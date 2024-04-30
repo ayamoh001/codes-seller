@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+      <url>
+          <loc>https://sample.com</loc>
+          <priority>1.0</priority>
+          <changefreq>weekly</changefreq>
+          <lastMod>2024-02-22</lastMod>
+          <image:image>
+            <image:loc>https://sample.com/avt-og-thumbnile.png</image:loc>
+            <image:title>إسم الموقع</image:title>
+          </image:image>
+      </url>
+      <url>
+        <loc>https://sample.com/login</loc>
+        <priority>0.8</priority>
+        <changefreq>weekly</changefreq>
+        <lastMod>2024-02-22</lastMod>
+        <image:image>
+          <image:loc>https://sample.com/avt-og-thumbnile.png</image:loc>
+          <image:title>إسم الموقع</image:title>
+        </image:image>
+      </url>
+      <url>
+        <loc>https://sample.com/profile</loc>
+        <priority>0.7</priority>
+        <changefreq>weekly</changefreq>
+        <lastMod>2024-02-22</lastMod>
+        <image:image>
+          <image:loc>https://sample.com/avt-og-thumbnile.png</image:loc>
+          <image:title>إسم الموقع</image:title>
+        </image:image>
+      </url>
+      <url>
+        <loc>https://sample.com/dashboard</loc>
+        <priority>0.6</priority>
+        <changefreq>weekly</changefreq>
+        <lastMod>2024-02-22</lastMod>
+        <image:image>
+          <image:loc>https://sample.com/avt-og-thumbnile.png</image:loc>
+          <image:title>إسم الموقع</image:title>
+        </image:image>
+      </url>
+      <url>
+        <loc>https://sample.com/policies</loc>
+        <priority>0.1</priority>
+        <changefreq>weekly</changefreq>
+        <lastMod>2024-02-22</lastMod>
+        <image:image>
+          <image:loc>https://sample.com/avt-og-thumbnile.png</image:loc>
+          <image:title>إسم الموقع</image:title>
+        </image:image>
+      </url>
+   </urlset>
+ 
