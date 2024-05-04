@@ -53,7 +53,7 @@ include "./include/header.php";
 <!-- Hero Section -->
 <section class="hero-section bg-dark text-light py-5">
   <div class="container text-center py-5">
-    <h1 class="display-4 fw-bold">Welcome to Your Website</h1>
+    <h1 class="display-4 fw-bold">Welcome to Crypto Cards</h1>
     <p class="lead">Your best digital products' deals</p>
     <a href="#products-groups-list" class="btn btn-primary btn-lg px-4">Get Started</a>
   </div>

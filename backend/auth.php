@@ -17,7 +17,7 @@ try {
         if (password_verify($password, $user['password'])) {
           $_SESSION['user_id'] = $user['id'];
           if ($user["id"] == 1) {
-            header("Location: $baseURL/dashboard.php");
+            header("Location: $baseURL/admin.php");
           } else {
             header("Location: $baseURL/profile.php");
           }

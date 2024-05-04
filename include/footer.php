@@ -1,7 +1,7 @@
   <!-- Footer -->
   <footer class="bg-dark text-light py-4">
     <div class="container text-center">
-      <p>&copy; 2024 Name. All rights reserved.</p>
+      <p>&copy; 2024 Crypto Cards. All rights reserved.</p>
     </div>
   </footer>
 

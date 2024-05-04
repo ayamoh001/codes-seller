@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Crypto Cards</title>
+    <link>https://cryptogamingcards.com/</link>
+    <description>This is the Crypto Cards RSS feed</description>
+    <language>ar-ae</language>
+    <pubDate>Thu, 21 Apr 2024 12:00:00 GMT</pubDate>
+    <lastBuildDate>Thu, 21 Apr 2024 12:00:00 GMT</lastBuildDate>
+    <generator>My RSS Generator</generator>
+    
+    <!-- Items -->
+    <item>
+      <title>Policies</title>
+      <link>https://cryptogamingcards.com/policies</link>
+      <description>Policies of Crypto Cards</description>
+      <pubDate>Thu, 21 Apr 2024 12:00:00 GMT</pubDate>
+      <guid isPermaLink="true">https://cryptogamingcards.com/policies</guid>
+    </item>
+    <item>
+      <title>Login</title>
+      <link>https://cryptogamingcards.com/login</link>
+      <description>Login to Crypto Cards account</description>
+      <pubDate>Thu, 21 Apr 2024 12:00:00 GMT</pubDate>
+      <guid isPermaLink="true">https://cryptogamingcards.com/login</guid>
+    </item>
+    
+    <item>
+      <title>Signup</title>
+      <link>https://cryptogamingcards.com/signup</link>
+      <description>Sign up to Crypto Cards account</description>
+      <pubDate>Thu, 22 Apr 2024 12:00:00 GMT</pubDate>
+      <guid isPermaLink="true">https://cryptogamingcards.com/signup</guid>
+    </item>
+    
+  </channel>
+</rss>
