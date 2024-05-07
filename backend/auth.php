@@ -16,11 +16,7 @@ try {
         $user = $users->fetch_assoc();
         if (password_verify($password, $user['password'])) {
           $_SESSION['user_id'] = $user['id'];
-          if ($user["id"] == 1) {
-            header("Location: $baseURL/admin.php");
-          } else {
-            header("Location: $baseURL/profile.php");
-          }
+          header("Location: $baseURL/profile.php");
         } else {
           $_SESSION['flash_message'] = "Invalid Credentials!";
           $_SESSION['flash_type'] = "danger";
@@ -109,7 +105,7 @@ try {
     exit;
   }
 } catch (Throwable $e) {
-  $_SESSION['flash_message'] = "Error in the server!";
+  $_SESSION['flash_message'] = "Error in the server! " . $e->getMessage();
   $_SESSION['flash_type'] = "danger";
 
   isset($_SERVER['HTTP_REFERER']) ? header("Location: " . $_SERVER['HTTP_REFERER']) : header("Location: $baseURL");

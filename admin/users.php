@@ -13,13 +13,13 @@ if (
   exit;
 }
 
-$title = "Admin Dashboard - Home";
+$title = "Admin Dashboard - Users";
 
 include "../include/admin/header.php";
 ?>
 
 <main>
-  admin home
+  admin users
 </main>
 
 <?php

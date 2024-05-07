@@ -39,10 +39,12 @@
 </head>
 
 <body class="inter-without-weight">
-  <header class="d-block bg-dark py-3">
+  <header class="d-block bg-dark bg-gradient py-3">
     <div class="container">
       <nav class="navbar navbar-expand-lg navbar-dark">
-        <a class="navbar-brand" href="<?php echo $baseURL; ?>">Logo</a>
+        <a class="navbar-brand ratio-16x9" href="<?php echo $baseURL; ?>" width="120">
+          <img class="ratio-16x9" src="<?php echo $baseURL; ?>/assets/images/Crypto-Cards-Logo.svg" alt="Crypto Cards Logo" width="120">
+        </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -53,7 +55,7 @@
             </li>
             <li class="nav-item ms-2">
               <div class="rounded-pill overflow-hidden shadow border-1 border-white">
-                <img src="<?php echo $baseURL . ($user["profile_picture"] != "" ? $user["profile_picture"] : "/assets/images/profile-picture.png") ?>" alt="profile picture" width="42">
+                <img src="<?php echo $baseURL . (isset($user["profile_picture"]) && $user["profile_picture"] != "" ? $user["profile_picture"] : "/assets/images/profile-picture.png") ?>" alt="profile picture" width="42">
               </div>
             </li>
             <li class="nav-item ms-3">

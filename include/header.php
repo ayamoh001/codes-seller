@@ -27,10 +27,10 @@
   <meta property="og:type" content="website">
   <meta property="og:image" content="<?php echo $baseURL; ?>/assets/images/codes-seller-og-thumbnile.png">
   <meta property="og:title" content="Crypto Cards">
-  <meta property="og:description" content="شركة Crypto Cards هي شركة سعودية تعمل بشكل رئيسي في كل من مكة المكرمة وجدة بخبرة تزيد عن 18 سنة">
+  <meta property="og:description" content="-------">
   <meta property="og:url" content="<?php echo $baseURL; ?>">
   <meta property="og:site_name" content="Crypto Cards">
-  <meta property="article:modified_time" content="2023-08-20T00:00:000+03:00">
+  <meta property="article:modified_time" content="2024-05-4T00:00:000+03:00">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="<?php echo $baseURL; ?>/assets/images/codes-seller-og-thumbnile.png">
   <meta name="twitter:label1" content="وقت القراءة المُقدّر">
@@ -49,7 +49,7 @@
       "description": "Crypto Cards",
       "logo": "<?php echo $baseURL; ?>/assets/images/codes-seller-logo.png",
       "paymentAccepted": "Cash",
-      "telephone": "",
+      "telephone": "+601167999817",
       "email": "sample@gmail.com",
       "priceRange": "dollar",
       "image": [
@@ -58,29 +58,25 @@
       contactPoint: {
         "@type": "ContactPoint",
         "contactType": "customer service",
-        "telephone": "+--------",
-        "email": "sample@gmail.com",
-        "areaServed": "US"
+        "telephone": "+601167999817",
+        "email": "crypto.cards.dealer24.7@gmail.com",
+        "areaServed": "MY"
       },
       "address": {
-        "@type"
-        ": "
-        PostalAddress ",
-        "streetAddress": "-----",
-        "addressLocality": "United States of America",
-        "addressRegion": "US",
-        "postalCode": "-----",
-        "addressCountry": "US",
+        "@type": "PostalAddress",
+        "streetAddress": "Kuala Lumpur, main street",
+        "addressLocality": "Malysia, Kuala Lumpur",
+        "addressRegion": "MY",
+        "postalCode": "50000",
+        "addressCountry": "MY",
       },
       "areaServed": {
         "@type": "GeoShape",
         "address": {
-          "@type"
-          ": "
-          PostalAddress ",
+          "@type": "PostalAddress",
           "addressLocality": "------",
           "addressRegion": "------",
-          "addressCountry": "US"
+          "addressCountry": "MY"
         }
       },
       "geo": {
@@ -90,15 +86,6 @@
           "longitude": 39.219224,
         }
       },
-      "openingHours": [
-        "Mo-Su 08:00-17:30"
-      ],
-      "openingHoursSpecification": [{
-        "@type": "OpeningHoursSpecification",
-        "dayOfWeek": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"],
-        "opens": "08:00",
-        "closes": "17:30",
-      }, ]
     }
   </script>
 
@@ -124,10 +111,12 @@
 </head>
 
 <body class="inter-without-weight">
-  <header class="d-block bg-dark py-3">
+  <header class="d-block bg-dark bg-gradient py-3">
     <div class="container">
       <nav class="navbar navbar-expand-lg navbar-dark">
-        <a class="navbar-brand" href="<?php echo $baseURL; ?>">Logo</a>
+        <a class="navbar-brand ratio-16x9" href="<?php echo $baseURL; ?>" width="120">
+          <img class="ratio-16x9" src="<?php echo $baseURL; ?>/assets/images/Crypto-Cards-Logo.svg" alt="Crypto Cards Logo" width="120">
+        </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -140,7 +129,13 @@
               <a class="nav-link" href="<?php echo $baseURL; ?>/policies.php">Policies</a>
             </li>
             <li class="nav-item">
-              <a class="btn btn-primary ms-2 px-4" href="<?php echo $baseURL; ?>/login">Login</a>
+              <?php if ($user_id == "") : ?>
+                <a class="btn btn-primary ms-2 px-4" href="<?php echo $baseURL; ?>/login.php">Login</a>
+              <?php else : ?>
+                <a href="<?php echo $baseURL; ?>/profile.php" class="d-block rounded-pill overflow-hidden shadow border-1 border-white ms-2">
+                  <img src="<?php echo $baseURL . (isset($user["profile_picture"]) && $user["profile_picture"] != "" ? $user["profile_picture"] : "/assets/images/profile-picture.png") ?>" alt="profile picture" width="42">
+                </a>
+              <?php endif; ?>
             </li>
           </ul>
         </div>

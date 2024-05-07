@@ -13,18 +13,15 @@ if (
   exit;
 }
 
+$title = "Admin Dashboard - Payments";
+
+include "../include/admin/header.php";
 ?>
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-</head>
+<main>
+  admin payments
+</main>
 
-<body>
-  test
-</body>
-
-</html>
+<?php
+include "../include/admin/footer.php";
+?>

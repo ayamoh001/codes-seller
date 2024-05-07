@@ -21,41 +21,42 @@ try {
     exit;
   }
 
-  if (!isset($_FILES["image"]) || $_FILES["image"]["error"] != UPLOAD_ERR_OK) {
-    $_SESSION['flash_message'] = "No file uploaded or file upload error occurred.";
+  $groupId = $_POST["group_id"];
+
+  $getGroupStmt = $connection->prepare("SELECT * FROM groups WHERE id = ? LIMIT 1");
+  $getGroupStmt->bind_param("i", $groupId);
+  $getGroupStmt->execute();
+  if ($getGroupStmt->errno) {
+    $_SESSION['flash_message'] = $getGroupStmt->error;
+    $_SESSION['flash_type'] = "danger";
+    header("Location: " . $_SERVER['HTTP_REFERER']);
+    exit;
+  }
+  $getGroupStmt->bind_result($group);
+  $getGroupStmt->fetch();
+  $getGroupStmt->close();
+
+  if (!$group) {
+    $_SESSION['flash_message'] = "No group with this ID!";
     $_SESSION['flash_type'] = "danger";
     header("Location: " . $_SERVER['HTTP_REFERER']);
     exit;
   }
 
-  $file_name = $_FILES["image"]["name"];
-  $upload_dir = "../storage/groups/"; // storage dir
+  $codeValue = $_POST["code_value"];
 
-  $ext = pathinfo($file_name, PATHINFO_EXTENSION);
-  $upload_path = $upload_dir . $title . time() . '.' . $ext;
-  if (!move_uploaded_file($file_tmp, $upload_path)) {
-    $_SESSION['flash_message'] = "Image file not stored successfully!";
+  $createNewProductStmt = $conn->prepare("INSERT INTO products(group_id, code_value) VALUES (?, ?)");
+  $createNewProductStmt->bind_param("ssds", $groupId, $codeValue);
+  $createNewProductStmt->execute();
+  if ($createNewProductStmt->errno) {
+    $_SESSION['flash_message'] = $createNewProductStmt->error;
     $_SESSION['flash_type'] = "danger";
     header("Location: " . $_SERVER['HTTP_REFERER']);
     exit;
   }
+  $createNewProductStmt->close();
 
-  $title = $_POST["title"];
-  $description = $_POST["description"];
-  $price = (float) $_POST["price"];
-
-  $createNewGroupStmt = $conn->prepare("INSERT INTO groups(title, description, price, image) VALUES (?, ?, ?, ?)");
-  $createNewGroupStmt->bind_param("ssds", $title, $description, $price, $upload_dir);
-  $createNewGroupStmt->execute();
-  if ($createNewGroupStmt->errno) {
-    $_SESSION['flash_message'] = $createNewGroupStmt->error;
-    $_SESSION['flash_type'] = "danger";
-    header("Location: " . $_SERVER['HTTP_REFERER']);
-    exit;
-  }
-  $createNewGroupStmt->close();
-
-  $_SESSION['flash_message'] = "New group was created successfully!";
+  $_SESSION['flash_message'] = "New Product was created for the group successfully!";
   $_SESSION['flash_type'] = "success";
   header("Location: " . $_SERVER['HTTP_REFERER']);
   exit;

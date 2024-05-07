@@ -21,6 +21,26 @@ try {
     exit;
   }
 
+  $getGroupStmt = $connection->prepare("SELECT * FROM groups WHERE id = ? LIMIT 1");
+  $getGroupStmt->bind_param("i", $groupId);
+  $getGroupStmt->execute();
+  if ($getGroupStmt->errno) {
+    $_SESSION['flash_message'] = $getGroupStmt->error;
+    $_SESSION['flash_type'] = "danger";
+    header("Location: " . $_SERVER['HTTP_REFERER']);
+    exit;
+  }
+  $getGroupStmt->bind_result($group);
+  $getGroupStmt->fetch();
+  $getGroupStmt->close();
+
+  if (!$group) {
+    $_SESSION['flash_message'] = "No group with this ID!";
+    $_SESSION['flash_type'] = "danger";
+    header("Location: " . $_SERVER['HTTP_REFERER']);
+    exit;
+  }
+
   if (!isset($_FILES["image"]) || $_FILES["image"]["error"] != UPLOAD_ERR_OK) {
     $_SESSION['flash_message'] = "No file uploaded or file upload error occurred.";
     $_SESSION['flash_type'] = "danger";
@@ -44,8 +64,8 @@ try {
   $description = $_POST["description"];
   $price = (float) $_POST["price"];
 
-  $createNewGroupStmt = $conn->prepare("INSERT INTO groups(title, description, price, image) VALUES (?, ?, ?, ?)");
-  $createNewGroupStmt->bind_param("ssds", $title, $description, $price, $upload_dir);
+  $createNewGroupStmt = $conn->prepare("UPDATE groups SET title = ?, description = ?, price = ?, image = ? WHERE id = ?");
+  $createNewGroupStmt->bind_param("ssdss", $title, $description, $price, $upload_dir, $groupId);
   $createNewGroupStmt->execute();
   if ($createNewGroupStmt->errno) {
     $_SESSION['flash_message'] = $createNewGroupStmt->error;
