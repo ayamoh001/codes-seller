@@ -1,8 +1,6 @@
 <?php
 include "./include/config.php";
 
-
-
 $title = "Crypto Cards - Signup";
 include "./include/header.php";
 ?>
@@ -18,7 +16,7 @@ include "./include/header.php";
       unset($_SESSION['flash_type']);
     }
     ?>
-    <div class="row justify-content-center py-5">
+    <main class="row justify-content-center py-5">
       <div class="col-md-6 col-lg-5">
         <div class="card shadow-sm">
           <div class="card-body p-4">
@@ -47,7 +45,7 @@ include "./include/header.php";
           </div>
         </div>
       </div>
-    </div>
+    </main>
   </div>
 </section>
 

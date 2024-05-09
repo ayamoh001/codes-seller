@@ -32,8 +32,8 @@ try {
     header("Location: " . $_SERVER['HTTP_REFERER']);
     exit;
   }
-  $getGroupStmt->bind_result($group);
-  $getGroupStmt->fetch();
+  $groupResult = $getGroupStmt->get_result();
+  $group = $groupResult->fetch_assoc();
   $getGroupStmt->close();
 
   if (!$group) {
@@ -43,25 +43,31 @@ try {
     exit;
   }
 
+  $price = (float) $_POST["price"];
   $codeValue = $_POST["code_value"];
+  $type = $_POST["type"];
 
-  $createNewProductStmt = $conn->prepare("INSERT INTO products(group_id, code_value) VALUES (?, ?)");
-  $createNewProductStmt->bind_param("ssds", $groupId, $codeValue);
+  $connection->begin_transaction();
+  $createNewProductStmt = $conn->prepare("INSERT INTO products(group_id, code_value, price, type) VALUES (?, ?, ?, ?)");
+  $createNewProductStmt->bind_param("ssds", $groupId, $codeValue, $price, $type);
   $createNewProductStmt->execute();
   if ($createNewProductStmt->errno) {
     $_SESSION['flash_message'] = $createNewProductStmt->error;
     $_SESSION['flash_type'] = "danger";
     header("Location: " . $_SERVER['HTTP_REFERER']);
+    $connection->rollback();
     exit;
   }
   $createNewProductStmt->close();
 
+  $connection->commit();
   $_SESSION['flash_message'] = "New Product was created for the group successfully!";
   $_SESSION['flash_type'] = "success";
   header("Location: " . $_SERVER['HTTP_REFERER']);
   exit;
 } catch (Throwable $e) {
-  echo "Error in the server!";
-  echo $e->getMessage();
+  $_SESSION['flash_message'] = "Error in the server! " . $e->getMessage();
+  $_SESSION['flash_type'] = "danger";
+  header("Location: " . $_SERVER['HTTP_REFERER']);
   exit;
 }

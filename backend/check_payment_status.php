@@ -6,12 +6,23 @@ if ($_SESSION["user_id"] == "") {
   exit;
 }
 
-$user_id = $_SESSION["user_id"];
-$getUserQuery = "SELECT * FROM users WHERE (id = '$user_id') AND (status != 'BLOCKED')";
-$user = $connection->query($getUserQuery)->fetch_assoc();
-
 try {
-  // logic here
+  $user_id = (int) $_SESSION["user_id"];
+  $getUserStmt = $connection->prepare("SELECT * FROM users WHERE id = ? AND status != 'BLOCKED' LIMIT 1");
+  $getUserStmt->bind_param("i", $user_id);
+  $getUserStmt->execute();
+  if ($getUserStmt->errno) {
+    echo json_encode(["error" => "Error in the auth proccess! please try again."]);
+    echo json_encode(["error" => $getUserStmt->error]);
+    exit;
+  }
+  $userResult = $getUserStmt->get_result();
+  $user = $userResult->fetch_assoc();
+  $getUserStmt->close();
+
+
+  // start the process
+
 } catch (Throwable $e) {
   echo json_encode(["error" => "Error in the server!"]);
   echo json_encode(["error" => $e->getMessage()]);

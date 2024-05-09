@@ -115,7 +115,7 @@
     <div class="container">
       <nav class="navbar navbar-expand-lg navbar-dark">
         <a class="navbar-brand ratio-16x9" href="<?php echo $baseURL; ?>" width="120">
-          <img class="ratio-16x9" src="<?php echo $baseURL; ?>/assets/images/Crypto-Cards-Logo.svg" alt="Crypto Cards Logo" width="120">
+          <img class="ratio-16x9" src="<?php echo $baseURL; ?>/assets/images/Crypto-Cards-Logo-Light.svg" alt="Crypto Cards Logo" width="120">
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
@@ -128,15 +128,20 @@
             <li class="nav-item">
               <a class="nav-link" href="<?php echo $baseURL; ?>/policies.php">Policies</a>
             </li>
-            <li class="nav-item">
-              <?php if ($user_id == "") : ?>
-                <a class="btn btn-primary ms-2 px-4" href="<?php echo $baseURL; ?>/login.php">Login</a>
-              <?php else : ?>
+            <?php if (isset($user_id) && $user_id != "") : ?>
+              <li class="nav-item">
+                <a href="<?php echo $baseURL; ?>/profile.php" class="nav-link ms-2 fw-bold text-warning"><?php echo $wallet["balance"] ?> USDT</a>
+              </li>
+              <li class="nav-item">
                 <a href="<?php echo $baseURL; ?>/profile.php" class="d-block rounded-pill overflow-hidden shadow border-1 border-white ms-2">
                   <img src="<?php echo $baseURL . (isset($user["profile_picture"]) && $user["profile_picture"] != "" ? $user["profile_picture"] : "/assets/images/profile-picture.png") ?>" alt="profile picture" width="42">
                 </a>
-              <?php endif; ?>
-            </li>
+              </li>
+            <?php else : ?>
+              <li class="nav-item">
+                <a class="btn btn-primary ms-2 px-4" href="<?php echo $baseURL; ?>/login.php">Login</a>
+              </li>
+            <?php endif; ?>
           </ul>
         </div>
       </nav>

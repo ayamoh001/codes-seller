@@ -8,7 +8,7 @@ include "./include/header.php";
 <!-- Content  -->
 <section>
   <div class="container">
-    
+    policies content
   </div>
 </section>
 

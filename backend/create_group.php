@@ -42,25 +42,28 @@ try {
 
   $title = $_POST["title"];
   $description = $_POST["description"];
-  $price = (float) $_POST["price"];
 
-  $createNewGroupStmt = $conn->prepare("INSERT INTO groups(title, description, price, image) VALUES (?, ?, ?, ?)");
-  $createNewGroupStmt->bind_param("ssds", $title, $description, $price, $upload_dir);
+  $connection->begin_transaction();
+  $createNewGroupStmt = $conn->prepare("INSERT INTO groups(title, description, image) VALUES (?, ?, ?)");
+  $createNewGroupStmt->bind_param("sss", $title, $description, $upload_dir);
   $createNewGroupStmt->execute();
   if ($createNewGroupStmt->errno) {
     $_SESSION['flash_message'] = $createNewGroupStmt->error;
     $_SESSION['flash_type'] = "danger";
     header("Location: " . $_SERVER['HTTP_REFERER']);
+    $connection->rollback();
     exit;
   }
   $createNewGroupStmt->close();
 
+  $connection->commit();
   $_SESSION['flash_message'] = "New group was created successfully!";
   $_SESSION['flash_type'] = "success";
   header("Location: " . $_SERVER['HTTP_REFERER']);
   exit;
 } catch (Throwable $e) {
-  echo "Error in the server!";
-  echo $e->getMessage();
+  $_SESSION['flash_message'] = "Error in the server! " . $e->getMessage();
+  $_SESSION['flash_type'] = "danger";
+  header("Location: " . $_SERVER['HTTP_REFERER']);
   exit;
 }

@@ -23,6 +23,7 @@ try {
 
   $groupId = $_POST["group_id"];
 
+  $connection->begin_transaction();
   $deleteGroupStmt = $connection->prepare("DELETE FROM groups WHERE id = ? LIMIT 1");
   $deleteGroupStmt->bind_param("i", $groupId);
   $deleteGroupStmt->execute();
@@ -30,25 +31,31 @@ try {
     $_SESSION['flash_message'] = $deleteGroupStmt->error;
     $_SESSION['flash_type'] = "danger";
     header("Location: " . $_SERVER['HTTP_REFERER']);
+    $connection->rollback();
     exit;
   }
+  $deleteGroupStmt->close();
 
-  // Still thinking
-  // $deleteProductsStmt = $connection->prepare("DELETE FROM products WHERE group_id = ? AND sold != 1");
-  // $deleteProductsStmt->bind_param("i", $groupId);
-  // $deleteProductsStmt->execute();
-  // if ($deleteProductsStmt->errno) {
-  //   $_SESSION['flash_message'] = $deleteProductsStmt->error;
-  //   $_SESSION['flash_type'] = "danger";
-  //   header("Location: " . $_SERVER['HTTP_REFERER']);
-  //   exit;
-  // }
+  $deleteRelatedProductsStmt = $connection->prepare("DELETE FROM products WHERE group_id = ? AND payments_id = NULL");
+  $deleteRelatedProductsStmt->bind_param("i", $groupId);
+  $deleteRelatedProductsStmt->execute();
+  if ($deleteRelatedProductsStmt->errno) {
+    $_SESSION['flash_message'] = $deleteRelatedProductsStmt->error;
+    $_SESSION['flash_type'] = "danger";
+    header("Location: " . $_SERVER['HTTP_REFERER']);
+    $connection->rollback();
+    exit;
+  }
+  $deleteRelatedProductsStmt->close();
 
+  $connection->commit();
   $_SESSION['flash_message'] = "Group and its codes were deleted successfully!";
   $_SESSION['flash_type'] = "success";
   header("Location: " . $_SERVER['HTTP_REFERER']);
   exit;
 } catch (Throwable $e) {
-  echo "Error in the server!";
-  echo $e->getMessage();
+  $_SESSION['flash_message'] = "Error in the server! " . $e->getMessage();
+  $_SESSION['flash_type'] = "danger";
+  header("Location: " . $_SERVER['HTTP_REFERER']);
+  exit;
 }

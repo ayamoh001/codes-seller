@@ -6,11 +6,21 @@ if ($_SESSION["user_id"] == "") {
   exit;
 }
 
-$user_id = $_SESSION["user_id"];
-$getUserQuery = "SELECT * FROM users WHERE (id = '$user_id') AND (status != 'BLOCKED')";
-$user = $connection->query($getUserQuery)->fetch_assoc();
-
 try {
+  $user_id = (int) $_SESSION["user_id"];
+  $getUserStmt = $connection->prepare("SELECT * FROM users WHERE id = ? AND status != 'BLOCKED' LIMIT 1");
+  $getUserStmt->bind_param("i", $user_id);
+  $getUserStmt->execute();
+  if ($getUserStmt->errno) {
+    echo json_encode(["error" => "Error in the auth proccess! please try again."]);
+    echo json_encode(["error" => $getUserStmt->error]);
+    exit;
+  }
+  $userResult = $getUserStmt->get_result();
+  $user = $userResult->fetch_assoc();
+  $getUserStmt->close();
+
+  // start the process
   $quantity = (int) $_POST["quantity"] ?? 1;
   $groupId = (int) $_POST["group_id"];
 
@@ -22,8 +32,8 @@ try {
     echo json_encode(["error" => $getGroupStmt->error]);
     exit;
   }
-  $getGroupStmt->bind_result($group);
-  $getGroupStmt->fetch();
+  $groupResult = $getGroupStmt->get_result();
+  $group = $groupResult->fetch_assoc();
   $getGroupStmt->close();
 
   if (!$group) {
@@ -48,24 +58,28 @@ try {
     exit;
   }
 
-  $totalPrice = $group["price"] * $quantity;
-  // TODO: start the Payment API
+  // TODO: update the price calculation process
+  // $totalPrice = $group["price"] * $quantity;
+
+  // TODO: start the Payment API here
 
 
   $status = "PENDING";
   $metadata1 = "";
   $metadata2 = "";
 
-  $createPaymentStmt = "INSERT INTO payments(group_id, product_id, status, price, metadata1, metdata2) VALUES (?,?,?,?,?,?)";
-  $getProductsStmt->bind_param("iisdss", $groupId, $productId, $status, $totalPrice, $metadata2, $metadata1);
-  if ($getProductsStmt->errno) {
+  $connection->begin_transaction();
+  $createPaymentStmt = $connection->prepare("INSERT INTO payments(group_id, product_id, status, price, metadata1, metdata2) VALUES (?,?,?,?,?,?)");
+  $createPaymentStmt->bind_param("iisdss", $groupId, $productId, $status, $totalPrice, $metadata2, $metadata1);
+  if ($createPaymentStmt->errno) {
     echo json_encode(["error" => "Error in the Server! please contact the support."]);
-    echo json_encode(["error" => $getProductsStmt->error]);
+    echo json_encode(["error" => $createPaymentStmt->error]);
+    $connection->rollback();
     exit;
   }
-  $getProductsStmt->bind_result($productsCount);
-  $getProductsStmt->fetch();
-  $getProductsStmt->close();
+  $createPaymentStmt->close();
+
+  $connection->commit();
   echo json_encode(["message" => "Success"]);
 } catch (Throwable $e) {
   echo json_encode(["error" => "Error in the server!"]);

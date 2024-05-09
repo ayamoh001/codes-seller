@@ -23,6 +23,7 @@ try {
 
   $productId = $_POST["product_id"];
 
+  $connection->begin_transaction();
   $deleteProductStmt = $connection->prepare("DELETE FROM products WHERE id = ? LIMIT 1");
   $deleteProductStmt->bind_param("i", $productId);
   $deleteProductStmt->execute();
@@ -30,14 +31,18 @@ try {
     $_SESSION['flash_message'] = $deleteProductStmt->error;
     $_SESSION['flash_type'] = "danger";
     header("Location: " . $_SERVER['HTTP_REFERER']);
+    $connection->rollback();
     exit;
   }
 
+  $connection->commit();
   $_SESSION['flash_message'] = "A code product was deleted successfully!";
   $_SESSION['flash_type'] = "success";
   header("Location: " . $_SERVER['HTTP_REFERER']);
   exit;
 } catch (Throwable $e) {
-  echo "Error in the server!";
-  echo $e->getMessage();
+  $_SESSION['flash_message'] = "Error in the server! " . $e->getMessage();
+  $_SESSION['flash_type'] = "danger";
+  header("Location: " . $_SERVER['HTTP_REFERER']);
+  exit;
 }

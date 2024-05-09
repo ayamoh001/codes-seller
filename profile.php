@@ -8,11 +8,38 @@ if ($_SESSION["user_id"] == "") {
   exit;
 }
 
-$user_id = $_SESSION["user_id"];
-$getUserQuery = "SELECT * FROM users WHERE (id = '$user_id') AND (status != 'BLOCKED')";
-$user = $connection->query($getUserQuery)->fetch_assoc();
+$user_id = "";
+$user = null;
+if (isset($_SESSION["user_id"]) && $_SESSION["user_id"] != "") {
+  // get the user
+  $user_id = (int) $_SESSION["user_id"];
+  $getUserStmt = $connection->prepare("SELECT * FROM users WHERE id = ? AND status != 'BLOCKED' LIMIT 1");
+  $getUserStmt->bind_param("i", $user_id);
+  $getUserStmt->execute();
+  if ($getUserStmt->errno) {
+    echo json_encode(["error" => "Error in the auth proccess! please try again."]);
+    echo json_encode(["error" => $getUserStmt->error]);
+    exit;
+  }
+  $userResult = $getUserStmt->get_result();
+  $user = $userResult->fetch_assoc();
+  $getUserStmt->close();
 
-$title = "إسم الموقع - الحساب";
+  // get the wallet
+  $getWalletStmt = $connection->prepare("SELECT * FROM wallet WHERE user_id = ? AND status != 'BLOCKED' LIMIT 1");
+  $getWalletStmt->bind_param("i", $user_id);
+  $getWalletStmt->execute();
+  if ($getWalletStmt->errno) {
+    echo json_encode(["error" => "Error in the wallet retriving process! please try again."]);
+    echo json_encode(["error" => $getWalletStmt->error]);
+    exit;
+  }
+  $walletResult = $getWalletStmt->get_result();
+  $wallet = $walletResult->fetch_assoc();
+  $getWalletStmt->close();
+}
+
+$title = "Crypto Cards - Profile";
 include "./include/profile/header.php";
 ?>
 
