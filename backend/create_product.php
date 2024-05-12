@@ -48,7 +48,7 @@ try {
   $type = $_POST["type"];
 
   $connection->begin_transaction();
-  $createNewProductStmt = $conn->prepare("INSERT INTO products(group_id, code_value, price, type) VALUES (?, ?, ?, ?)");
+  $createNewProductStmt = $connection->prepare("INSERT INTO products(group_id, code_value, price, type) VALUES (?, ?, ?, ?)");
   $createNewProductStmt->bind_param("ssds", $groupId, $codeValue, $price, $type);
   $createNewProductStmt->execute();
   if ($createNewProductStmt->errno) {

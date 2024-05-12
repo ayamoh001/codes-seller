@@ -2,7 +2,7 @@
 include "./include/config.php";
 
 if (isset($_SESSION["user_id"]) && $_SESSION["user_id"] != "") {
-  header("location: $baseURL/profile.php");
+  header("location: $baseURL/profile/");
 }
 
 $title = "Crypto Cards - Login";

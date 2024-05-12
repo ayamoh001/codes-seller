@@ -13,14 +13,39 @@ if (
   exit;
 }
 
+$getUsersStmt = $connection->prepare("SELECT * FROM users");
+$getUsersStmt->execute();
+if ($getUsersStmt->errno) {
+  $_SESSION['flash_message'] = $getUsersStmt->error;
+  $_SESSION['flash_type'] = "danger";
+  header("Location: $baseURL/admin/users.php");
+  exit;
+}
+$groupResult = $getUsersStmt->get_result();
+$group = $groupResult->fetch_assoc();
+$getUsersStmt->close();
+
 $title = "Admin Dashboard - Users";
 
 include "../include/admin/header.php";
 ?>
 
-<main>
-  admin users
-</main>
+<section class="py-5 bg-dark">
+  <div class="container py-5">
+    <?php
+    if (isset($_SESSION['flash_message'])) {
+      echo '<div class="alert alert-' . $_SESSION['flash_type'] . '">' . $_SESSION['flash_message'] . '</div>';
+
+      unset($_SESSION['flash_message']);
+      unset($_SESSION['flash_type']);
+    }
+    ?>
+    <main>
+      admin users
+    </main>
+
+  </div>
+</section>
 
 <?php
 include "../include/admin/footer.php";

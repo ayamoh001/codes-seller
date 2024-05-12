@@ -17,7 +17,7 @@ try {
   if ($_SERVER["REQUEST_METHOD"] !== "POST") { // DELETE is not supported by the HTML forms
     $_SESSION['flash_message'] = "Not allowed HTTP method!";
     $_SESSION['flash_type'] = "danger";
-    header("Location: " . $_SERVER['HTTP_REFERER']);
+    header("Location: $baseURL/admin/");
     exit;
   }
 
@@ -30,7 +30,7 @@ try {
   if ($deleteProductStmt->errno) {
     $_SESSION['flash_message'] = $deleteProductStmt->error;
     $_SESSION['flash_type'] = "danger";
-    header("Location: " . $_SERVER['HTTP_REFERER']);
+    header("Location: $baseURL/admin/");
     $connection->rollback();
     exit;
   }
@@ -38,11 +38,11 @@ try {
   $connection->commit();
   $_SESSION['flash_message'] = "A code product was deleted successfully!";
   $_SESSION['flash_type'] = "success";
-  header("Location: " . $_SERVER['HTTP_REFERER']);
+  header("Location: $baseURL/admin/");
   exit;
 } catch (Throwable $e) {
   $_SESSION['flash_message'] = "Error in the server! " . $e->getMessage();
   $_SESSION['flash_type'] = "danger";
-  header("Location: " . $_SERVER['HTTP_REFERER']);
+  header("Location: $baseURL/admin/");
   exit;
 }

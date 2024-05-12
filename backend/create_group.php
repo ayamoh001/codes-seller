@@ -17,40 +17,42 @@ try {
   if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     $_SESSION['flash_message'] = "Not allowed HTTP method!";
     $_SESSION['flash_type'] = "danger";
-    header("Location: " . $_SERVER['HTTP_REFERER']);
+    header("Location: $baseURL/admin/");
     exit;
   }
 
   if (!isset($_FILES["image"]) || $_FILES["image"]["error"] != UPLOAD_ERR_OK) {
     $_SESSION['flash_message'] = "No file uploaded or file upload error occurred.";
     $_SESSION['flash_type'] = "danger";
-    header("Location: " . $_SERVER['HTTP_REFERER']);
-    exit;
-  }
-
-  $file_name = $_FILES["image"]["name"];
-  $upload_dir = "../storage/groups/"; // storage dir
-
-  $ext = pathinfo($file_name, PATHINFO_EXTENSION);
-  $upload_path = $upload_dir . $title . time() . '.' . $ext;
-  if (!move_uploaded_file($file_tmp, $upload_path)) {
-    $_SESSION['flash_message'] = "Image file not stored successfully!";
-    $_SESSION['flash_type'] = "danger";
-    header("Location: " . $_SERVER['HTTP_REFERER']);
+    header("Location: $baseURL/admin/");
     exit;
   }
 
   $title = $_POST["title"];
   $description = $_POST["description"];
+  $sortIndex = $_POST["sort_index"];
+  $file_name = $_FILES["image"]["name"];
+  $file_tmp = $_FILES["image"]["tmp_name"];
+  // var_dump($_FILES["image"]);
+  $uploadDirectory = "../storage/groups/"; // storage dir
+
+  $ext = pathinfo($file_name, PATHINFO_EXTENSION);
+  $upload_path = $uploadDirectory . $title . time() . '.' . $ext;
+  if (!move_uploaded_file($file_tmp, $upload_path)) {
+    $_SESSION['flash_message'] = "Image file not stored successfully!";
+    $_SESSION['flash_type'] = "danger";
+    header("Location: $baseURL/admin/");
+    exit;
+  }
 
   $connection->begin_transaction();
-  $createNewGroupStmt = $conn->prepare("INSERT INTO groups(title, description, image) VALUES (?, ?, ?)");
-  $createNewGroupStmt->bind_param("sss", $title, $description, $upload_dir);
+  $createNewGroupStmt = $connection->prepare("INSERT INTO groups(title, description, image, sort_index) VALUES (?, ?, ?, ?)");
+  $createNewGroupStmt->bind_param("sssi", $title, $description, $uploadDirectory, $sortIndex);
   $createNewGroupStmt->execute();
   if ($createNewGroupStmt->errno) {
     $_SESSION['flash_message'] = $createNewGroupStmt->error;
     $_SESSION['flash_type'] = "danger";
-    header("Location: " . $_SERVER['HTTP_REFERER']);
+    header("Location: $baseURL/admin/");
     $connection->rollback();
     exit;
   }
@@ -59,11 +61,11 @@ try {
   $connection->commit();
   $_SESSION['flash_message'] = "New group was created successfully!";
   $_SESSION['flash_type'] = "success";
-  header("Location: " . $_SERVER['HTTP_REFERER']);
+  header("Location: $baseURL/admin/");
   exit;
 } catch (Throwable $e) {
   $_SESSION['flash_message'] = "Error in the server! " . $e->getMessage();
   $_SESSION['flash_type'] = "danger";
-  header("Location: " . $_SERVER['HTTP_REFERER']);
+  header("Location: $baseURL/admin/");
   exit;
 }

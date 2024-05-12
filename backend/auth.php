@@ -20,7 +20,7 @@ try {
         $user = $result->fetch_assoc();
         if (password_verify($password, $user['password'])) {
           $_SESSION['user_id'] = $user['id'];
-          header("Location: $baseURL/profile.php");
+          header("Location: $baseURL/profile/");
         } else {
           $_SESSION['flash_message'] = "Invalid Credentials!";
           $_SESSION['flash_type'] = "danger";
@@ -83,7 +83,7 @@ try {
         $stmt = $connection->prepare($createUserWalletQuery);
         $stmt->bind_param("i", $user_id);
         if ($stmt->execute()) {
-          header("Location: $baseURL/profile.php");
+          header("Location: $baseURL/profile/");
           $connection->commit();
           exit;
         }

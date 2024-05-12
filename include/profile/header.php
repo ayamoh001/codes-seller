@@ -51,18 +51,18 @@
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav ms-auto">
             <li class="nav-item">
-              <a class="nav-link" href="<?php echo $baseURL; ?>/profile.php">profile</a>
+              <a class="nav-link" href="<?php echo $baseURL; ?>/profile/">profile</a>
             </li>
             <li class="nav-item">
-              <a href="<?php echo $baseURL; ?>/profile.php" class="nav-link ms-2 fw-bold text-warning"><?php echo $wallet["balance"] ?> USDT</a>
+              <a href="<?php echo $baseURL; ?>/profile/" class="nav-link ms-2 fw-bold text-warning"><?php echo $wallet["balance"] ?> USDT</a>
             </li>
             <li class="nav-item">
-              <a href="<?php echo $baseURL; ?>/profile.php" class="d-block rounded-pill overflow-hidden shadow border-1 border-white ms-2">
+              <a href="<?php echo $baseURL; ?>/profile/" class="d-block rounded-pill overflow-hidden shadow border-1 border-white ms-2">
                 <img src="<?php echo $baseURL . (isset($user["profile_picture"]) && $user["profile_picture"] != "" ? $user["profile_picture"] : "/assets/images/profile-picture.png") ?>" alt="profile picture" width="42">
               </a>
             </li>
             <li class="nav-item ms-3">
-              <span class="nav-link p-1" href="<?php echo $baseURL; ?>/profile.php">
+              <span class="nav-link p-1">
                 <form action="<?php echo $baseURL ?>/backend/auth.php" method="POST">
                   <input type="hidden" name="do" value="logout">
                   <button class="btn btn-danger" type="submit">Logout</button>

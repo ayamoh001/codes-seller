@@ -14,27 +14,26 @@
   <meta name="publisher" content="Crypto Cards">
   <meta name="author" content="Crypto Cards">
   <meta name="creator" content="Crypto Cards">
-  <meta name="theme-color" content="#C29725">
+  <meta name="theme-color" content="#F7931A">
   <meta name="color-scheme" content="dark">
   <meta name="referrer" content="origin">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
-  <link rel="canonical" href="<?php echo $baseURL; ?>">
+  <link rel="canonical" href="<?php echo $baseURL . (isset($canonicalPath) ? $canonicalPath : ""); ?>">
   <link rel="alternate" type="application/rss+xml" href="rss.xml" title="rss">
   <meta name="format-detection" content="telephone=yes, date=yes, address=yes, email=yes, url=yes">
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
   <link rel="author" href="<?php echo $baseURL; ?>" />
-  <meta property="og:locale" content="ar_AR">
+  <meta property="og:locale" content="en_US">
   <meta property="og:type" content="website">
-  <meta property="og:image" content="<?php echo $baseURL; ?>/assets/images/codes-seller-og-thumbnile.png">
+  <meta property="og:image" content="<?php echo $baseURL; ?>/assets/images/crypto-cards-og-thumbnile.png">
   <meta property="og:title" content="Crypto Cards">
   <meta property="og:description" content="-------">
   <meta property="og:url" content="<?php echo $baseURL; ?>">
   <meta property="og:site_name" content="Crypto Cards">
   <meta property="article:modified_time" content="2024-05-4T00:00:000+03:00">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:image" content="<?php echo $baseURL; ?>/assets/images/codes-seller-og-thumbnile.png">
-  <meta name="twitter:label1" content="وقت القراءة المُقدّر">
-  <meta name="twitter:data1" content="دقيقة">
+  <meta name="twitter:image" content="<?php echo $baseURL; ?>/assets/images/crypto-cards-og-thumbnile.png">
+  <meta name="twitter:label1" content="estimated read time">
+  <meta name="twitter:data1" content="1 minute">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Crypto Cards">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -47,13 +46,13 @@
         "name": "Crypto Cards",
       "legalName": "Crypto Cards",
       "description": "Crypto Cards",
-      "logo": "<?php echo $baseURL; ?>/assets/images/codes-seller-logo.png",
+      "logo": "<?php echo $baseURL; ?>/assets/images/crypto-cards-logo.png",
       "paymentAccepted": "Cash",
       "telephone": "+601167999817",
       "email": "sample@gmail.com",
       "priceRange": "dollar",
       "image": [
-        "<?php echo $baseURL; ?>/assets/images/codes-seller-og-thumbnile.png",
+        "<?php echo $baseURL; ?>/assets/images/crypto-cards-og-thumbnile.png",
       ],
       contactPoint: {
         "@type": "ContactPoint",
@@ -130,10 +129,10 @@
             </li>
             <?php if (isset($user_id) && $user_id != "") : ?>
               <li class="nav-item">
-                <a href="<?php echo $baseURL; ?>/profile.php" class="nav-link ms-2 fw-bold text-warning"><?php echo $wallet["balance"] ?> USDT</a>
+                <a href="<?php echo $baseURL; ?>/profile/" class="nav-link ms-2 fw-bold text-warning"><?php echo $wallet["balance"] ?> USDT</a>
               </li>
               <li class="nav-item">
-                <a href="<?php echo $baseURL; ?>/profile.php" class="d-block rounded-pill overflow-hidden shadow border-1 border-white ms-2">
+                <a href="<?php echo $baseURL; ?>/profile/" class="d-block rounded-pill overflow-hidden shadow border-1 border-white ms-2">
                   <img src="<?php echo $baseURL . (isset($user["profile_picture"]) && $user["profile_picture"] != "" ? $user["profile_picture"] : "/assets/images/profile-picture.png") ?>" alt="profile picture" width="42">
                 </a>
               </li>

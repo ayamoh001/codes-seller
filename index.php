@@ -531,7 +531,7 @@ include "./include/header.php";
     <div class="container text-center">
       <h1 class="display-4 fw-bold">INSTANT DELIVERY</h1>
       <p class="lead">Choose your code type</p>
-      <a href="<?php echo $baseURL . ($user_id == "" ? "/login.php" : "/profile.php"); ?>" class="btn btn-primary btn-lg px-5 fw-bold mt-2"><?php echo $user_id == "" ? "LOGIN NOW" : "Your Account"; ?></a>
+      <a href="<?php echo $baseURL . ($user_id == "" ? "/login.php" : "/profile/"); ?>" class="btn btn-primary btn-lg px-5 fw-bold mt-2"><?php echo $user_id == "" ? "LOGIN NOW" : "Your Account"; ?></a>
     </div>
   </section>
 
@@ -550,12 +550,12 @@ include "./include/header.php";
                 <p class="card-text line-clamp-2"><?php echo $groups[$i]["description"]; ?></p>
                 <input type="number" min="1" max="2" class="form-control mb-3" id="quantity-<?php echo $i; ?>" placeholder="1">
                 <div class="d-flex gap-2">
-                  <a class="btn btn-primary fw-bold w-100" href="https://wa.me/+601167999817" target="_blank" rel="noopener noreferrer">
+                  <button type="button" class="btn btn-primary fw-bold w-100" data-bs-toggle="modal" data-bs-target="#group-modal-<?php echo $groups[$i]["id"]; ?>">
                     --- USD
-                  </a>
-                  <button type="button" class="btn btn-outline-primary fw-bold w-100" data-bs-toggle="modal" data-bs-target="#group-modal-<?php echo $groups[$i]["id"]; ?>">
-                    Ask
                   </button>
+                  <a type="button" class="btn btn-outline-primary fw-bold w-100" href="https://wa.me/+601167999817" target="_blank" rel="noopener noreferrer">
+                    Ask
+                  </a>
                 </div>
               </div>
             </div>

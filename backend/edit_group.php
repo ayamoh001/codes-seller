@@ -17,7 +17,7 @@ try {
   if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     $_SESSION['flash_message'] = "Not allowed HTTP method!";
     $_SESSION['flash_type'] = "danger";
-    header("Location: " . $_SERVER['HTTP_REFERER']);
+    header("Location: $baseURL/admin/");
     exit;
   }
 
@@ -27,7 +27,7 @@ try {
   if ($getGroupStmt->errno) {
     $_SESSION['flash_message'] = $getGroupStmt->error;
     $_SESSION['flash_type'] = "danger";
-    header("Location: " . $_SERVER['HTTP_REFERER']);
+    header("Location: $baseURL/admin/");
     exit;
   }
   $groupResult = $getGroupStmt->get_result();
@@ -37,7 +37,7 @@ try {
   if (!$group) {
     $_SESSION['flash_message'] = "No group with this ID!";
     $_SESSION['flash_type'] = "danger";
-    header("Location: " . $_SERVER['HTTP_REFERER']);
+    header("Location: $baseURL/admin/");
     exit;
   }
 
@@ -54,22 +54,23 @@ try {
     if (!move_uploaded_file($file_tmp, $upload_path)) {
       $_SESSION['flash_message'] = "Image file not stored successfully!";
       $_SESSION['flash_type'] = "danger";
-      header("Location: " . $_SERVER['HTTP_REFERER']);
+      header("Location: $baseURL/admin/");
       exit;
     }
   }
 
   $title = $_POST["title"];
   $description = $_POST["description"];
+  $sortIndex = $_POST["sort_index"];
 
   $connection->begin_transaction();
-  $createNewGroupStmt = $conn->prepare("UPDATE groups SET title = ?, description = ?, image = ? WHERE id = ?");
-  $createNewGroupStmt->bind_param("sssi", $title, $description, $upload_dir, $groupId);
+  $createNewGroupStmt = $connection->prepare("UPDATE groups SET title = ?, description = ?, sort_index = ?, image = ? WHERE id = ?");
+  $createNewGroupStmt->bind_param("ssisi", $title, $description, $sortIndex, $upload_dir, $groupId);
   $createNewGroupStmt->execute();
   if ($createNewGroupStmt->errno) {
     $_SESSION['flash_message'] = $createNewGroupStmt->error;
     $_SESSION['flash_type'] = "danger";
-    header("Location: " . $_SERVER['HTTP_REFERER']);
+    header("Location: $baseURL/admin/");
     $connection->rollback();
     exit;
   }
@@ -78,11 +79,11 @@ try {
   $connection->commit();
   $_SESSION['flash_message'] = "New group was created successfully!";
   $_SESSION['flash_type'] = "success";
-  header("Location: " . $_SERVER['HTTP_REFERER']);
+  header("Location: $baseURL/admin/");
   exit;
 } catch (Throwable $e) {
   $_SESSION['flash_message'] = "Error in the server! " . $e->getMessage();
   $_SESSION['flash_type'] = "danger";
-  header("Location: " . $_SERVER['HTTP_REFERER']);
+  header("Location: $baseURL/admin/");
   exit;
 }

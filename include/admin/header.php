@@ -34,15 +34,16 @@
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav ms-auto">
             <li class="nav-item">
-              <a class="nav-link" href="<?php echo $baseURL; ?>/profile.php">profile</a>
+              <a class="nav-link" href="<?php echo $baseURL; ?>/products.php">products</a>
             </li>
-            <li class="nav-item ms-2">
-              <div class="rounded-pill overflow-hidden shadow border-1 border-white">
-                <img src="<?php echo $baseURL . ($user["profile_picture"] != "" ? $user["profile_picture"] : "/assets/images/profile-picture.png") ?>" alt="profile picture" width="42">
-              </div>
+            <li class="nav-item">
+              <a class="nav-link" href="<?php echo $baseURL; ?>/payments.php">payments</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="<?php echo $baseURL; ?>/users.php">users</a>
             </li>
             <li class="nav-item ms-3">
-              <span class="nav-link p-1" href="<?php echo $baseURL; ?>/profile.php">
+              <span class="nav-link p-1">
                 <form action="<?php echo $baseURL ?>/backend/auth.php" method="POST">
                   <input type="hidden" name="do" value="logout">
                   <button class="btn btn-danger" type="submit">Logout</button>
