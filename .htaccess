@@ -5,8 +5,6 @@ RewriteCond %{HTTPS} off
 RewriteRule ^index$ index.php [L]
 RewriteRule ^login$ login.php [L]
 RewriteRule ^signup$ signup.php [L]
-RewriteRule ^profile$ profile/ [L]
-RewriteRule ^admin$ admin.php [L]
 
 ErrorDocument 404 /404.html
 

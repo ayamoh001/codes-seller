@@ -1,6 +1,7 @@
 {
   "name": "Crypto Cards",
   "short_name": "Crypto Cards",
+  "description": "",
   "icons": [
     {
       "src": "/favicon.png",
@@ -37,5 +38,27 @@
   "background_color": "#000",
   "start_url": "/",
   "display": "minimal-ui",
-  "orientation": "portrait"
+  "orientation": "portrait",
+  "scope": "/",
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "screenshots": [
+    {
+      "src": "/assets/images/screenshot-1.png",
+      "sizes": "1280x720",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/images/screenshot-2.png",
+      "sizes": "1280x720",
+      "type": "image/png"
+    }
+  ],
+  "dir": "auto",
+  "lang": "en-US",
+  "serviceworker": {
+    "src": "/assets/js/service-worker.js",
+    "scope": "/",
+    "use_cache": true
+  }
 }

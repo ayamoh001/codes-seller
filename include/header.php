@@ -7,7 +7,7 @@
   <link rel="shortcut icon" href="<?php echo $baseURL; ?>/favicon.ico" type="image/x-icon">
   <link rel="icon" href="<?php echo $baseURL; ?>/favicon.ico" type="image/x-icon">
   <title><?php echo $title; ?></title>
-  <meta name="description" content="">
+  <meta name="description" content="Crypto gaming cards online store">
   <meta name="category" content="digital, cards, crypto">
   <meta name="classification" content="digital, cards, crypto">
   <meta name="keywords" content="cryptogamingards.com, Crypto Cards, Crypto Gaming Cards, CryptoCards, CryptoGamingCards">
@@ -22,11 +22,11 @@
   <meta name="format-detection" content="telephone=yes, date=yes, address=yes, email=yes, url=yes">
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
   <link rel="author" href="<?php echo $baseURL; ?>" />
-  <meta property="og:locale" content="en_US">
+  <meta property="og:locale" content="en-US">
   <meta property="og:type" content="website">
   <meta property="og:image" content="<?php echo $baseURL; ?>/assets/images/crypto-cards-og-thumbnile.png">
   <meta property="og:title" content="Crypto Cards">
-  <meta property="og:description" content="-------">
+  <meta property="og:description" content="Crypto gaming cards online store">
   <meta property="og:url" content="<?php echo $baseURL; ?>">
   <meta property="og:site_name" content="Crypto Cards">
   <meta property="article:modified_time" content="2024-05-4T00:00:000+03:00">
@@ -41,50 +41,38 @@
   <script type="application/ld+json">
     {
       "@context": "http://schema.org",
-      "@type": "LocalBusiness",
-      "url": https: //cryptogamingcards.com,
-        "name": "Crypto Cards",
-      "legalName": "Crypto Cards",
-      "description": "Crypto Cards",
+      "@type": "Store",
+      "url": "https://cryptogamingcards.com",
+      "name": "Crypto Cards",
+      "description": "Crypto gaming cards online store",
       "logo": "<?php echo $baseURL; ?>/assets/images/crypto-cards-logo.png",
-      "paymentAccepted": "Cash",
+      "paymentAccepted": "Cryptocurrencies",
       "telephone": "+601167999817",
-      "email": "sample@gmail.com",
-      "priceRange": "dollar",
+      "email": "crypto.cards.dealer24.7@gmail.com",
+      "priceRange": "$",
       "image": [
-        "<?php echo $baseURL; ?>/assets/images/crypto-cards-og-thumbnile.png",
+        "<?php echo $baseURL; ?>/assets/images/crypto-cards-og-thumbnail.png"
       ],
-      contactPoint: {
+      "contactPoint": {
         "@type": "ContactPoint",
         "contactType": "customer service",
         "telephone": "+601167999817",
         "email": "crypto.cards.dealer24.7@gmail.com",
-        "areaServed": "MY"
+        "areaServed": "Malaysia"
       },
       "address": {
         "@type": "PostalAddress",
-        "streetAddress": "Kuala Lumpur, main street",
-        "addressLocality": "Malysia, Kuala Lumpur",
-        "addressRegion": "MY",
+        "streetAddress": "Main Street",
+        "addressLocality": "Kuala Lumpur",
+        "addressRegion": "Wilayah Persekutuan Kuala Lumpur",
         "postalCode": "50000",
-        "addressCountry": "MY",
-      },
-      "areaServed": {
-        "@type": "GeoShape",
-        "address": {
-          "@type": "PostalAddress",
-          "addressLocality": "------",
-          "addressRegion": "------",
-          "addressCountry": "MY"
-        }
+        "addressCountry": "Malaysia"
       },
       "geo": {
-        "@type": "",
-        "GeoCoordinates": {
-          "latitude": 21.539134,
-          "longitude": 39.219224,
-        }
-      },
+        "@type": "GeoCoordinates",
+        "latitude": 3.139,
+        "longitude": 101.6869
+      }
     }
   </script>
 

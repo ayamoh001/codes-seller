@@ -21,8 +21,7 @@ if ($getUsersStmt->errno) {
   header("Location: $baseURL/admin/users.php");
   exit;
 }
-$groupResult = $getUsersStmt->get_result();
-$group = $groupResult->fetch_assoc();
+$usersResult = $getUsersStmt->get_result();
 $getUsersStmt->close();
 
 $title = "Admin Dashboard - Users";
@@ -40,8 +39,38 @@ include "../include/admin/header.php";
       unset($_SESSION['flash_type']);
     }
     ?>
+
     <main>
-      admin users
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Id</th>
+            <th scope="col">Picture</th>
+            <th scope="col">Username</th>
+            <th scope="col">Email</th>
+            <th scope="col">Status</th>
+            <th scope="col">Registration Data</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php
+          while ($user = $usersResult->fetch_assoc()) :
+          ?>
+            <tr>
+              <th scope="row"><?php echo $user["id"]; ?></th>
+              <td>
+                <img src="<?php echo $baseURL . (isset($user["profile_picture"]) && $user["profile_picture"] != "" ? $user["profile_picture"] : "/assets/images/profile-picture.png") ?>" alt="profile picture" width="42">
+              </td>
+              <td><?php echo $user["username"]; ?></td>
+              <td><?php echo $user["email"]; ?></td>
+              <td><?php echo $user["status"]; ?></td>
+              <td><?php echo $user["date"]; ?></td>
+            </tr>
+          <?php
+          endwhile;
+          ?>
+        </tbody>
+      </table>
     </main>
 
   </div>
