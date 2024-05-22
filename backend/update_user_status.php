@@ -14,31 +14,33 @@ if (
 }
 
 try {
-  if ($_SERVER["REQUEST_METHOD"] !== "POST") { // DELETE is not supported by the HTML forms
+  if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     $_SESSION['flash_message'] = "Not allowed HTTP method!";
     $_SESSION['flash_type'] = "danger";
     header("Location: $baseURL/admin/");
     exit;
   }
-
-  $productId = $_POST["product_id"];
+  $user_id = (int) $_POST["user_id"];
+  $new_status = $_POST["new_status"];
 
   $connection->begin_transaction();
-  $deleteProductStmt = $connection->prepare("DELETE FROM products WHERE id = ? LIMIT 1");
-  $deleteProductStmt->bind_param("i", $productId);
-  $deleteProductStmt->execute();
-  if ($deleteProductStmt->errno) {
-    $_SESSION['flash_message'] = $deleteProductStmt->error;
+
+  $updateUserStatusStmt = $connection->prepare("UPDATE users SET `status` = ? WHERE id = ?");
+  $updateUserStatusStmt->bind_param("si", $new_status, $user_id);
+  $updateUserStatusStmt->execute();
+  if ($updateUserStatusStmt->errno) {
+    $_SESSION['flash_message'] = $updateUserStatusStmt->error;
     $_SESSION['flash_type'] = "danger";
     header("Location: $baseURL/admin/");
     $connection->rollback();
     exit;
   }
+  $updateUserStatusStmt->close();
 
   $connection->commit();
-  $_SESSION['flash_message'] = "A code product was deleted successfully!";
+  $_SESSION['flash_message'] = "User Status Changed successfully!";
   $_SESSION['flash_type'] = "success";
-  header("Location: $baseURL/admin/");
+  header("Location: $baseURL/admin/users.php");
   exit;
 } catch (Throwable $e) {
   $_SESSION['flash_message'] = "Error in the server! " . $e->getMessage();

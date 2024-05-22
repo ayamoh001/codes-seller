@@ -1,5 +1,5 @@
 <?php
-include "../include/config.php";
+require_once "../include/config.php";
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
   $_SESSION['flash_message'] = "Not allowed HTTP method!";
@@ -9,7 +9,7 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
 }
 
 if ($_SESSION["user_id"] == "") {
-  echo json_encode(["error" => "Not Athenticated!"]);
+  $_SESSION['flash_message'] = "Not Athenticated!";
   exit;
 }
 
@@ -20,8 +20,8 @@ try {
   $getUserStmt->bind_param("i", $user_id);
   $getUserStmt->execute();
   if ($getUserStmt->errno) {
-    echo json_encode(["error" => "Error in the auth proccess! please try again."]);
-    echo json_encode(["error" => $getUserStmt->error]);
+    $_SESSION['flash_message'] = "Error in the auth proccess! please try again.";
+    $_SESSION['flash_message'] = $getUserStmt->error;
     exit;
   }
   $userResult = $getUserStmt->get_result();
@@ -66,7 +66,7 @@ try {
   header("Location: $baseURL/profile/edit_profile/");
   exit;
 } catch (Throwable $e) {
-  echo json_encode(["error" => "Error in the server!"]);
-  echo json_encode(["error" => $e->getMessage()]);
+  $_SESSION['flash_message'] = "Error in the server!";
+  $_SESSION['flash_message'] = $e->getMessage();
   exit;
 }

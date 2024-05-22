@@ -1,5 +1,5 @@
 <?php
-include "../include/config.php";
+require_once "../include/config.php";
 
 if (
   !isset($_SERVER['PHP_AUTH_USER']) ||
@@ -26,10 +26,10 @@ $getUsersStmt->close();
 
 $title = "Admin Dashboard - Users";
 
-include "../include/admin/header.php";
+require_once "../include/admin/header.php";
 ?>
 
-<section class="py-5 bg-dark">
+<main class="py-5 bg-dark" style="min-height: 100vh;">
   <div class="container py-5">
     <?php
     if (isset($_SESSION['flash_message'])) {
@@ -40,16 +40,19 @@ include "../include/admin/header.php";
     }
     ?>
 
-    <main>
-      <table class="table">
+    <section>
+      <h1 class="mb-5 pb-5 h1 fw-bold text-white">All Platform Registed Users</h1>
+
+      <table class="table table-dark table-striped align-middle">
         <thead>
           <tr>
-            <th scope="col">Id</th>
+            <th scope="col">ID</th>
             <th scope="col">Picture</th>
             <th scope="col">Username</th>
             <th scope="col">Email</th>
             <th scope="col">Status</th>
-            <th scope="col">Registration Data</th>
+            <th scope="col">Registration Date</th>
+            <th scope="col">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -57,25 +60,40 @@ include "../include/admin/header.php";
           while ($user = $usersResult->fetch_assoc()) :
           ?>
             <tr>
-              <th scope="row"><?php echo $user["id"]; ?></th>
+              <th scope="row">#<?php echo $user["id"]; ?></th>
               <td>
-                <img src="<?php echo $baseURL . (isset($user["profile_picture"]) && $user["profile_picture"] != "" ? $user["profile_picture"] : "/assets/images/profile-picture.png") ?>" alt="profile picture" width="42">
+                <img class="rounded-pill overflow-hidden" src="<?php echo $baseURL . (isset($user["profile_picture"]) && $user["profile_picture"] != "" ? $user["profile_picture"] : "/assets/images/profile-picture.png") ?>" alt="profile picture" width="42">
               </td>
               <td><?php echo $user["username"]; ?></td>
               <td><?php echo $user["email"]; ?></td>
               <td><?php echo $user["status"]; ?></td>
               <td><?php echo $user["date"]; ?></td>
+              <td>
+                <?php if ($user["status"] != "BLOCKED") : ?>
+                  <form action="<?php echo $baseURL . "/backend/update_user_status.php"; ?>" method="POST">
+                    <input type="hidden" name="user_id" value="<?php echo $user["id"]; ?>">
+                    <input type="hidden" name="new_status" value="BLOCKED">
+                    <button class="btn btn-sm btn-danger">Block</button>
+                  </form>
+                <?php else : ?>
+                  <form action="<?php echo $baseURL . "/backend/update_user_status.php"; ?>" method="POST">
+                    <input type="hidden" name="user_id" value="<?php echo $user["id"]; ?>">
+                    <input type="hidden" name="new_status" value="ACTIVE">
+                    <button class="btn btn-sm btn-success">Activate</button>
+                  </form>
+                <?php endif; ?>
+              </td>
             </tr>
           <?php
           endwhile;
           ?>
         </tbody>
       </table>
-    </main>
+    </section>
 
   </div>
-</section>
+</main>
 
 <?php
-include "../include/admin/footer.php";
+require_once "../include/admin/footer.php";
 ?>

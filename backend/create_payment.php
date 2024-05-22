@@ -1,5 +1,5 @@
 <?php
-include "../include/config.php";
+require_once "../include/config.php";
 
 if ($_SESSION["user_id"] == "") {
   echo json_encode(["error" => "Not Athenticated!"]);

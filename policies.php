@@ -1,8 +1,8 @@
 <?php
-include "./include/config.php";
+require_once "./include/config.php";
 
 $title = "Crypto Cards - Policies";
-include "./include/header.php";
+require_once "./include/header.php";
 ?>
 
 <!-- Content  -->
@@ -13,5 +13,5 @@ include "./include/header.php";
 </section>
 
 <?php
-include "./include/footer.php";
+require_once "./include/footer.php";
 ?>

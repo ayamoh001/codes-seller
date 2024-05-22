@@ -1,12 +1,12 @@
 <?php
-include "./include/config.php";
+require_once "./include/config.php";
 
 if (isset($_SESSION["user_id"]) && $_SESSION["user_id"] != "") {
   header("location: $baseURL/profile/");
 }
 
 $title = "Crypto Cards - Login";
-include "./include/header.php";
+require_once "./include/header.php";
 ?>
 
 <!-- Login form  -->
@@ -50,5 +50,5 @@ include "./include/header.php";
 </section>
 
 <?php
-include "./include/footer.php";
+require_once "./include/footer.php";
 ?>

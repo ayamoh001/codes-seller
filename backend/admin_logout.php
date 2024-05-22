@@ -1,5 +1,5 @@
 <?php
-include "../include/config.php";
+require_once "../include/config.php";
 
 $_SERVER['PHP_AUTH_USER'] = "";
 $_SERVER['PHP_AUTH_PW'] = "";

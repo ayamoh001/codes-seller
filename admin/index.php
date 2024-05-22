@@ -1,5 +1,5 @@
 <?php
-include "../include/config.php";
+require_once "../include/config.php";
 
 if (
   !isset($_SERVER['PHP_AUTH_USER']) ||
@@ -21,13 +21,21 @@ $getGroupsWithProuductsStmt = $connection->prepare("SELECT g.*, p.id AS product_
                                                     ORDER BY g.sort_index, g.id");
 
 $getGroupsWithProuductsStmt->execute();
+if ($getGroupsWithProuductsStmt->errno) {
+  $_SESSION['flash_message'] = $getGroupsWithProuductsStmt->error;
+  $_SESSION['flash_type'] = "danger";
+  header("Location: $baseURL/admin/");
+  // $connection->rollback();
+  exit;
+}
 $getGroupsWithProuductsResults = $getGroupsWithProuductsStmt->get_result();
 $getGroupsWithProuductsStmt->close();
 
 $groups = [];
 
 while ($row = $getGroupsWithProuductsResults->fetch_assoc()) {
-  $row;
+  var_dump($row);
+  // var_dump($row);
   if (!isset($groups[$row["id"]])) {
     $groups[$row["id"]] = [
       'id' => $row["id"],
@@ -40,10 +48,11 @@ while ($row = $getGroupsWithProuductsResults->fetch_assoc()) {
     ];
   }
 
-  $groups[$row["id"]]['products'][] = [
+  $groups[$row["id"]]["products"][$row["type"]][] = [
     'id' => $row["product_id"],
     'code_value' => $row["code_value"],
     'type' => $row["type"],
+    'payment_id' => $row["payment_id"],
     'price' => $row["price"],
   ];
 }
@@ -53,10 +62,10 @@ $groups = array_values($groups);
 
 $title = "Admin Dashboard - Home";
 
-include "../include/admin/header.php";
+require_once "../include/admin/header.php";
 ?>
 
-<section class="py-5 bg-dark">
+<main class="py-5 bg-dark" style="min-height: 100vh;">
   <div class="container py-5">
     <?php
     if (isset($_SESSION['flash_message'])) {
@@ -67,16 +76,16 @@ include "../include/admin/header.php";
     }
     ?>
 
-    <main>
-      <button type="button" class="btn btn-primary fw-bold" data-bs-toggle="modal" data-bs-target="#group-modal-create-new-group">
+    <section>
+      <button type="button" class="btn btn-primary fw-bold" data-bs-toggle="modal" data-bs-target="#create-group-modal-create-new-group">
         Create New Group
       </button>
 
-      <div class="modal fade" id="group-modal-create-new-group" aria-labelledby="create-exampleModalLabelnew-group" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal fade" id="create-group-modal-create-new-group" aria-labelledby="create-exampleModalLabelnew-group" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog" role="document">
           <div class="modal-content">
             <div class="modal-header">
-              <h5 class="modal-title" id="create-exampleModalLabelnew-group">Create New Group of Products</h5>
+              <h5 class="modal-title" id="create-exampleModalLabelnew-group">Create New Group for Products</h5>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -93,7 +102,7 @@ include "../include/admin/header.php";
                     </div>
                     <div class="mb-3">
                       <label for="sort" class="form-label">Sort</label>
-                      <input type="number" min="1" class="form-control" id="sort" name="sort" placeholder="0" required>
+                      <input type="number" min="1" class="form-control" id="sort" name="sort_index" placeholder="0" required>
                     </div>
                     <div class="mb-3">
                       <label for="image" class="form-label">Image</label>
@@ -111,11 +120,63 @@ include "../include/admin/header.php";
           </div>
         </div>
       </div>
-    </main>
+    </section>
+
+    <section>
+      <?php
+      foreach ($groups as $group) :
+      ?>
+        <div class="card w-100">
+          <div class="card-body">
+            <div class="d-flex gap-2 mb-3">
+              <img src="<?php echo $baseURL . $groups[$i]["image"]; ?>" class="w-25 rounded ratio-16x9" alt="<?php echo $groups[$i]["title"]; ?>">
+              <h5 class="card-title xw-75 my-auto line-clamp-1"><?php echo $groups[$i]["title"]; ?></h5>
+            </div>
+            <p class="card-text line-clamp-2"><?php echo $groups[$i]["description"]; ?></p>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th scope="col">Product ID</th>
+                  <th scope="col">Price</th>
+                  <th scope="col">Type</th>
+                  <th scope="col">Code Value</th>
+                  <th scope="col">Payment ID</th>
+                  <th scope="col">Create Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                <?php
+                foreach ($group["products"] as $product) :
+                ?>
+                  <tr>
+                    <th scope="row"><?php echo $product["id"]; ?></th>
+                    <td><?php echo $product["price"]; ?></td>
+                    <td><?php echo $product["type"]; ?></td>
+                    <td><?php echo $product["code_value"]; ?></td>
+                    <td><?php echo $product["payment_id"]; ?></td>
+                    <td><?php echo $product["date"]; ?></td>
+                  </tr>
+                <?php
+                endforeach;
+                ?>
+              </tbody>
+            </table>
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-primary fw-bold w-100" data-bs-toggle="modal" data-bs-target="#edit-group-modal-<?php echo $groups[$i]["id"]; ?>">
+                Edit
+              </button>
+            </div>
+          </div>
+        </div>
+
+      <?php
+      endforeach;
+      ?>
+    </section>
   </div>
-</section>
+</main>
 
 
 <?php
-include "../include/admin/footer.php";
+require_once "../include/admin/footer.php";
 ?>

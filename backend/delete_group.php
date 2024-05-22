@@ -1,5 +1,5 @@
 <?php
-include "../include/config.php";
+require_once "../include/config.php";
 
 if (
   !isset($_SERVER['PHP_AUTH_USER']) ||

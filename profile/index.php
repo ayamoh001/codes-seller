@@ -1,7 +1,7 @@
 <?php
-include "./include/config.php";
+require_once "./include/config.php";
 
-if ($_SESSION["user_id"] == "") {
+if (!isset($_SESSION["user_id"]) || $_SESSION["user_id"] == "") {
   $_SESSION['flash_message'] = "You are not logged in!";
   $_SESSION['flash_type'] = "danger";
   header("location: $baseURL/login.php");
@@ -10,6 +10,7 @@ if ($_SESSION["user_id"] == "") {
 
 $user_id = "";
 $user = null;
+
 if (isset($_SESSION["user_id"]) && $_SESSION["user_id"] != "") {
   // get the user
   $user_id = (int) $_SESSION["user_id"];
@@ -40,10 +41,13 @@ if (isset($_SESSION["user_id"]) && $_SESSION["user_id"] != "") {
 }
 
 $title = "Crypto Cards - Profile";
-include "./include/profile/header.php";
+require_once "./include/profile/header.php";
 ?>
 
+<main>
+  profile
+</main>
 
 <?php
-include "./include/profile/footer.php";
+require_once "./include/profile/footer.php";
 ?>
