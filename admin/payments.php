@@ -72,36 +72,38 @@ require_once "../include/admin/header.php";
       unset($_SESSION['flash_type']);
     }
     ?>
+    <section>
+      <h1 class="mb-5 pb-5 h1 fw-bold text-white">All Platform Payments By Users/Geusts</h1>
 
-    <table class="table table-dark">
-      <thead>
-        <tr>
-          <th scope="col">Payment ID</th>
-          <th scope="col">Product ID</th>
-          <th scope="col">Product Price</th>
-          <th scope="col">User ID</th>
-          <th scope="col">Date</th>
-        </tr>
-      </thead>
-      <tbody>
-        <?php
-        while ($payment = $paymentsResult->fetch_assoc()) :
-        ?>
+      <table class="table table-dark">
+        <thead>
           <tr>
-            <th scope="row" rowspan="<?php echo $productsInRow ?>"><?php echo $payment["id"]; ?></th>
-            <td><?php echo $payment["product_id"]; ?></td>
-            <td><?php echo $payment["product_price"]; ?></td>
-            <td><?php echo $payment["user_id"]; ?></td>
-            <td><?php echo $payment["date"]; ?></td>
+            <th scope="col">Payment ID</th>
+            <th scope="col">Product ID</th>
+            <th scope="col">Product Price</th>
+            <th scope="col">User ID</th>
+            <th scope="col">Date</th>
           </tr>
-        <?php
-        endwhile;
-        ?>
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          <?php
+          while ($payment = $paymentsResult->fetch_assoc()) :
+          ?>
+            <tr>
+              <th scope="row" rowspan="<?php echo $productsInRow ?>"><?php echo $payment["id"]; ?></th>
+              <td><?php echo $payment["product_id"]; ?></td>
+              <td><?php echo $payment["product_price"]; ?></td>
+              <td><?php echo $payment["user_id"]; ?></td>
+              <td><?php echo $payment["date"]; ?></td>
+            </tr>
+          <?php
+          endwhile;
+          ?>
+        </tbody>
+      </table>
+    </section>
+
 </main>
-</div>
-</m>
 
 <?php
 require_once "../include/admin/footer.php";

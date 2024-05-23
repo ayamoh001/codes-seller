@@ -1,5 +1,5 @@
 <?php
-require_once "./include/config.php";
+require_once "../include/config.php";
 
 if (!isset($_SESSION["user_id"]) || $_SESSION["user_id"] == "") {
   $_SESSION['flash_message'] = "You are not logged in!";
@@ -41,7 +41,7 @@ if (isset($_SESSION["user_id"]) && $_SESSION["user_id"] != "") {
 }
 
 $title = "Crypto Cards - Profile";
-require_once "./include/profile/header.php";
+require_once "../include/profile/header.php";
 ?>
 
 <main>
@@ -49,5 +49,5 @@ require_once "./include/profile/header.php";
 </main>
 
 <?php
-require_once "./include/profile/footer.php";
+require_once "../include/profile/footer.php";
 ?>

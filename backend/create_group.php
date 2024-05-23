@@ -34,10 +34,11 @@ try {
   $file_name = $_FILES["image"]["name"];
   $file_tmp = $_FILES["image"]["tmp_name"];
   // var_dump($_FILES["image"]);
-  $uploadDirectory = "../storage/groups/"; // storage dir
+
+  $uploadDirectory = "/storage/groups/"; // storage dir
 
   $ext = pathinfo($file_name, PATHINFO_EXTENSION);
-  $upload_path = $uploadDirectory . $title . time() . '.' . $ext;
+  $upload_path = str_replace(" ", $uploadDirectory, "-") . $title . time() . '.' . $ext;
   if (!move_uploaded_file($file_tmp, $upload_path)) {
     $_SESSION['flash_message'] = "Image file not stored successfully!";
     $_SESSION['flash_type'] = "danger";

@@ -36,7 +36,7 @@ try {
   }
 
   $file_name = $_FILES["profile_picture"]["name"];
-  $upload_dir = "../storage/profile_pictures/"; // storage dir
+  $upload_dir = "/storage/profile_pictures/"; // storage dir
 
   $ext = pathinfo($file_name, PATHINFO_EXTENSION);
   $upload_path = $upload_dir . $title . time() . '.' . $ext;
