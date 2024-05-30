@@ -125,7 +125,10 @@
               <span class="nav-link p-1">
                 <form action="<?php echo $baseURL ?>/backend/auth.php" method="POST">
                   <input type="hidden" name="do" value="logout">
-                  <button class="btn btn-danger" type="submit">Logout</button>
+                  <button class="btn btn-danger  d-flex gap-2 align-items-center px-3" type="submit">
+                    <span>Logout</span>
+                    <i class="bi bi-door-open-fill"></i>
+                  </button>
                 </form>
               </span>
             </li>

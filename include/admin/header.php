@@ -119,7 +119,10 @@
             </li>
             <li class="nav-item ms-3">
               <span class="nav-link p-1">
-                <a class="btn btn-danger" href="<?php echo $baseURL ?>/backend/admin_logout.php">Logout</a>
+                <a class="btn btn-danger d-flex gap-2 align-items-center px-3" href="<?php echo $baseURL ?>/backend/admin_logout.php">
+                  <span>Logout</span>
+                  <i class="bi bi-door-open-fill"></i>
+                </a>
               </span>
             </li>
           </ul>

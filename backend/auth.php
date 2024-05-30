@@ -110,6 +110,6 @@ try {
   $_SESSION['flash_message'] = "Error in the server! " . $e->getMessage();
   $_SESSION['flash_type'] = "danger";
 
-  isset($_SERVER['HTTP_REFERER']) ? header("Location: " . $_SERVER['HTTP_REFERER']) : header("Location: $baseURL");
+  header("Location: $baseURL/login.php");
   exit;
 }

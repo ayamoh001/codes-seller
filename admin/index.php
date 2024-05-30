@@ -42,6 +42,7 @@ while ($row = $getGroupsWithProuductsResults->fetch_assoc()) {
       'description' => $row["description"],
       'image' => $row["image"],
       'sort_index' => $row["sort_index"],
+      'visibility' => $row["visibility"],
       'date' => $row["date"],
       'products' => []
     ];
@@ -54,6 +55,7 @@ while ($row = $getGroupsWithProuductsResults->fetch_assoc()) {
       'type' => $row["type"],
       'payment_id' => $row["payment_id"],
       'price' => $row["price"],
+      'date' => $row["date"],
     ];
   }
 }
@@ -78,8 +80,9 @@ require_once "../include/admin/header.php";
     ?>
 
     <section>
-      <button type="button" class="btn btn-primary fw-bold ratio-16x9 mb-5" data-bs-toggle="modal" data-bs-target="#create-group-modal-create-new-group">
-        Create New Group
+      <button type="button" class="btn btn-primary btn-lg fw-bold ratio-16x9 mb-5 px-4 d-flex gap-2" data-bs-toggle="modal" data-bs-target="#create-group-modal-create-new-group">
+        <span>Create New Group</span>
+        <i class="bi bi-plus-circle"></i>
       </button>
 
       <div class="modal fade" id="create-group-modal-create-new-group" aria-labelledby="create-exampleModalLabelnew-group" tabindex="-1" role="dialog" aria-hidden="true">
@@ -109,6 +112,10 @@ require_once "../include/admin/header.php";
                       <label for="image" class="form-label">Image</label>
                       <input type="file" class="form-control" id="image" name="image" required>
                     </div>
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" role="switch" id="switch" name="visibilty">
+                      <label class="form-check-label" for="switch">Visible for Visitors</label>
+                    </div>
                     <button type="submit" class="btn btn-primary w-100">Create</button>
                   </form>
                 </div>
@@ -130,11 +137,11 @@ require_once "../include/admin/header.php";
         <div class="card w-100">
           <div class="card-body">
             <div class="d-flex gap-2 mb-3">
-              <img src="<?php echo $baseURL . $group["image"]; ?>" class="rounded ratio-16x9" alt="<?php echo $group["title"]; ?>">
+              <img src="<?php echo $baseURL . $group["image"]; ?>" class="rounded ratio-16x9" alt="<?php echo $group["title"]; ?>" width="96">
               <h5 class="card-title xw-75 my-auto line-clamp-1"><?php echo $group["title"]; ?></h5>
             </div>
             <p class="card-text line-clamp-2"><?php echo $group["description"]; ?></p>
-            <table class="table w-100">
+            <table class="table w-100" class="overflow-scroll" style="max-height: 160px;">
               <thead>
                 <tr>
                   <th scope="col">Product ID</th>
@@ -147,26 +154,31 @@ require_once "../include/admin/header.php";
               </thead>
               <tbody>
                 <?php
-                foreach ($group["products"] as $product) :
-                  var_dump($product);
+                foreach ($group["products"] as $type => $productsByType) :
+                  foreach ($productsByType as $product) :
+                    // var_dump($product);
                 ?>
-                  <tr>
-                    <th scope="row"><?php echo $product["id"]; ?></th>
-                    <td><?php echo $product["price"]; ?></td>
-                    <td><?php echo $product["type"]; ?></td>
-                    <td><?php echo $product["code_value"]; ?></td>
-                    <td><?php echo $product["payment_id"]; ?></td>
-                    <td><?php echo $product["date"]; ?></td>
-                  </tr>
+                    <tr>
+                      <th scope="row"><?php echo $product["id"]; ?></th>
+                      <td><?php echo $product["price"]; ?></td>
+                      <td><?php echo $product["type"]; ?></td>
+                      <td><?php echo $product["code_value"]; ?></td>
+                      <td><?php echo $product["payment_id"] ?? "<span class='text-white bg-secondary py-1 px-3 rounded-pill'>Not Sold Yet<span>"; ?></td>
+                      <td><?php echo $product["date"]; ?></td>
+                    </tr>
                 <?php
+                  endforeach;
                 endforeach;
                 ?>
               </tbody>
             </table>
             <div class="d-flex gap-2">
-              <button type="button" class="btn btn-primary fw-bold w-100" data-bs-toggle="modal" data-bs-target="#add-product-modal-<?php echo $group["id"]; ?>">
-                Add Product
+              <!-- Add Product button -->
+              <button type="button" class="btn btn-primary fw-bold w-100 d-flex gap-2 justify-content-center" data-bs-toggle="modal" data-bs-target="#add-product-modal-<?php echo $group["id"]; ?>">
+                <i class="bi bi-plus-circle-fill"></i>
+                <span>Add Product</span>
               </button>
+              <!-- Add Product Modal -->
               <div class="modal fade" id="add-product-modal-<?php echo $group["id"] ?>" aria-labelledby="add-product-label-<?php echo $group["id"] ?>" tabindex="-1" role="dialog" aria-hidden="true">
                 <div class="modal-dialog" role="document">
                   <div class="modal-content">
@@ -189,7 +201,7 @@ require_once "../include/admin/header.php";
                             </div>
                             <div class="mb-3">
                               <label for="type" class="form-label">Price ($)</label>
-                              <input type="number" min="0.01" step="0.1" class="form-control" id="price" name="price" placeholder="00.00" required>
+                              <input type="number" min="0.01" step="0.01" class="form-control" id="price" name="price" placeholder="00.00" required>
                             </div>
                             <button type="submit" class="btn btn-primary w-100 fw-bold">Add</button>
                           </form>
@@ -199,9 +211,12 @@ require_once "../include/admin/header.php";
                   </div>
                 </div>
               </div>
-              <button type="button" class="btn btn-warning fw-bold w-100" data-bs-toggle="modal" data-bs-target="#edit-group-modal-<?php echo $group["id"]; ?>">
-                Edit
+              <!-- Edit Group Button -->
+              <button type="button" class="btn btn-warning fw-bold w-100 d-flex gap-2 justify-content-center" data-bs-toggle="modal" data-bs-target="#edit-group-modal-<?php echo $group["id"]; ?>">
+                <i class="bi bi-pencil-square"></i>
+                <span>Edit Group</span>
               </button>
+              <!-- Edit Group Modal -->
               <div class="modal fade" id="edit-group-modal-<?php echo $group["id"] ?>" aria-labelledby="edit-group-label-<?php echo $group["id"] ?>" tabindex="-1" role="dialog" aria-hidden="true">
                 <div class="modal-dialog" role="document">
                   <div class="modal-content">

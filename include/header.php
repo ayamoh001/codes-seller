@@ -127,7 +127,10 @@
               </li>
             <?php else : ?>
               <li class="nav-item">
-                <a class="btn btn-primary ms-2 px-4" href="<?php echo $baseURL; ?>/login.php">Login</a>
+                <a class="btn btn-primary ms-2 px-4 d-flex align-items-center gap-2" href="<?php echo $baseURL; ?>/login.php">
+                  <span>Login</span>
+                  <i class="bi bi-door-closed-fill"></i>
+                </a>
               </li>
             <?php endif; ?>
           </ul>

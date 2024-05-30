@@ -36,12 +36,22 @@ try {
   }
 
   $file_name = $_FILES["profile_picture"]["name"];
-  $upload_dir = "/storage/profile_pictures/"; // storage dir
+  $file_tmp = $_FILES["profile_picture"]["tmp_name"];
+
+  $storageDirAbsolute = __DIR__ . "/../storage/profile_pictures/";
+  $storageDirRelative = "/storage/profile_pictures/";
+  if (!is_dir($storageDirAbsolute)) {
+    mkdir($storageDirAbsolute, 0777, true);
+  }
 
   $ext = pathinfo($file_name, PATHINFO_EXTENSION);
-  $upload_path = $upload_dir . $title . time() . '.' . $ext;
-  if (!move_uploaded_file($file_tmp, $upload_path)) {
-    $_SESSION['flash_message'] = "Profile picture file not stored successfully!";
+  $newFileName = $title . time() . '.' . $ext;
+
+  $uploadPathAbsolute = $storageDirAbsolute . $newFileName;
+  $uploadPathRelative = $storageDirRelative . $newFileName;
+
+  if (!move_uploaded_file($file_tmp, $uploadPathAbsolute)) {
+    $_SESSION['flash_message'] = "Image file not stored successfully!";
     $_SESSION['flash_type'] = "danger";
     header("Location: $baseURL/profile/edit_profile/");
     exit;
@@ -49,7 +59,7 @@ try {
 
   $connection->begin_transaction();
   $updateUserProfilePictureStmt = $connection->prepare("UPDATE groups SET profile_picture = ? WHERE id = ?");
-  $updateUserProfilePictureStmt->bind_param("ss", $upload_dir, $user_id);
+  $updateUserProfilePictureStmt->bind_param("ss", $uploadPathRelative, $user_id);
   $updateUserProfilePictureStmt->execute();
   if ($updateUserProfilePictureStmt->errno) {
     $_SESSION['flash_message'] = $updateUserProfilePictureStmt->error;

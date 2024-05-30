@@ -33,13 +33,20 @@ try {
   $sortIndex = $_POST["sort_index"];
   $file_name = $_FILES["image"]["name"];
   $file_tmp = $_FILES["image"]["tmp_name"];
-  // var_dump($_FILES["image"]);
 
-  $uploadDirectory = "/storage/groups/"; // storage dir
+  $storageDirAbsolute = __DIR__ . "/../storage/groups/";
+  $storageDirRelative = "/storage/groups/";
+  if (!is_dir($storageDirAbsolute)) {
+    mkdir($storageDirAbsolute, 0777, true);
+  }
 
   $ext = pathinfo($file_name, PATHINFO_EXTENSION);
-  $upload_path = str_replace(" ", $uploadDirectory, "-") . $title . time() . '.' . $ext;
-  if (!move_uploaded_file($file_tmp, $upload_path)) {
+  $newFileName = $title . time() . '.' . $ext;
+
+  $uploadPathAbsolute = $storageDirAbsolute . $newFileName;
+  $uploadPathRelative = $storageDirRelative . $newFileName;
+
+  if (!move_uploaded_file($file_tmp, $uploadPathAbsolute)) {
     $_SESSION['flash_message'] = "Image file not stored successfully!";
     $_SESSION['flash_type'] = "danger";
     header("Location: $baseURL/admin/");
@@ -48,7 +55,7 @@ try {
 
   $connection->begin_transaction();
   $createNewGroupStmt = $connection->prepare("INSERT INTO groups(title, description, image, sort_index) VALUES (?, ?, ?, ?)");
-  $createNewGroupStmt->bind_param("sssi", $title, $description, $uploadDirectory, $sortIndex);
+  $createNewGroupStmt->bind_param("sssi", $title, $description, $uploadPathRelative, $sortIndex);
   $createNewGroupStmt->execute();
   if ($createNewGroupStmt->errno) {
     $_SESSION['flash_message'] = $createNewGroupStmt->error;

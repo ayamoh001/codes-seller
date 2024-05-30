@@ -43,19 +43,27 @@ try {
     exit;
   }
 
-  $uploadPath = $group["image"];
+  $storageDirRelative = $group["image"];
 
   // Check if an image is uploaded and handle the process if it exists
   if (isset($_FILES["image"]) && $_FILES["image"]["error"] == UPLOAD_ERR_OK) {
     $file_name = $_FILES["image"]["name"];
     $file_tmp = $_FILES["image"]["tmp_name"];
-    $storageDir = "/storage/groups/"; // storage dir
+
+    $storageDirAbsolute = __DIR__ . "/../storage/groups/";
+    $storageDirRelative = "/storage/groups/";
+
+    if (!is_dir($storageDirAbsolute)) {
+      mkdir($storageDirAbsolute, 0777, true);
+    }
 
     $ext = pathinfo($file_name, PATHINFO_EXTENSION);
-    $uploadPath = $storageDir . $title . time() . '.' . $ext;
+    $newFileName = $title . time() . '.' . $ext;
 
-    // Move the uploaded file to the destination directory
-    if (!move_uploaded_file($file_tmp, $uploadPath)) {
+    $uploadPathAbsolute = $storageDirAbsolute . $newFileName;
+    $uploadPathRelative = $storageDirRelative . $newFileName;
+
+    if (!move_uploaded_file($file_tmp, $uploadPathAbsolute)) {
       $_SESSION['flash_message'] = "Image file not stored successfully!";
       $_SESSION['flash_type'] = "danger";
       header("Location: $baseURL/admin/");
@@ -69,7 +77,7 @@ try {
 
   $connection->begin_transaction();
   $createNewGroupStmt = $connection->prepare("UPDATE groups SET title = ?, description = ?, sort_index = ?, image = ? WHERE id = ?");
-  $createNewGroupStmt->bind_param("ssisi", $title, $description, $sortIndex, $uploadPath, $groupId);
+  $createNewGroupStmt->bind_param("ssisi", $title, $description, $sortIndex, $uploadPathRelative, $groupId);
   $createNewGroupStmt->execute();
   if ($createNewGroupStmt->errno) {
     $_SESSION['flash_message'] = $createNewGroupStmt->error;
