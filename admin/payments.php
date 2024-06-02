@@ -14,8 +14,8 @@ if (
 }
 
 
-$getPaymentsStmt = $connection->prepare("SELECT py.*, pr.id AS product_id, pr.price AS product_price, pr.date AS product_date, pr.* FROM 
-                                        payments As py 
+$getPaymentsStmt = $connection->prepare("SELECT py.*, pr.id AS product_id, pr.date AS product_date, pr.* FROM 
+                                        payments As py
                                         INNER JOIN 
                                         products AS pr
                                         WHERE pr.payment_id = py.id");
@@ -31,27 +31,27 @@ $getPaymentsStmt->close();
 
 $payments = [];
 
-// while ($row = $paymentsResult->fetch_assoc()) {
-//   $row;
-//   if (!isset($payments[$row["id"]])) {
-//     $payments[$row["id"]] = [
-//       'id' => $row["id"],
-//       'price' => $row["price"],
-//       'user_id' => $row["user_id"],
-//       'group_id' => $row["group_id"],
-//       'status' => $row["status"],
-//       'date' => $row["date"],
-//       'products' => []
-//     ];
-//   }
+while ($row = $paymentsResult->fetch_assoc()) {
+  $row;
+  if (!isset($payments[$row["id"]])) {
+    $payments[$row["id"]] = [
+      'id' => $row["id"],
+      'price' => $row["price"],
+      'user_id' => $row["user_id"],
+      'group_id' => $row["group_id"],
+      'status' => $row["status"],
+      'date' => $row["date"],
+      'products' => []
+    ];
+  }
 
-//   $payments[$row["id"]]['products'][] = [
-//     'id' => $row["product_id"],
-//     'code_value' => $row["code_value"],
-//     'type' => $row["type"],
-//     'price' => $row["price"],
-//   ];
-// }
+  $payments[$row["id"]]['products'][] = [
+    'id' => $row["product_id"],
+    'code_value' => $row["code_value"],
+    'type' => $row["type"],
+    'price' => $row["price"],
+  ];
+}
 
 // Convert associative array to indexed array
 // $payments = array_values($payments);
@@ -79,9 +79,12 @@ require_once "../include/admin/header.php";
         <thead>
           <tr>
             <th scope="col">Payment ID</th>
-            <th scope="col">Product ID</th>
-            <th scope="col">Product Price</th>
             <th scope="col">User ID</th>
+            <th scope="col">Group ID</th>
+            <th scope="col">Prepay ID</th>
+            <th scope="col">Quantity</th>
+            <th scope="col">Amount Price</th>
+            <th scope="col">Status</th>
             <th scope="col">Date</th>
           </tr>
         </thead>
@@ -92,8 +95,11 @@ require_once "../include/admin/header.php";
             <tr>
               <th scope="row" rowspan="<?php echo $productsInRow ?>"><?php echo $payment["id"]; ?></th>
               <td><?php echo $payment["product_id"]; ?></td>
-              <td><?php echo $payment["product_price"]; ?></td>
               <td><?php echo $payment["user_id"]; ?></td>
+              <td><?php echo $payment["group_id"]; ?></td>
+              <td><?php echo $payment["prepay_id"]; ?></td>
+              <td><?php echo $payment["price"]; ?></td>
+              <td><?php echo $payment["status"]; ?></td>
               <td><?php echo $payment["date"]; ?></td>
             </tr>
           <?php

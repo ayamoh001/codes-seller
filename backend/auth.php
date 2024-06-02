@@ -69,9 +69,11 @@ try {
         exit;
       }
 
+      // TODO: change the guest ids for this session to the user id
+
       // Insert new user
       $connection->begin_transaction();
-      $createUserQuery = "INSERT INTO users (username, email, password, otp_code, status) VALUES (?, ?, ?, ?, '')";
+      $createUserQuery = "INSERT INTO users (username, email, password, otp_code, status) VALUES (?, ?, ?, ?, 'ACTIVE')";
       $stmt = $connection->prepare($createUserQuery);
       $stmt->bind_param("ssss", $username, $email, $hashPassword, $otp_code);
       if ($stmt->execute()) {
@@ -99,9 +101,6 @@ try {
       header("Location: $baseURL/login.php");
       exit;
     }
-  } else if (isset($_GET["do"])) {
-    $do = $_GET["do"];
-    // TODO: later
   } else {
     echo "Invalid HTTP method or missing action!";
     exit;

@@ -40,13 +40,13 @@ if (isset($_SESSION["user_id"]) && $_SESSION["user_id"] != "") {
   $getWalletStmt->close();
 }
 
-$title = "Crypto Cards - Profile";
+$title = "Crypto Cards - Payments";
 require_once "../include/profile/header.php";
 ?>
 
 <main class="vh-100 bg-dark text-white">
   <div class="container py-5">
-    profile
+    Payments
   </div>
 </main>
 

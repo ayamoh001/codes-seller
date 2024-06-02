@@ -1,6 +1,14 @@
   <!-- Footer -->
   <footer class="bg-dark text-light py-4 border-top">
-    <div class="container text-center">
+    <div class="container text-center d-flex align-items-center justify-content-between">
+      <nav class="navbar-nav d-flex flex-row gap-3">
+        <a class="p-0 m-0 nav-link" href="https://www.instagram.com/crypto_cards_store?igsh=MWE5cWcxYTVvcmNlMw==">
+          <i class="bi bi-instagram"></i>
+        </a>
+        <a class="p-0 m-0 nav-link" href="https://t.me/SamsupplierX">
+          <i class="bi bi-telegram"></i>
+        </a>
+      </nav>
       <p class="p-0 m-0">&copy; 2024 Crypto Cards. All rights reserved.</p>
     </div>
   </footer>

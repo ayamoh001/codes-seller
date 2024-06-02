@@ -1,6 +1,7 @@
 <?php
 require_once "./include/config.php";
 
+$canonicalPath = "/signup.php";
 $title = "Crypto Cards - Signup";
 require_once "./include/header.php";
 ?>

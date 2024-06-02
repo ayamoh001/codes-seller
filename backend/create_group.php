@@ -31,6 +31,7 @@ try {
   $title = $_POST["title"];
   $description = $_POST["description"];
   $sortIndex = $_POST["sort_index"];
+  $visibility = (int) (bool) $_POST["visibility"];
   $file_name = $_FILES["image"]["name"];
   $file_tmp = $_FILES["image"]["tmp_name"];
 
@@ -54,8 +55,8 @@ try {
   }
 
   $connection->begin_transaction();
-  $createNewGroupStmt = $connection->prepare("INSERT INTO groups(title, description, image, sort_index) VALUES (?, ?, ?, ?)");
-  $createNewGroupStmt->bind_param("sssi", $title, $description, $uploadPathRelative, $sortIndex);
+  $createNewGroupStmt = $connection->prepare("INSERT INTO groups(title, description, image, sort_index, visibility) VALUES (?, ?, ?, ?, ?)");
+  $createNewGroupStmt->bind_param("sssii", $title, $description, $uploadPathRelative, $sortIndex, $visibility);
   $createNewGroupStmt->execute();
   if ($createNewGroupStmt->errno) {
     $_SESSION['flash_message'] = $createNewGroupStmt->error;

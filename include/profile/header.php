@@ -111,7 +111,13 @@
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav ms-auto">
             <li class="nav-item">
-              <a class="nav-link" href="<?php echo $baseURL; ?>/profile/">profile</a>
+              <a class="nav-link" href="<?php echo $baseURL; ?>/profile/index.php">profile</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="<?php echo $baseURL; ?>/profile/payments.php">payments</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="<?php echo $baseURL; ?>/profile/wallet.php">wallet</a>
             </li>
             <li class="nav-item">
               <a href="<?php echo $baseURL; ?>/profile/" class="nav-link ms-2 fw-bold text-warning"><?php echo $wallet["balance"] ?> USDT</a>

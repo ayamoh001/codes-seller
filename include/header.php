@@ -118,10 +118,10 @@
             </li>
             <?php if (isset($user_id) && $user_id != "") : ?>
               <li class="nav-item">
-                <a href="<?php echo $baseURL; ?>/profile/" class="nav-link ms-2 fw-bold text-warning"><?php echo $wallet["balance"] ?> USDT</a>
+                <a href="<?php echo $baseURL; ?>/profile/wallet.php" class="nav-link ms-2 fw-bold text-warning"><?php echo $wallet["balance"] ?> USDT</a>
               </li>
               <li class="nav-item">
-                <a href="<?php echo $baseURL; ?>/profile/" class="d-block rounded-pill overflow-hidden shadow border-1 border-white ms-2">
+                <a href="<?php echo $baseURL; ?>/profile/index.php" class="d-block rounded-pill overflow-hidden shadow border-1 border-white ms-2">
                   <img src="<?php echo $baseURL . (isset($user["profile_picture"]) && $user["profile_picture"] != "" ? $user["profile_picture"] : "/assets/images/profile-picture.png") ?>" alt="profile picture" width="42">
                 </a>
               </li>

@@ -79,7 +79,10 @@ require_once "../include/admin/header.php";
     }
     ?>
 
+
     <section>
+      <h1 class="mb-5 h1 fw-bold text-white">All Platform Registed Users</h1>
+
       <button type="button" class="btn btn-primary btn-lg fw-bold ratio-16x9 mb-5 px-4 d-flex gap-2" data-bs-toggle="modal" data-bs-target="#create-group-modal-create-new-group">
         <span>Create New Group</span>
         <i class="bi bi-plus-circle"></i>
@@ -112,8 +115,8 @@ require_once "../include/admin/header.php";
                       <label for="image" class="form-label">Image</label>
                       <input type="file" class="form-control" id="image" name="image" required>
                     </div>
-                    <div class="form-check form-switch">
-                      <input class="form-check-input" type="checkbox" role="switch" id="switch" name="visibilty">
+                    <div class="mb-3 form-check form-switch">
+                      <input class="form-check-input" type="checkbox" role="switch" id="switch" name="visibility" checked>
                       <label class="form-check-label" for="switch">Visible for Visitors</label>
                     </div>
                     <button type="submit" class="btn btn-primary w-100">Create</button>
@@ -130,7 +133,7 @@ require_once "../include/admin/header.php";
       </div>
     </section>
 
-    <section>
+    <section class="d-flex flex-column gap-4">
       <?php
       foreach ($groups as $group) :
       ?>
@@ -141,37 +144,46 @@ require_once "../include/admin/header.php";
               <h5 class="card-title xw-75 my-auto line-clamp-1"><?php echo $group["title"]; ?></h5>
             </div>
             <p class="card-text line-clamp-2"><?php echo $group["description"]; ?></p>
-            <table class="table w-100" class="overflow-scroll" style="max-height: 160px;">
-              <thead>
-                <tr>
-                  <th scope="col">Product ID</th>
-                  <th scope="col">Price</th>
-                  <th scope="col">Type</th>
-                  <th scope="col">Code Value</th>
-                  <th scope="col">Payment ID</th>
-                  <th scope="col">Create Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                <?php
-                foreach ($group["products"] as $type => $productsByType) :
-                  foreach ($productsByType as $product) :
-                    // var_dump($product);
-                ?>
-                    <tr>
-                      <th scope="row"><?php echo $product["id"]; ?></th>
-                      <td><?php echo $product["price"]; ?></td>
-                      <td><?php echo $product["type"]; ?></td>
-                      <td><?php echo $product["code_value"]; ?></td>
-                      <td><?php echo $product["payment_id"] ?? "<span class='text-white bg-secondary py-1 px-3 rounded-pill'>Not Sold Yet<span>"; ?></td>
-                      <td><?php echo $product["date"]; ?></td>
-                    </tr>
-                <?php
+            <div class="bg-body-secondary overflow-auto my-4" style="max-height: 160px;">
+              <table class="table table-secondary w-100">
+                <thead>
+                  <tr>
+                    <th scope="col">Product ID</th>
+                    <th scope="col">Price</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Code Value</th>
+                    <th scope="col">Payment ID</th>
+                    <th scope="col">Create Date</th>
+                    <th scope="col">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                  foreach ($group["products"] as $type => $productsByType) :
+                    foreach ($productsByType as $product) :
+                      // var_dump($product);
+                  ?>
+                      <tr>
+                        <th scope="row"><?php echo $product["id"]; ?></th>
+                        <td><?php echo $product["price"]; ?></td>
+                        <td><?php echo $product["type"]; ?></td>
+                        <td><?php echo $product["code_value"]; ?></td>
+                        <td><?php echo $product["payment_id"] ?? "<span class='small text-white bg-secondary py-1 px-3 rounded-pill'>Not Sold Yet<span>"; ?></td>
+                        <td><?php echo $product["date"]; ?></td>
+                        <td>
+                          <form action="<?php echo $baseURL; ?>/backend/delete_product.php" method="POST">
+                            <input type="hidden" name="product_id" value="<?php echo $product["id"]; ?>">
+                            <button class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></button>
+                          </form>
+                        </td>
+                      </tr>
+                  <?php
+                    endforeach;
                   endforeach;
-                endforeach;
-                ?>
-              </tbody>
-            </table>
+                  ?>
+                </tbody>
+              </table>
+            </div>
             <div class="d-flex gap-2">
               <!-- Add Product button -->
               <button type="button" class="btn btn-primary fw-bold w-100 d-flex gap-2 justify-content-center" data-bs-toggle="modal" data-bs-target="#add-product-modal-<?php echo $group["id"]; ?>">
@@ -193,14 +205,14 @@ require_once "../include/admin/header.php";
                             <input type="hidden" name="group_id" value="<?php echo $group["id"] ?>">
                             <div class="mb-3">
                               <label for="code_value" class="form-label">Code Value</label>
-                              <input type="text" class="form-control" id="code_value" name="code_value" placeholder="code_value" required>
+                              <input type="text" class="form-control" id="code_value" name="code_value" placeholder="code value (ZpkdKOFJdXkfadfDPl)" required>
                             </div>
                             <div class="mb-3">
-                              <label for="type" class="form-label">Type/Class</label>
+                              <label for="type" class="form-label">Type/Class (to classify products)</label>
                               <input type="text" class="form-control" id="type" name="type" placeholder="25$" required>
                             </div>
                             <div class="mb-3">
-                              <label for="type" class="form-label">Price ($)</label>
+                              <label for="price" class="form-label">Price ($)</label>
                               <input type="number" min="0.01" step="0.01" class="form-control" id="price" name="price" placeholder="00.00" required>
                             </div>
                             <button type="submit" class="btn btn-primary w-100 fw-bold">Add</button>
@@ -244,6 +256,10 @@ require_once "../include/admin/header.php";
                             <div class="mb-3">
                               <label for="image" class="form-label">New Image</label>
                               <input type="file" class="form-control" id="image" name="image">
+                            </div>
+                            <div class="mb-3 form-check form-switch">
+                              <input class="form-check-input" type="checkbox" role="switch" id="switch" name="visibility" <?php echo !!$group["visibility"] ? "checked" : "" ?>>
+                              <label class="form-check-label" for="switch">Visible for Visitors</label>
                             </div>
                             <button type="submit" class="btn btn-warning w-100 fw-bold">Edit</button>
                           </form>

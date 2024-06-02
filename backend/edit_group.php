@@ -43,7 +43,7 @@ try {
     exit;
   }
 
-  $storageDirRelative = $group["image"];
+  $uploadPathRelative = $group["image"];
 
   // Check if an image is uploaded and handle the process if it exists
   if (isset($_FILES["image"]) && $_FILES["image"]["error"] == UPLOAD_ERR_OK) {
@@ -74,10 +74,13 @@ try {
   $title = $_POST["title"];
   $description = $_POST["description"];
   $sortIndex = $_POST["sort_index"];
+  $visibility = (int) (bool) $_POST["visibility"];
+  // var_dump($visibility);
+  // exit;
 
   $connection->begin_transaction();
-  $createNewGroupStmt = $connection->prepare("UPDATE groups SET title = ?, description = ?, sort_index = ?, image = ? WHERE id = ?");
-  $createNewGroupStmt->bind_param("ssisi", $title, $description, $sortIndex, $uploadPathRelative, $groupId);
+  $createNewGroupStmt = $connection->prepare("UPDATE groups SET title = ?, description = ?, sort_index = ?, visibility = ?, image = ? WHERE id = ?");
+  $createNewGroupStmt->bind_param("ssiisi", $title, $description, $sortIndex, $visibility, $uploadPathRelative, $groupId);
   $createNewGroupStmt->execute();
   if ($createNewGroupStmt->errno) {
     $_SESSION['flash_message'] = $createNewGroupStmt->error;

@@ -24,7 +24,7 @@ try {
   $productId = $_POST["product_id"];
 
   $connection->begin_transaction();
-  $deleteProductStmt = $connection->prepare("DELETE FROM products WHERE id = ? LIMIT 1");
+  $deleteProductStmt = $connection->prepare("DELETE FROM products WHERE id = ? AND payment_id IS NULL LIMIT 1");
   $deleteProductStmt->bind_param("i", $productId);
   $deleteProductStmt->execute();
   if ($deleteProductStmt->errno) {
@@ -34,9 +34,16 @@ try {
     $connection->rollback();
     exit;
   }
+  if ($deleteProductStmt->affected_rows == 0) {
+    $_SESSION['flash_message'] = "No product was deleted, be sure the product is exists and not sold yet.";
+    $_SESSION['flash_type'] = "danger";
+    header("Location: $baseURL/admin/");
+    $connection->rollback();
+    exit;
+  };
 
   $connection->commit();
-  $_SESSION['flash_message'] = "A code product was deleted successfully!";
+  $_SESSION['flash_message'] = "The product was deleted successfully!";
   $_SESSION['flash_type'] = "success";
   header("Location: $baseURL/admin/");
   exit;
