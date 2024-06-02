@@ -120,18 +120,18 @@
               <a class="nav-link" href="<?php echo $baseURL; ?>/profile/wallet.php">wallet</a>
             </li>
             <li class="nav-item">
-              <a href="<?php echo $baseURL; ?>/profile/" class="nav-link ms-2 fw-bold text-warning"><?php echo $wallet["balance"] ?> USDT</a>
+              <a href="<?php echo $baseURL; ?>/profile/" class="nav-link ms-md-2 fw-bold text-warning"><?php echo $wallet["balance"] ?> USDT</a>
             </li>
             <li class="nav-item">
-              <a href="<?php echo $baseURL; ?>/profile/" class="d-block rounded-pill overflow-hidden shadow border-1 border-white ms-2">
+              <a href="<?php echo $baseURL; ?>/profile/" class="d-block rounded-pill overflow-hidden shadow border-1 border-white ms-md-2">
                 <img src="<?php echo $baseURL . (isset($user["profile_picture"]) && $user["profile_picture"] != "" ? $user["profile_picture"] : "/assets/images/profile-picture.png") ?>" alt="profile picture" width="42">
               </a>
             </li>
-            <li class="nav-item ms-3">
+            <li class="nav-item ms-md-3">
               <span class="nav-link p-1">
                 <form action="<?php echo $baseURL ?>/backend/auth.php" method="POST">
                   <input type="hidden" name="do" value="logout">
-                  <button class="btn btn-danger  d-flex gap-2 align-items-center px-3" type="submit">
+                  <button class="btn btn-danger d-flex gap-2 align-items-center px-3" type="submit">
                     <span>Logout</span>
                     <i class="bi bi-door-open-fill"></i>
                   </button>

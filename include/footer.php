@@ -1,6 +1,6 @@
   <!-- Footer -->
   <footer class="bg-dark text-light py-4 border-top">
-    <div class="container text-center d-flex align-items-center justify-content-between">
+    <div class="container text-center d-flex gap-4 flex-column-reverse flex-md-row align-items-center justify-content-between">
       <nav class="navbar-nav d-flex flex-row gap-3">
         <a class="p-0 m-0 nav-link" href="https://www.instagram.com/crypto_cards_store?igsh=MWE5cWcxYTVvcmNlMw==">
           <i class="bi bi-instagram"></i>

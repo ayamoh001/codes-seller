@@ -118,16 +118,16 @@
             </li>
             <?php if (isset($user_id) && $user_id != "") : ?>
               <li class="nav-item">
-                <a href="<?php echo $baseURL; ?>/profile/wallet.php" class="nav-link ms-2 fw-bold text-warning"><?php echo $wallet["balance"] ?> USDT</a>
+                <a href="<?php echo $baseURL; ?>/profile/wallet.php" class="nav-link ms-md-2 fw-bold text-warning"><?php echo $wallet["balance"] ?> USDT</a>
               </li>
               <li class="nav-item">
-                <a href="<?php echo $baseURL; ?>/profile/index.php" class="d-block rounded-pill overflow-hidden shadow border-1 border-white ms-2">
+                <a href="<?php echo $baseURL; ?>/profile/index.php" class="d-block rounded-pill overflow-hidden shadow border-1 border-white ms-md-2">
                   <img src="<?php echo $baseURL . (isset($user["profile_picture"]) && $user["profile_picture"] != "" ? $user["profile_picture"] : "/assets/images/profile-picture.png") ?>" alt="profile picture" width="42">
                 </a>
               </li>
             <?php else : ?>
               <li class="nav-item">
-                <a class="btn btn-primary ms-2 px-4 d-flex align-items-center gap-2" href="<?php echo $baseURL; ?>/login.php">
+                <a class="btn btn-primary ms-md-2 px-4 d-flex align-items-center justify-content-center gap-2" href="<?php echo $baseURL; ?>/login.php">
                   <span>Login</span>
                   <i class="bi bi-door-closed-fill"></i>
                 </a>

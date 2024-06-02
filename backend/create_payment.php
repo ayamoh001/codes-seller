@@ -20,10 +20,8 @@ try {
     $getUserStmt->close();
     $userId = $user["id"];
   } else {
-    $userId = "Guest_" . session_id();
+    $userId = $guestIdPrefix . session_id();
   }
-
-
 
   // start the process
   $requestData = json_decode(file_get_contents("php://input"), true);
@@ -35,7 +33,7 @@ try {
   // var_dump($groupId);
   // var_dump($quantity);
 
-  $getGroupStmt = $connection->prepare("SELECT * FROM groups WHERE id = ? LIMIT 1");
+  $getGroupStmt = $connection->prepare("SELECT * FROM `groups` WHERE id = ? LIMIT 1");
   $getGroupStmt->bind_param("i", $groupId);
   $getGroupStmt->execute();
   if ($getGroupStmt->errno) {
@@ -139,15 +137,16 @@ try {
 
   $json_request = json_encode($request);
   $payload = $timestamp . "\n" . $nonce . "\n" . $json_request . "\n";
-  $binance_pay_key = $API_KEY;
-  $binance_pay_secret = $API_SECRET;
-  $signature = strtoupper(hash_hmac('SHA512', $payload, $binance_pay_secret));
+  $binance_pay_api_key = $API_KEY;
+  $binance_pay_api_secret = $API_SECRET;
+  $signature = strtoupper(hash_hmac('SHA512', $payload, $binance_pay_api_secret));
   $headers = [
     "Content-Type: application/json",
     "BinancePay-Timestamp: $timestamp",
     "BinancePay-Nonce: $nonce",
-    "BinancePay-Certificate-SN: $binance_pay_key",
+    "BinancePay-Certificate-SN: $binance_pay_api_key",
     "BinancePay-Signature: $signature",
+    "X-MBX-APIKEY: $binance_pay_api_key",
   ];
 
   curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
@@ -181,8 +180,8 @@ try {
   // }
 
   $responseData = json_decode($result, true);
-  if (!!$responseData["errorMessage"] || $responseData["status"] != "SUCCESS") {
-    echo json_encode(["error" => "Error in the Binance side: " . ($responseData["errorMessage"] ? $responseData["errorMessage"] : $responseData["code"])]);
+  if (!!$responseData["msg"] || !!$responseData["errorMessage"] || $responseData["status"] != "SUCCESS") {
+    echo json_encode(["error" => "Error in the Binance side: " . ($responseData["errorMessage"] ? $responseData["errorMessage"] : ($responseData["msg"] ? $responseData["msg"] : $responseData["code"]))]);
     $connection->rollback();
     exit;
   }

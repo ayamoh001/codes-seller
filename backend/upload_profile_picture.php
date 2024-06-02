@@ -10,6 +10,7 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
 
 if ($_SESSION["user_id"] == "") {
   $_SESSION['flash_message'] = "Not Athenticated!";
+  $_SESSION['flash_type'] = "danger";
   exit;
 }
 
@@ -22,10 +23,16 @@ try {
   if ($getUserStmt->errno) {
     $_SESSION['flash_message'] = "Error in the auth proccess! please try again.";
     $_SESSION['flash_message'] = $getUserStmt->error;
+    $_SESSION['flash_type'] = "danger";
     exit;
   }
   $userResult = $getUserStmt->get_result();
   $user = $userResult->fetch_assoc();
+  if (!$user) {
+    $_SESSION['flash_message'] = "No user found! Please login in first.";
+    $_SESSION['flash_type'] = "danger";
+    exit;
+  }
   $getUserStmt->close();
 
   if (!isset($_FILES["profile_picture"]) || $_FILES["profile_picture"]["error"] != UPLOAD_ERR_OK) {
@@ -62,6 +69,7 @@ try {
   $updateUserProfilePictureStmt->bind_param("ss", $uploadPathRelative, $user_id);
   $updateUserProfilePictureStmt->execute();
   if ($updateUserProfilePictureStmt->errno) {
+    $_SESSION['flash_message'] = "Error in the updating process!";
     $_SESSION['flash_message'] = $updateUserProfilePictureStmt->error;
     $_SESSION['flash_type'] = "danger";
     header("Location: $baseURL/profile/edit_profile/");
@@ -71,6 +79,7 @@ try {
   $updateUserProfilePictureStmt->close();
 
   $connection->commit();
+
   $_SESSION['flash_message'] = "Your profile picture was uploaded successfuly!";
   $_SESSION['flash_type'] = "success";
   header("Location: $baseURL/profile/edit_profile/");
@@ -78,5 +87,6 @@ try {
 } catch (Throwable $e) {
   $_SESSION['flash_message'] = "Error in the server!";
   $_SESSION['flash_message'] = $e->getMessage();
+  $_SESSION['flash_type'] = "danger";
   exit;
 }

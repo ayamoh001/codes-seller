@@ -117,7 +117,7 @@
             <li class="nav-item">
               <a class="nav-link" href="<?php echo $baseURL; ?>/admin/users.php">users</a>
             </li>
-            <li class="nav-item ms-3">
+            <li class="nav-item ms-md-3">
               <span class="nav-link p-1">
                 <a class="btn btn-danger d-flex gap-2 align-items-center px-3" href="<?php echo $baseURL ?>/backend/admin_logout.php">
                   <span>Logout</span>
