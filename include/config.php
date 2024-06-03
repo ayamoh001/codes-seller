@@ -17,3 +17,5 @@ $adminUsername = "admin";
 $adminPassword = "admin";
 
 $guestIdPrefix = "Guest_";
+
+$errorLogsFilePath = __DIR__ . "/logs.txt";

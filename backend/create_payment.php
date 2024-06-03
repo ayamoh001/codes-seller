@@ -146,7 +146,7 @@ try {
     "BinancePay-Nonce: $nonce",
     "BinancePay-Certificate-SN: $binance_pay_api_key",
     "BinancePay-Signature: $signature",
-    "X-MBX-APIKEY: $binance_pay_api_key",
+    "X-MBX-APIKEY: $binance_pay_api_key", // not important \_(0_0)_/
   ];
 
   curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
@@ -157,7 +157,9 @@ try {
 
   $result = curl_exec($ch);
   if (curl_errno($ch)) {
-    echo 'Error:' . curl_error($ch);
+    echo json_encode(["error" => "Error in binance connection: " . curl_error($ch)]);
+    $connection->rollback();
+    exit;
   }
   curl_close($ch);
 
@@ -209,7 +211,9 @@ try {
     "data" => $responseData,
   ]);
 } catch (Throwable $e) {
-  // echo json_encode(["error" => "Error in the server!"]);
-  echo json_encode(["error" => $e->getLine() . " | " . $e->getMessage()]);
+  $errorMessage = $e->getFile() . " | " . $e->getLine() . " | " . $e->getMessage();
+  echo json_encode(["error" => "Error in the server!"]);
+  echo json_encode(["error" => $errorMessage]);
+  file_put_contents($errorLogsFilePath, $errorMessage, FILE_APPEND);
   exit;
 }
