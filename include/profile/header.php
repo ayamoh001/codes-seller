@@ -7,74 +7,21 @@
   <link rel="shortcut icon" href="<?php echo $baseURL; ?>/favicon.ico" type="image/x-icon">
   <link rel="icon" href="<?php echo $baseURL; ?>/favicon.ico" type="image/x-icon">
   <title><?php echo $title; ?></title>
-  <link rel="canonical" href="<?php echo $baseURL . (isset($canonicalPath) ? $canonicalPath : ""); ?>">
   <meta name="description" content="Crypto gaming cards online store">
   <meta name="category" content="digital, cards, crypto">
   <meta name="classification" content="digital, cards, crypto">
-  <meta name="keywords" content="cryptogamingards.com, Crypto Cards, Crypto Gaming Cards, CryptoCards, CryptoGamingCards">
   <meta name="publisher" content="Crypto Cards">
   <meta name="author" content="Crypto Cards">
   <meta name="creator" content="Crypto Cards">
   <meta name="theme-color" content="#F7931A">
   <meta name="color-scheme" content="dark">
   <meta name="referrer" content="origin">
-  <link rel="alternate" type="application/rss+xml" href="rss.xml" title="rss">
   <meta name="format-detection" content="telephone=yes, date=yes, address=yes, email=yes, url=yes">
-  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta name="robots" content="noindex, nofollow">
   <link rel="author" href="<?php echo $baseURL; ?>" />
-  <meta property="og:locale" content="en-US">
-  <meta property="og:type" content="website">
-  <meta property="og:image" content="<?php echo $baseURL; ?>/assets/images/crypto-cards-og-thumbnile.png">
-  <meta property="og:title" content="Crypto Cards">
-  <meta property="og:description" content="-------">
-  <meta property="og:url" content="<?php echo $baseURL; ?>">
-  <meta property="og:site_name" content="Crypto Cards">
-  <meta property="article:modified_time" content="2024-05-4T00:00:000+03:00">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:image" content="<?php echo $baseURL; ?>/assets/images/crypto-cards-og-thumbnile.png">
-  <meta name="twitter:label1" content="estimated read time">
-  <meta name="twitter:data1" content="1 minute">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Crypto Cards">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-  <script type="application/ld+json">
-    {
-      "@context": "http://schema.org",
-      "@type": "Store",
-      "url": "https://cryptogamingcards.com",
-      "name": "Crypto Cards",
-      "description": "Crypto gaming cards online store",
-      "logo": "<?php echo $baseURL; ?>/assets/images/crypto-cards-logo.png",
-      "paymentAccepted": "Cryptocurrencies",
-      "telephone": "+601167999817",
-      "email": "crypto.cards.dealer24.7@gmail.com",
-      "priceRange": "$",
-      "image": [
-        "<?php echo $baseURL; ?>/assets/images/crypto-cards-og-thumbnail.png"
-      ],
-      "contactPoint": {
-        "@type": "ContactPoint",
-        "contactType": "customer service",
-        "telephone": "+601167999817",
-        "email": "crypto.cards.dealer24.7@gmail.com",
-        "areaServed": "Malaysia"
-      },
-      "address": {
-        "@type": "PostalAddress",
-        "streetAddress": "Main Street",
-        "addressLocality": "Kuala Lumpur",
-        "addressRegion": "Wilayah Persekutuan Kuala Lumpur",
-        "postalCode": "50000",
-        "addressCountry": "Malaysia"
-      },
-      "geo": {
-        "@type": "GeoCoordinates",
-        "latitude": 3.139,
-        "longitude": 101.6869
-      }
-    }
-  </script>
 
   <!-- <link rel='dns-prefetch' href='https://www.googletagmanager.com' />
   <script src='https://www.googletagmanager.com/gtag/js?id=' defer></script>
@@ -109,37 +56,66 @@
           <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav ms-auto">
+          <ul class="navbar-nav ms-auto align-items-center">
             <li class="nav-item">
-              <a class="nav-link" href="<?php echo $baseURL; ?>/profile/index.php">profile</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="<?php echo $baseURL; ?>/profile/payments.php">payments</a>
+              <a class="nav-link text-capitalize" href="<?php echo $baseURL; ?>/profile/index.php">profile</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="<?php echo $baseURL; ?>/profile/wallet.php">wallet</a>
+              <a class="nav-link text-capitalize" href="<?php echo $baseURL; ?>/profile/products.php">products</a>
             </li>
             <li class="nav-item">
-              <a href="<?php echo $baseURL; ?>/profile/" class="nav-link ms-md-2 fw-bold text-warning"><?php echo $wallet["balance"] ?> USDT</a>
+              <a class="nav-link text-capitalize" href="<?php echo $baseURL; ?>/profile/payments.php">payments</a>
             </li>
             <li class="nav-item">
-              <a href="<?php echo $baseURL; ?>/profile/" class="d-block rounded-pill overflow-hidden shadow border-1 border-white ms-md-2">
-                <img src="<?php echo $baseURL . (isset($user["profile_picture"]) && $user["profile_picture"] != "" ? $user["profile_picture"] : "/assets/images/profile-picture.png") ?>" alt="profile picture" width="42">
-              </a>
+              <a class="nav-link text-capitalize" href="<?php echo $baseURL; ?>/profile/wallet.php">wallet</a>
             </li>
-            <li class="nav-item ms-md-3">
-              <span class="nav-link p-1">
-                <form action="<?php echo $baseURL ?>/backend/auth.php" method="POST">
-                  <input type="hidden" name="do" value="logout">
-                  <button class="btn btn-danger d-flex gap-2 align-items-center px-3" type="submit">
-                    <span>Logout</span>
-                    <i class="bi bi-door-open-fill"></i>
-                  </button>
-                </form>
-              </span>
-            </li>
+            <div class="d-flex gap-3 gap-lg-0 align-items-center">
+              <div class="d-flex flex-row-reverse flex-lg-row gap-3 gap-lg-0 justify-content-end">
+                <li class="nav-item">
+                  <a href="<?php echo $baseURL; ?>/profile/wallet.php" class="nav-link ms-lg-2 fw-bold text-warning"><?php echo $wallet["balance"] ?> USDT</a>
+                </li>
+                <li class="nav-item">
+                  <a href="<?php echo $baseURL; ?>/profile/settings.php" class="d-block rounded-circle overflow-hidden shadow border-1 border-white ms-lg-2" style="width: 42px; height: 42px;">
+                    <img src="<?php echo $baseURL . (isset($user["profile_picture"]) && $user["profile_picture"] != "" ? $user["profile_picture"] : "/assets/images/profile-picture.png") ?>" alt="profile picture" width="42">
+                  </a>
+                </li>
+              </div>
+              <li class="nav-item ms-lg-3">
+                <span class="nav-link">
+                  <form action="<?php echo $baseURL ?>/backend/auth.php" method="POST">
+                    <input type="hidden" name="do" value="logout">
+                    <button class="btn btn-sm btn-outline-danger d-flex gap-2 align-items-center px-3" type="submit">
+                      <span>Logout</span>
+                      <i class="bi bi-door-open-fill"></i>
+                    </button>
+                  </form>
+                </span>
+              </li>
+            </div>
           </ul>
         </div>
       </nav>
     </div>
   </header>
+
+  <main class="vh-100 bg-dark text-white">
+    <div class="container py-5">
+
+      <?php
+      if (isset($_SESSION['flash_message'])) {
+        echo '<div class="alert alert-' . $_SESSION['flash_type'] . '">' . $_SESSION['flash_message'] . '</div>';
+
+        unset($_SESSION['flash_message']);
+        unset($_SESSION['flash_type']);
+      };
+      ?>
+
+      <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+        <ol class="breadcrumb" style="--bs-breadcrumb-divider-color: #777;">
+          <?php for ($i = 0; $i < count($breadcrumbs); $i++) :
+            $isHere = count($breadcrumbs) == 1 || $i == (count($breadcrumbs) - 1);
+          ?>
+            <li class="breadcrumb-item <?php echo $isHere ? "active text-light" : ""; ?>" <?php echo $isHere ? "aria-current='page'" : ""; ?>><?php echo $isHere ? $breadcrumbs[$i]["name"] : "<a href='" . $breadcrumbs[$i]["url"] . "'>" . $breadcrumbs[$i]["name"] . "</a>"; ?></li>
+          <?php endfor; ?>
+        </ol>
+      </nav>

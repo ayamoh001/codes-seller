@@ -7,87 +7,12 @@
   <link rel="shortcut icon" href="<?php echo $baseURL; ?>/favicon.ico" type="image/x-icon">
   <link rel="icon" href="<?php echo $baseURL; ?>/favicon.ico" type="image/x-icon">
   <title><?php echo $title; ?></title>
-  <meta name="description" content="Crypto gaming cards online store">
-  <meta name="category" content="digital, cards, crypto">
-  <meta name="classification" content="digital, cards, crypto">
-  <meta name="keywords" content="cryptogamingards.com, Crypto Cards, Crypto Gaming Cards, CryptoCards, CryptoGamingCards">
-  <meta name="publisher" content="Crypto Cards">
-  <meta name="author" content="Crypto Cards">
-  <meta name="creator" content="Crypto Cards">
   <meta name="theme-color" content="#F7931A">
   <meta name="color-scheme" content="dark">
-  <meta name="referrer" content="origin">
-  <link rel="canonical" href="<?php echo $baseURL . (isset($canonicalPath) ? $canonicalPath : ""); ?>">
-  <link rel="alternate" type="application/rss+xml" href="rss.xml" title="rss">
-  <meta name="format-detection" content="telephone=yes, date=yes, address=yes, email=yes, url=yes">
-  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
-  <link rel="author" href="<?php echo $baseURL; ?>" />
-  <meta property="og:locale" content="en_US">
-  <meta property="og:type" content="website">
-  <meta property="og:image" content="<?php echo $baseURL; ?>/assets/images/crypto-cards-og-thumbnile.png">
-  <meta property="og:title" content="Crypto Cards">
-  <meta property="og:description" content="-------">
-  <meta property="og:url" content="<?php echo $baseURL; ?>">
-  <meta property="og:site_name" content="Crypto Cards">
-  <meta property="article:modified_time" content="2024-05-4T00:00:000+03:00">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:image" content="<?php echo $baseURL; ?>/assets/images/crypto-cards-og-thumbnile.png">
-  <meta name="twitter:label1" content="estimated read time">
-  <meta name="twitter:data1" content="1 minute">
+  <meta name="robots" content="noindex, nofollow">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Crypto Cards">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-  <script type="application/ld+json">
-    {
-      "@context": "http://schema.org",
-      "@type": "Store",
-      "url": "https://cryptogamingcards.com",
-      "name": "Crypto Cards",
-      "description": "Crypto gaming cards online store",
-      "logo": "<?php echo $baseURL; ?>/assets/images/crypto-cards-logo.png",
-      "paymentAccepted": "Cryptocurrencies",
-      "telephone": "+601167999817",
-      "email": "crypto.cards.dealer24.7@gmail.com",
-      "priceRange": "$",
-      "image": [
-        "<?php echo $baseURL; ?>/assets/images/crypto-cards-og-thumbnail.png"
-      ],
-      "contactPoint": {
-        "@type": "ContactPoint",
-        "contactType": "customer service",
-        "telephone": "+601167999817",
-        "email": "crypto.cards.dealer24.7@gmail.com",
-        "areaServed": "Malaysia"
-      },
-      "address": {
-        "@type": "PostalAddress",
-        "streetAddress": "Main Street",
-        "addressLocality": "Kuala Lumpur",
-        "addressRegion": "Wilayah Persekutuan Kuala Lumpur",
-        "postalCode": "50000",
-        "addressCountry": "Malaysia"
-      },
-      "geo": {
-        "@type": "GeoCoordinates",
-        "latitude": 3.139,
-        "longitude": 101.6869
-      }
-    }
-  </script>
-
-  <!-- <link rel='dns-prefetch' href='https://www.googletagmanager.com' />
-  <script src='https://www.googletagmanager.com/gtag/js?id=' defer></script>
-  <script defer>
-    window.dataLayer = window.dataLayer || [];
-
-    function gtag() {
-      dataLayer.push(arguments);
-    }
-    gtag('js', new Date());
-
-    gtag('config', '---------');
-  </script> -->
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

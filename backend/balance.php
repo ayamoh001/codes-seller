@@ -46,13 +46,14 @@ try {
   if (curl_errno($ch)) {
     echo 'Error:' . curl_error($ch);
   }
-  echo $result;
   curl_close($ch);
+
+  echo $result;
 } catch (Throwable $e) {
   $_SESSION['flash_message'] = "Error in the server!";
   $_SESSION['flash_message'] = $e->getMessage();
   $_SESSION['flash_type'] = "danger";
-  header("Location: $baseURL/profile/edit_profile/");
+  header("Location: $baseURL/profile/balance/");
 
   $errorMessage = $e->getFile() . " | " . $e->getLine() . " | " . $e->getMessage();
   file_put_contents($errorLogsFilePath, $errorMessage, FILE_APPEND);

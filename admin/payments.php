@@ -93,11 +93,12 @@ require_once "../include/admin/header.php";
           while ($payment = $paymentsResult->fetch_assoc()) :
           ?>
             <tr>
-              <th scope="row" rowspan="<?php echo $productsInRow ?>"><?php echo $payment["id"]; ?></th>
+              <th scope="row"><?php echo $payment["id"]; ?></th>
               <td><?php echo $payment["product_id"]; ?></td>
               <td><?php echo $payment["user_id"]; ?></td>
               <td><?php echo $payment["group_id"]; ?></td>
               <td><?php echo $payment["prepay_id"]; ?></td>
+              <td><?php echo count($payment["products"]); ?></td>
               <td><?php echo $payment["price"]; ?></td>
               <td><?php echo $payment["status"]; ?></td>
               <td><?php echo $payment["date"]; ?></td>

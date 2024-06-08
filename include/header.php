@@ -109,7 +109,7 @@
           <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav ms-auto">
+          <ul class="navbar-nav ms-auto align-items-center">
             <li class="nav-item">
               <a class="nav-link" href="<?php echo $baseURL; ?>">Home</a>
             </li>
@@ -117,17 +117,32 @@
               <a class="nav-link" href="<?php echo $baseURL; ?>/policies.php">Policies</a>
             </li>
             <?php if (isset($user_id) && $user_id != "") : ?>
-              <li class="nav-item">
-                <a href="<?php echo $baseURL; ?>/profile/wallet.php" class="nav-link ms-md-2 fw-bold text-warning"><?php echo $wallet["balance"] ?> USDT</a>
-              </li>
-              <li class="nav-item">
-                <a href="<?php echo $baseURL; ?>/profile/index.php" class="d-block rounded-pill overflow-hidden shadow border-1 border-white ms-md-2">
-                  <img src="<?php echo $baseURL . (isset($user["profile_picture"]) && $user["profile_picture"] != "" ? $user["profile_picture"] : "/assets/images/profile-picture.png") ?>" alt="profile picture" width="42">
-                </a>
-              </li>
+              <div class="d-flex gap-3 gap-lg-0 align-items-center">
+                <div class="d-flex flex-row-reverse flex-lg-row gap-3 gap-lg-0 justify-content-end">
+                  <li class="nav-item">
+                    <a href="<?php echo $baseURL; ?>/profile/wallet.php" class="nav-link ms-lg-2 fw-bold text-warning"><?php echo $wallet["balance"] ?> USDT</a>
+                  </li>
+                  <li class="nav-item">
+                    <a href="<?php echo $baseURL; ?>/profile/settings.php" class="d-block rounded-circle overflow-hidden shadow border-1 border-white ms-lg-2" style="width: 42px; height: 42px;">
+                      <img src="<?php echo $baseURL . (isset($user["profile_picture"]) && $user["profile_picture"] != "" ? $user["profile_picture"] : "/assets/images/profile-picture.png") ?>" alt="profile picture" width="42">
+                    </a>
+                  </li>
+                </div>
+                <li class="nav-item ms-lg-3">
+                  <span class="nav-link">
+                    <form action="<?php echo $baseURL ?>/backend/auth.php" method="POST">
+                      <input type="hidden" name="do" value="logout">
+                      <button class="btn btn-sm btn-outline-danger d-flex gap-2 align-items-center px-3" type="submit">
+                        <span>Logout</span>
+                        <i class="bi bi-door-open-fill"></i>
+                      </button>
+                    </form>
+                  </span>
+                </li>
+              </div>
             <?php else : ?>
               <li class="nav-item">
-                <a class="btn btn-primary ms-md-2 px-4 d-flex align-items-center justify-content-center gap-2" href="<?php echo $baseURL; ?>/login.php">
+                <a class="btn btn-sm btn-primary ms-md-2 px-4 d-flex align-items-center justify-content-center gap-2" href="<?php echo $baseURL; ?>/login.php">
                   <span>Login</span>
                   <i class="bi bi-door-closed-fill"></i>
                 </a>

@@ -4,7 +4,7 @@ require_once "../include/config.php";
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
   $_SESSION['flash_message'] = "Not allowed HTTP method!";
   $_SESSION['flash_type'] = "danger";
-  header("Location: $baseURL/profile/edit_profile/");
+  header("Location: $baseURL/profile/settings.php");
   exit;
 }
 
@@ -35,44 +35,44 @@ try {
   }
   $getUserStmt->close();
 
-  if (!isset($_FILES["profile_picture"]) || $_FILES["profile_picture"]["error"] != UPLOAD_ERR_OK) {
-    $_SESSION['flash_message'] = "No file uploaded or file upload error occurred.";
-    $_SESSION['flash_type'] = "danger";
-    header("Location: $baseURL/profile/edit_profile/");
-    exit;
+  $uploadPathRelative = $user["profile_picture"];
+  if (isset($_FILES["profile_picture"]) && $_FILES["profile_picture"]["error"] == UPLOAD_ERR_OK) {
+    $file_name = $_FILES["profile_picture"]["name"];
+    $file_tmp = $_FILES["profile_picture"]["tmp_name"];
+
+    $storageDirAbsolute = __DIR__ . "/../storage/profile_pictures/";
+    $storageDirRelative = "/storage/profile_pictures/";
+    if (!is_dir($storageDirAbsolute)) {
+      mkdir($storageDirAbsolute, 0777, true);
+    }
+
+    $ext = pathinfo($file_name, PATHINFO_EXTENSION);
+    $newFileName = $title . time() . '.' . $ext;
+
+    $uploadPathAbsolute = $storageDirAbsolute . $newFileName;
+    $uploadPathRelative = $storageDirRelative . $newFileName;
+
+    if (!move_uploaded_file($file_tmp, $uploadPathAbsolute)) {
+      $_SESSION['flash_message'] = "Image wasn't stored successfully!";
+      $_SESSION['flash_type'] = "danger";
+      header("Location: $baseURL/profile/settings.php");
+      exit;
+    }
   }
 
-  $file_name = $_FILES["profile_picture"]["name"];
-  $file_tmp = $_FILES["profile_picture"]["tmp_name"];
-
-  $storageDirAbsolute = __DIR__ . "/../storage/profile_pictures/";
-  $storageDirRelative = "/storage/profile_pictures/";
-  if (!is_dir($storageDirAbsolute)) {
-    mkdir($storageDirAbsolute, 0777, true);
-  }
-
-  $ext = pathinfo($file_name, PATHINFO_EXTENSION);
-  $newFileName = $title . time() . '.' . $ext;
-
-  $uploadPathAbsolute = $storageDirAbsolute . $newFileName;
-  $uploadPathRelative = $storageDirRelative . $newFileName;
-
-  if (!move_uploaded_file($file_tmp, $uploadPathAbsolute)) {
-    $_SESSION['flash_message'] = "Image file not stored successfully!";
-    $_SESSION['flash_type'] = "danger";
-    header("Location: $baseURL/profile/edit_profile/");
-    exit;
-  }
+  $username = $_POST["username"];
+  $newPassword = $_POST["new_password"];
+  $hashPassword = $newPassword ? hash("sha256", $newPassword) : $user["password"];
 
   $connection->begin_transaction();
-  $updateUserProfilePictureStmt = $connection->prepare("UPDATE groups SET profile_picture = ? WHERE id = ?");
-  $updateUserProfilePictureStmt->bind_param("ss", $uploadPathRelative, $user_id);
+  $updateUserProfilePictureStmt = $connection->prepare("UPDATE groups SET username = ?, `password` = ? profile_picture = ? WHERE id = ?");
+  $updateUserProfilePictureStmt->bind_param("ssi", $username,  $hashPassword, $uploadPathRelative, $user_id);
   $updateUserProfilePictureStmt->execute();
   if ($updateUserProfilePictureStmt->errno) {
     $_SESSION['flash_message'] = "Error in the updating process!";
     $_SESSION['flash_message'] = $updateUserProfilePictureStmt->error;
     $_SESSION['flash_type'] = "danger";
-    header("Location: $baseURL/profile/edit_profile/");
+    header("Location: $baseURL/profile/settings.php");
     $connection->rollback();
     exit;
   }
@@ -80,15 +80,15 @@ try {
 
   $connection->commit();
 
-  $_SESSION['flash_message'] = "Your profile picture was uploaded successfuly!";
+  $_SESSION['flash_message'] = "Your Account Settings were updated successfuly!";
   $_SESSION['flash_type'] = "success";
-  header("Location: $baseURL/profile/edit_profile/");
+  header("Location: $baseURL/profile/settings.php");
   exit;
 } catch (Throwable $e) {
   $_SESSION['flash_message'] = "Error in the server!";
   $_SESSION['flash_message'] = $e->getMessage();
   $_SESSION['flash_type'] = "danger";
-  header("Location: $baseURL/profile/edit_profile/");
+  header("Location: $baseURL/profile/settings.php");
 
   $errorMessage = $e->getFile() . " | " . $e->getLine() . " | " . $e->getMessage();
   file_put_contents($errorLogsFilePath, $errorMessage, FILE_APPEND);

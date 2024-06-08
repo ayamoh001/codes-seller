@@ -60,57 +60,97 @@
 /* Scrolling Bar Styling */
 
 /* For WebKit browsers (Chrome, Safari, Edge) */
-::-webkit-scrollbar {
-  width: 12px;
-  height: 12px;
+html::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
 
-::-webkit-scrollbar-track {
+html::-webkit-scrollbar-track {
   background: transparent;
 }
 
-::-webkit-scrollbar-thumb {
-  background-color: rgba(5, 5, 5, 0.9);
-  border-radius: 10px;
-  border: 3px solid transparent;
-  background-clip: padding-box;
+html::-webkit-scrollbar-thumb {
+  background-color: rgba(247, 147, 26, 0.8);
 }
 
 /* For Firefox */
-* {
+html * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(5, 5, 5, 0.9) transparent;
+  scrollbar-color: rgba(247, 147, 26, 0.8) transparent;
 }
 
-::-moz-scrollbar-thumb {
-  background-color: rgba(5, 5, 5, 0.9);
-  border-radius: 2rem;
-  border: 2rem solid transparent;
-  background-clip: padding-box;
+html::-moz-scrollbar-thumb {
+  background-color: rgba(247, 147, 26, 0.8);
 }
 
 /* For Internet Explorer and Edge Legacy */
-.scroll-container {
-  -ms-overflow-style: none;
+html {
+  -ms-overflow-style: scrollbar;
 }
 
-.scroll-container::-ms-scrollbar-thumb {
-  background-color: rgba(5, 5, 5, 0.9);
-  border-radius: 10px;
-  border: 3px solid transparent;
-  background-clip: padding-box;
+html::-ms-scrollbar-thumb {
+  background-color: rgba(247, 147, 26, 0.8);
 }
 
 /* For handling vertical and horizontal scrollbars differently */
-.scroll-container {
-  overflow: auto;
-}
-
-.scroll-container::-webkit-scrollbar-corner {
+html::-webkit-scrollbar-corner {
   background: transparent;
 }
 
 *.btn:hover {
   scale: 1.04;
   transition: all 150ms ease-in-out;
+}
+
+/* Dropzone */
+
+.drop-zone {
+  aspect-ratio: 1/1 !important;
+  width: 100%;
+  min-height: fit-content;
+  min-height: 160px;
+  padding: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-weight: 500;
+  font-size: 20px;
+  cursor: pointer;
+  color: #f7931a;
+  background-color: #f7941a24;
+  border: 2px dashed #f7931a;
+  border-radius: 10px;
+}
+
+.drop-zone--over {
+  border-style: solid;
+}
+
+.drop-zone__input {
+  display: none;
+}
+
+.drop-zone__thumb {
+  width: 100%;
+  height: 100%;
+  min-height: 100px;
+  border-radius: 10px;
+  overflow: hidden;
+  background-color: #f7931a;
+  background-size: cover;
+  position: relative;
+}
+
+.drop-zone__thumb::after {
+  content: attr(data-label);
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 5px 0;
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.75);
+  font-size: 14px;
+  text-align: center;
 }

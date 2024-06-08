@@ -38,17 +38,56 @@ $walletResult = $getWalletStmt->get_result();
 $wallet = $walletResult->fetch_assoc();
 $getWalletStmt->close();
 
-$title = "Crypto Cards - Wallet";
+$getProductsStmt = $connection->prepare("SELECT pr.* FROM products as pr
+                                          INNER JOIN payments AS py
+                                          WHERE py.user_id = ? AND payment_id IS NOT NULL");
+
+$getProductsStmt->bind_param("i", $user_id);
+$getProductsStmt->execute();
+if ($getProductsStmt->errno) {
+  $_SESSION['flash_message'] = $getProductsStmt->error;
+  $_SESSION['flash_type'] = "danger";
+  header("Location: $baseURL/profile/products.php");
+  exit;
+}
+$productsResult = $getProductsStmt->get_result();
+$getProductsStmt->close();
+
+
+$title = "Crypto Cards - Products";
 $breadcrumbs = [
   ["name" => "Home", "url" => "$baseURL/profile/"],
-  ["name" => "Wallet"]
+  ["name" => "Products"]
 ];
 require_once "../include/profile/header.php";
 ?>
 
 <section>
-  <h1 class="mb-5 h1 fw-bold text-white">Your Wallet (Comming soon...)</h1>
-
+  <h1 class="mb-5 h1 fw-bold text-white text-capitalize">All of your products</h1>
+  <table class="table table-dark">
+    <thead>
+      <tr>
+        <th scope="col">Product ID</th>
+        <th scope="col">Card Code</th>
+        <th scope="col">Type</th>
+        <th scope="col">Price</th>
+      </tr>
+    </thead>
+    <tbody>
+      <?php
+      while ($product = $productsResult->fetch_assoc()) :
+      ?>
+        <tr>
+          <th scope="row"><?php echo $product["id"]; ?></th>
+          <td><?php echo $product["code_value"]; ?></td>
+          <td><?php echo $product["type"]; ?></td>
+          <td><?php echo $product["price"]; ?></td>
+        </tr>
+      <?php
+      endwhile;
+      ?>
+    </tbody>
+  </table>
 </section>
 
 <?php

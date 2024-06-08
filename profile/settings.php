@@ -38,42 +38,31 @@ $walletResult = $getWalletStmt->get_result();
 $wallet = $walletResult->fetch_assoc();
 $getWalletStmt->close();
 
-$title = "Crypto Cards - Profile";
+$title = "Crypto Cards - Account Settings";
 $breadcrumbs = [
-  ["name" => "Profile Home Page", "url" => "$baseURL/profile/"],
+  ["name" => "Home", "url" => "$baseURL/profile/"],
+  ["name" => "Account Settings"]
 ];
-
 require_once "../include/profile/header.php";
 ?>
 
+<section>
+  <h1 class="mb-5 h1 fw-bold text-white">Account Settings</h1>
+  <form action="<?php echo $baseURL ?>/backend/update_user_profile.php" method="POST">
 
-<div class="row g-3">
-  <div class="col-4">
-    <div class="card bg-dark text-light bg-gradient border-light-subtle w-full">
-      <div class="card-body">
-        <h5 class="card-title">000</h5>
-        <p class="card-text">of cards has been bought</p>
+    <div class="d-flex flex-column g-2 align-items-start justify-content start w-100">
+      <label class="text-sm" for="profile_picture">Profile Picture</label>
+      <div class="drop-zone ratio-1x1" style="width: 160px; height: 160px;">
+        <div class="drop-zone__prompt d-flex flex-column g-2 align-items-center justify-content-center w-100 h-100">
+          <i class="bi bi-upload" style="width: 48px; height: 48px;"></i>
+        </div>
+        <input type="file" id="profile_picture" accept="image/jpeg, image/jpg, image/png, image/webp" required name="profile_picture" class="drop-zone__input">
       </div>
     </div>
-  </div>
-  <div class="col-4">
-    <div class="card bg-dark text-light bg-gradient border-light-subtle w-full">
-      <div class="card-body">
-        <h5 class="card-title">000</h5>
-        <p class="card-text">of cards has been bought</p>
-      </div>
-    </div>
-  </div>
-  <div class="col-4">
-    <div class="card bg-dark text-light bg-gradient border-light-subtle w-full">
-      <div class="card-body">
-        <h5 class="card-title">000</h5>
-        <p class="card-text">of cards has been bought</p>
-      </div>
-    </div>
-  </div>
-</div>
 
+    <button type="submit" class="btn btn-lg btn-warning mx-auto">Update</button>
+  </form>
+</section>
 
 <?php
 require_once "../include/profile/footer.php";

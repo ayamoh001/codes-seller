@@ -9,7 +9,7 @@
           <i class="bi bi-telegram"></i>
         </a>
       </nav>
-      <p class="p-0 m-0">&copy; 2024 Crypto Cards. All rights reserved.</p>
+      <p class="p-0 m-0">&copy; <?php echo date("Y"); ?> Crypto Cards. All rights reserved.</p>
     </div>
   </footer>
 
