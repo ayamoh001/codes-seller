@@ -109,7 +109,7 @@ html::-webkit-scrollbar-corner {
   width: 100%;
   min-height: fit-content;
   min-height: 160px;
-  padding: 25px;
+  padding: 16px;
   display: flex;
   align-items: center;
   justify-content: center;

@@ -75,8 +75,8 @@
                   <a href="<?php echo $baseURL; ?>/profile/wallet.php" class="nav-link ms-lg-2 fw-bold text-warning"><?php echo $wallet["balance"] ?> USDT</a>
                 </li>
                 <li class="nav-item">
-                  <a href="<?php echo $baseURL; ?>/profile/settings.php" class="d-block rounded-circle overflow-hidden shadow border-1 border-white ms-lg-2" style="width: 42px; height: 42px;">
-                    <img src="<?php echo $baseURL . (isset($user["profile_picture"]) && $user["profile_picture"] != "" ? $user["profile_picture"] : "/assets/images/profile-picture.png") ?>" alt="profile picture" width="42">
+                  <a href="<?php echo $baseURL; ?>/profile/index.php" class="d-block rounded-circle overflow-hidden shadow border-1 border-white ms-lg-2" style="width: 42px; height: 42px;">
+                    <img src="<?php echo $baseURL . (isset($user["profile_picture"]) && $user["profile_picture"] != "" ? $user["profile_picture"] : "/assets/images/profile-picture.png") ?>" class="object-cover h-100 w-100" alt="profile picture" width="42">
                   </a>
                 </li>
               </div>
@@ -98,7 +98,7 @@
     </div>
   </header>
 
-  <main class="vh-100 bg-dark text-white">
+  <main class="min-vh-100 bg-dark text-white">
     <div class="container py-5">
 
       <?php

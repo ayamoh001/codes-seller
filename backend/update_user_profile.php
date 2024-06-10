@@ -4,7 +4,7 @@ require_once "../include/config.php";
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
   $_SESSION['flash_message'] = "Not allowed HTTP method!";
   $_SESSION['flash_type'] = "danger";
-  header("Location: $baseURL/profile/settings.php");
+  header("Location: $baseURL/profile/index.php");
   exit;
 }
 
@@ -55,24 +55,68 @@ try {
     if (!move_uploaded_file($file_tmp, $uploadPathAbsolute)) {
       $_SESSION['flash_message'] = "Image wasn't stored successfully!";
       $_SESSION['flash_type'] = "danger";
-      header("Location: $baseURL/profile/settings.php");
+      header("Location: $baseURL/profile/index.php");
       exit;
     }
   }
+  // for debugging
+  // else {
+  //   $_SESSION['flash_message'] = "No Image Selected!";
+  //   $_SESSION['flash_type'] = "danger";
+  //   header("Location: $baseURL/profile/index.php");
+  //   exit;
+  // }
 
-  $username = $_POST["username"];
-  $newPassword = $_POST["new_password"];
-  $hashPassword = $newPassword ? hash("sha256", $newPassword) : $user["password"];
+  $username = $user["username"];
+  if (isset($_POST["username"]) && $_POST["username"] != "") {
+    $newUsername = $_POST["username"];
+    $checkUsernameUniquenessStmt = $connection->prepare("SELECT id FROM users WHERE username = ? LIMIT 1");
+    $checkUsernameUniquenessStmt->bind_param("s", $newUsername);
+    $checkUsernameUniquenessStmt->execute();
+    if ($checkUsernameUniquenessStmt->errno) {
+      $_SESSION['flash_message'] = "Error while checking username uniqueness!";
+      $_SESSION['flash_type'] = "danger";
+      header("Location: $baseURL/profile/index.php");
+      exit;
+    }
+    $checkUsernameUniquenessResult = $checkUsernameUniquenessStmt->get_result();
+    if ($checkUsernameUniquenessResult->num_rows > 0) {
+      $_SESSION['flash_message'] = "Username already exists!";
+      $_SESSION['flash_type'] = "danger";
+      header("Location: $baseURL/profile/index.php");
+      exit;
+    }
+    $checkUsernameUniquenessStmt->close();
+    $username = $newUsername;
+  }
+
+
+  $hashPassword = $user["password"];
+
+  if (isset($_POST["new_password"]) && $_POST["new_password"] != "") {
+    $newPassword = $_POST["new_password"];
+    $newPasswordConfirm = $_POST["new_password_confirm"];
+
+    if ($newPassword != $newPasswordConfirm) {
+      $_SESSION['flash_message'] = "Passwords don't match!";
+      $_SESSION['flash_type'] = "danger";
+      header("Location: $baseURL/profile/index.php");
+      exit;
+    } else {
+      $hashPassword = password_hash($newPassword, PASSWORD_BCRYPT, ["cost" => 4]);
+    }
+  }
 
   $connection->begin_transaction();
-  $updateUserProfilePictureStmt = $connection->prepare("UPDATE groups SET username = ?, `password` = ? profile_picture = ? WHERE id = ?");
-  $updateUserProfilePictureStmt->bind_param("ssi", $username,  $hashPassword, $uploadPathRelative, $user_id);
+
+  $updateUserProfilePictureStmt = $connection->prepare("UPDATE users SET username = ?, `password` = ?, profile_picture = ? WHERE id = ?");
+  $updateUserProfilePictureStmt->bind_param("sssi", $username,  $hashPassword, $uploadPathRelative, $user_id);
   $updateUserProfilePictureStmt->execute();
   if ($updateUserProfilePictureStmt->errno) {
     $_SESSION['flash_message'] = "Error in the updating process!";
     $_SESSION['flash_message'] = $updateUserProfilePictureStmt->error;
     $_SESSION['flash_type'] = "danger";
-    header("Location: $baseURL/profile/settings.php");
+    header("Location: $baseURL/profile/index.php");
     $connection->rollback();
     exit;
   }
@@ -80,15 +124,15 @@ try {
 
   $connection->commit();
 
-  $_SESSION['flash_message'] = "Your Account Settings were updated successfuly!";
+  $_SESSION['flash_message'] = "Your Account index were updated successfuly!";
   $_SESSION['flash_type'] = "success";
-  header("Location: $baseURL/profile/settings.php");
+  header("Location: $baseURL/profile/index.php");
   exit;
 } catch (Throwable $e) {
   $_SESSION['flash_message'] = "Error in the server!";
   $_SESSION['flash_message'] = $e->getMessage();
   $_SESSION['flash_type'] = "danger";
-  header("Location: $baseURL/profile/settings.php");
+  header("Location: $baseURL/profile/index.php");
 
   $errorMessage = $e->getFile() . " | " . $e->getLine() . " | " . $e->getMessage();
   file_put_contents($errorLogsFilePath, $errorMessage, FILE_APPEND);
