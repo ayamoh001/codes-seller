@@ -10,7 +10,7 @@ try {
       $email = trim($_POST['email']);
       $password = trim($_POST['password']);
 
-      $getUserQuery = "SELECT id, password FROM users WHERE email = ? AND (status != 'BLOCKED')";
+      $getUserQuery = "SELECT id, `password` FROM `users` WHERE email = ? AND (status != 'BLOCKED')";
       $stmt = $connection->prepare($getUserQuery);
       $stmt->bind_param("s", $email);
       $stmt->execute();
@@ -40,7 +40,7 @@ try {
       $otp_code = rand(111111, 999999);
 
       // Check for duplicate email
-      $getDuplicateEmailQuery = "SELECT count(*) as count FROM users WHERE email = ?";
+      $getDuplicateEmailQuery = "SELECT count(*) as count FROM `users` WHERE email = ?";
       $stmt = $connection->prepare($getDuplicateEmailQuery);
       $stmt->bind_param("s", $email);
       $stmt->execute();
@@ -55,7 +55,7 @@ try {
       }
 
       // Check for duplicate username
-      $getDuplicateUsernameQuery = "SELECT count(*) as count FROM users WHERE username = ?";
+      $getDuplicateUsernameQuery = "SELECT count(*) as count FROM `users` WHERE username = ?";
       $stmt = $connection->prepare($getDuplicateUsernameQuery);
       $stmt->bind_param("s", $username);
       $stmt->execute();
@@ -73,7 +73,7 @@ try {
 
       // Insert new user
       $connection->begin_transaction();
-      $createUserQuery = "INSERT INTO users (username, email, password, otp_code, status) VALUES (?, ?, ?, ?, 'ACTIVE')";
+      $createUserQuery = "INSERT INTO `users` (username, email, password, otp_code, status) VALUES (?, ?, ?, ?, 'ACTIVE')";
       $stmt = $connection->prepare($createUserQuery);
       $stmt->bind_param("ssss", $username, $email, $hashPassword, $otp_code);
       if ($stmt->execute()) {
@@ -81,7 +81,7 @@ try {
         $_SESSION['user_id'] = $user_id;
 
         // Create user wallet
-        $createUserWalletQuery = "INSERT INTO wallet (user_id, balance) VALUES (?, 0)";
+        $createUserWalletQuery = "INSERT INTO `wallets` (user_id, balance) VALUES (?, 0)";
         $stmt = $connection->prepare($createUserWalletQuery);
         $stmt->bind_param("i", $user_id);
         if ($stmt->execute()) {

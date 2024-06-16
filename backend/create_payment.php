@@ -7,13 +7,14 @@ try {
 
   if (isset($_SESSION["user_id"]) && $_SESSION["user_id"] != "") {
     $user_id = (int) $_SESSION["user_id"];
-    $getUserStmt = $connection->prepare("SELECT * FROM users WHERE id = ? AND status != 'BLOCKED' LIMIT 1");
+    $getUserStmt = $connection->prepare("SELECT * FROM `users` WHERE id = ? AND status != 'BLOCKED' LIMIT 1");
     $getUserStmt->bind_param("i", $user_id);
     $getUserStmt->execute();
     if ($getUserStmt->errno) {
-      echo json_encode(["error" => "Error in the auth proccess! please try again."]);
-      echo json_encode(["error" => $getUserStmt->error]);
-      exit;
+      $_SESSION['flash_message'] = "Error in the auth proccess! please try again.";
+      $_SESSION['flash_message'] = $getUserStmt->error;
+      $_SESSION['flash_type'] = "danger";
+      header("Location: $baseURL/login.php");
     }
     $userResult = $getUserStmt->get_result();
     $user = $userResult->fetch_assoc();
@@ -28,10 +29,7 @@ try {
   $type = $requestData["type"];
   $quantity = (int) $requestData["quantity"] ?? 1;
   $groupId = (int) $requestData["groupId"];
-
-  // var_dump($type);
-  // var_dump($groupId);
-  // var_dump($quantity);
+  $useWallet = (bool) $requestData["useWallet"];
 
   $getGroupStmt = $connection->prepare("SELECT * FROM `groups` WHERE id = ? LIMIT 1");
   $getGroupStmt->bind_param("i", $groupId);
@@ -53,7 +51,7 @@ try {
 
   $products = [];
   $productsIds = [];
-  $getProductsStmt = $connection->prepare("SELECT * FROM products WHERE (group_id = ?) AND (`type` = ?) AND (payment_id IS NULL) LIMIT ?");
+  $getProductsStmt = $connection->prepare("SELECT * FROM `products` WHERE (group_id = ?) AND (`type` = ?) AND (payment_id IS NULL) LIMIT ?");
   $getProductsStmt->bind_param("isi", $groupId, $type, $quantity);
   $getProductsStmt->execute();
   if ($getProductsStmt->errno) {
@@ -84,7 +82,7 @@ try {
   $metadata2 = "";
 
   $encodedProductsIds = json_encode($productsIds);
-  $createPaymentStmt = $connection->prepare("INSERT INTO payments(user_id, group_id, `status`, price, products, metadata1, metadata2) VALUES (?,?,?,?,?,?,?)");
+  $createPaymentStmt = $connection->prepare("INSERT INTO `payments`(user_id, group_id, `status`, price, products, metadata1, metadata2) VALUES (?,?,?,?,?,?,?)");
   $createPaymentStmt->bind_param("iisdsss", $userId, $groupId, $status, $totalPrice, $encodedProductsIds, $metadata1, $metadata2);
   if ($createPaymentStmt->errno) {
     echo json_encode(["error" => "Error in the Server! please contact the support."]);
@@ -101,98 +99,135 @@ try {
     $totalPrice += (float) $product["price"];
   }
 
-  // Generate Nonce
-  $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  $nonce = '';
-  for ($i = 1; $i <= 32; $i++) {
-    $pos = mt_rand(0, strlen($chars) - 1);
-    $char = $chars[$pos];
-    $nonce .= $char;
-  }
+  $prepayID = "";
+  if ($useWallet) {
+    // use wallet balance
+    $getWalletStmt = $connection->prepare("SELECT id FROM `wallets` WHERE user_id = ? LIMIT 1");
+    $getWalletStmt->bind_param("i", $userId);
+    $getWalletStmt->execute();
+    if ($getWalletStmt->errno) {
+      echo json_encode(["error" => "Error in the Server! please contact the support."]);
+      echo json_encode(["error" => $getWalletStmt->error]);
+      $connection->rollback();
+      exit;
+    }
+    $walletResult = $getWalletStmt->get_result();
+    $wallet = $walletResult->fetch_assoc();
+    $walletId = $wallet["id"];
+    $getWalletStmt->close();
 
-  $ch = curl_init();
-  $timestamp = round(microtime(true) * 1000);
+    if ($wallet["balance"] < $totalPrice) {
+      echo json_encode(["error" => "Not enough balance! please charge your wallet first."]);
+      $connection->rollback();
+      exit;
+    }
 
-  $request = [
-    "env" => [
-      "terminalType" => "WEB"
-    ],
-    "merchantTradeNo" => mt_rand(982538, 9825382937292),
-    // "orderAmount" => 25.17,
-    // "currency" => "USDT",
-    "fiatAmount" => $totalPrice,
-    "fiatCurrency" => "USD",
-    "goods" => [
-      "goodsType" => "02",
-      "goodsCategory" => "6000",
-      "referenceGoodsId" => $insertedPaymentId . time(),
-      "goodsName" => $group["title"],
-      "goodsDetail" => $group["description"],
-      "goodsQuantity" => $quantity,
-    ],
-    "webhookUrl" => $baseURL . "/backend/binance_payment_webhook.php",
-    "returnUrl" => $baseURL . "/backend/confirm_payment.php",
-    "cancelUrl" => $baseURL . "/faild_payment.php",
-  ];
+    // subtract the balance
+    $subtractBalanceStmt = $connection->prepare("UPDATE `wallets` SET balance = balance - ? WHERE id = ?");
+    $subtractBalanceStmt->bind_param("di", $totalPrice, $walletId);
+    if ($subtractBalanceStmt->errno) {
+      echo json_encode(["error" => "Error in the Server! please contact the support."]);
+      echo json_encode(["error" => $subtractBalanceStmt->error]);
+      $connection->rollback();
+      exit;
+    }
+    $subtractBalanceStmt->close();
+  } else {
+    // Generate Nonce
+    $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    $nonce = '';
+    for ($i = 1; $i <= 32; $i++) {
+      $pos = mt_rand(0, strlen($chars) - 1);
+      $char = $chars[$pos];
+      $nonce .= $char;
+    }
 
-  $json_request = json_encode($request);
-  $payload = $timestamp . "\n" . $nonce . "\n" . $json_request . "\n";
-  $binance_pay_api_key = $API_KEY;
-  $binance_pay_api_secret = $API_SECRET;
-  $signature = strtoupper(hash_hmac('SHA512', $payload, $binance_pay_api_secret));
-  $headers = [
-    "Content-Type: application/json",
-    "BinancePay-Timestamp: $timestamp",
-    "BinancePay-Nonce: $nonce",
-    "BinancePay-Certificate-SN: $binance_pay_api_key",
-    "BinancePay-Signature: $signature",
-    "X-MBX-APIKEY: $binance_pay_api_key", // not important \_(0_0)_/
-  ];
+    $ch = curl_init();
+    $timestamp = round(microtime(true) * 1000);
 
-  curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-  curl_setopt($ch, CURLOPT_URL, $binanceURL . "/binancepay/openapi/v2/order");
-  curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-  curl_setopt($ch, CURLOPT_POST, 1);
-  curl_setopt($ch, CURLOPT_POSTFIELDS, $json_request);
+    $request = [
+      "env" => [
+        "terminalType" => "WEB"
+      ],
+      "merchantTradeNo" => mt_rand(982538, 9825382937292),
+      // "orderAmount" => 25.17,
+      // "currency" => "USDT",
+      "fiatAmount" => $totalPrice,
+      "fiatCurrency" => "USD",
+      "goods" => [
+        "goodsType" => "02",
+        "goodsCategory" => "6000",
+        "referenceGoodsId" => $insertedPaymentId . time(),
+        "goodsName" => $group["title"],
+        "goodsDetail" => $group["description"],
+        "goodsQuantity" => $quantity,
+      ],
+      "webhookUrl" => $baseURL . "/backend/binance_payment_webhook.php",
+      "returnUrl" => $baseURL . "/backend/confirm_payment.php",
+      "cancelUrl" => $baseURL . "/faild_payment.php",
+    ];
 
-  $result = curl_exec($ch);
-  if (curl_errno($ch)) {
-    echo json_encode(["error" => "Error in binance connection: " . curl_error($ch)]);
-    $connection->rollback();
-    exit;
-  }
-  curl_close($ch);
+    $json_request = json_encode($request);
+    $payload = $timestamp . "\n" . $nonce . "\n" . $json_request . "\n";
+    $binance_pay_api_key = $API_KEY;
+    $binance_pay_api_secret = $API_SECRET;
+    $signature = strtoupper(hash_hmac('SHA512', $payload, $binance_pay_api_secret));
+    $headers = [
+      "Content-Type: application/json",
+      "BinancePay-Timestamp: $timestamp",
+      "BinancePay-Nonce: $nonce",
+      "BinancePay-Certificate-SN: $binance_pay_api_key",
+      "BinancePay-Signature: $signature",
+      "X-MBX-APIKEY: $binance_pay_api_key", // not important \_(0_0)_/
+    ];
 
-  var_dump($result);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($ch, CURLOPT_URL, $binanceURL . "/binancepay/openapi/v2/order");
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch, CURLOPT_POST, 1);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $json_request);
 
-  // {
-  //   "status": "SUCCESS",
-  //   "code": "000000",
-  //   "data": {
-  //     "prepayId": "29383937493038367292",
-  //     "terminalType": "APP",
-  //     "expireTime": 121123232223,
-  //     "qrcodeLink": "https://qrservice.dev.com/en/qr/dplkb005181944f84b84aba2430e1177012b.jpg",
-  //     "qrContent": "https://qrservice.dev.com/en/qr/dplk12121112b",
-  //     "checkoutUrl": "https://pay.binance.com/checkout/dplk12121112b",
-  //     "deeplink": "bnc://app.binance.com/payment/secpay/xxxxxx",
-  //     "universalUrl": "https://app.binance.com/payment/secpay?_dp=xxx=&linkToken=xxx"
-  //   },
-  //   "errorMessage": ""
-  // }
+    $result = curl_exec($ch);
+    if (curl_errno($ch)) {
+      echo json_encode(["error" => "Error in binance connection: " . curl_error($ch)]);
+      $connection->rollback();
+      exit;
+    }
+    curl_close($ch);
 
-  $responseData = json_decode($result, true);
-  if (!!$responseData["msg"] || !!$responseData["errorMessage"] || $responseData["status"] != "SUCCESS") {
-    echo json_encode(["error" => "Error in the Binance side: " . ($responseData["errorMessage"] ? $responseData["errorMessage"] : ($responseData["msg"] ? $responseData["msg"] : $responseData["code"]))]);
-    $connection->rollback();
-    exit;
+    var_dump($result);
+
+    // {
+    //   "status": "SUCCESS",
+    //   "code": "000000",
+    //   "data": {
+    //     "prepayId": "29383937493038367292",
+    //     "terminalType": "APP",
+    //     "expireTime": 121123232223,
+    //     "qrcodeLink": "https://qrservice.dev.com/en/qr/dplkb005181944f84b84aba2430e1177012b.jpg",
+    //     "qrContent": "https://qrservice.dev.com/en/qr/dplk12121112b",
+    //     "checkoutUrl": "https://pay.binance.com/checkout/dplk12121112b",
+    //     "deeplink": "bnc://app.binance.com/payment/secpay/xxxxxx",
+    //     "universalUrl": "https://app.binance.com/payment/secpay?_dp=xxx=&linkToken=xxx"
+    //   },
+    //   "errorMessage": ""
+    // }
+
+    $responseData = json_decode($result, true);
+    if (!!$responseData["msg"] || !!$responseData["errorMessage"] || $responseData["status"] != "SUCCESS") {
+      echo json_encode(["error" => "Error in the Binance side: " . ($responseData["errorMessage"] ? $responseData["errorMessage"] : ($responseData["msg"] ? $responseData["msg"] : $responseData["code"]))]);
+      $connection->rollback();
+      exit;
+    }
+
+    $prepayID = $responseData["data"]["prepayId"];
   }
 
   // update the payment
-  $prepayID = $responseData["data"]["prepayId"];
   $newStatus = "PENDING";
-  $updatePaymentStmt = $connection->prepare("UPDATE payments SET prepay_id = ?, `status` = ? WHERE id = ?");
-  $updatePaymentStmt->bind_param("ssi", $prepayID, $newStatus, $insertedPaymentId);
+  $type = $useWallet ? "WALLET" : "BINANCE";
+  $updatePaymentStmt = $connection->prepare("UPDATE `payments` SET prepay_id = ?, `status` = ?, type = ? WHERE id = ?");
+  $updatePaymentStmt->bind_param("sssi", $prepayID, $newStatus, $type, $insertedPaymentId);
   if ($updatePaymentStmt->errno) {
     echo json_encode(["error" => "Error in storing binance prepay ID."]);
     echo json_encode(["error" => $updatePaymentStmt->error]);

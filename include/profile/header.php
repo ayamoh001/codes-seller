@@ -72,7 +72,7 @@
             <div class="d-flex gap-3 gap-lg-0 align-items-center">
               <div class="d-flex flex-row-reverse flex-lg-row gap-3 gap-lg-0 justify-content-end">
                 <li class="nav-item">
-                  <a href="<?php echo $baseURL; ?>/profile/wallet.php" class="nav-link ms-lg-2 fw-bold text-warning"><?php echo $wallet["balance"] ?> USDT</a>
+                  <a href="<?php echo $baseURL; ?>/profile/wallet.php" class="nav-link ms-lg-2 fw-bold text-warning"><?php echo $wallet["balance"] ?> USD</a>
                 </li>
                 <li class="nav-item">
                   <a href="<?php echo $baseURL; ?>/profile/index.php" class="d-block rounded-circle overflow-hidden shadow border-1 border-white ms-lg-2" style="width: 42px; height: 42px;">

@@ -25,7 +25,7 @@ try {
 
   $connection->begin_transaction();
 
-  $updateUserStatusStmt = $connection->prepare("UPDATE users SET `status` = ? WHERE id = ?");
+  $updateUserStatusStmt = $connection->prepare("UPDATE `users` SET `status` = ? WHERE id = ?");
   $updateUserStatusStmt->bind_param("si", $new_status, $user_id);
   $updateUserStatusStmt->execute();
   if ($updateUserStatusStmt->errno) {

@@ -6,7 +6,7 @@ $user = null;
 if (isset($_SESSION["user_id"]) && $_SESSION["user_id"] != "") {
   // get the user
   $user_id = (int) $_SESSION["user_id"];
-  $getUserStmt = $connection->prepare("SELECT * FROM users WHERE id = ? AND status != 'BLOCKED' LIMIT 1");
+  $getUserStmt = $connection->prepare("SELECT * FROM `users` WHERE id = ? AND status != 'BLOCKED' LIMIT 1");
   $getUserStmt->bind_param("i", $user_id);
   $getUserStmt->execute();
   if ($getUserStmt->errno) {
@@ -19,7 +19,7 @@ if (isset($_SESSION["user_id"]) && $_SESSION["user_id"] != "") {
   $getUserStmt->close();
 
   // get the wallet
-  $getWalletStmt = $connection->prepare("SELECT * FROM wallet WHERE user_id = ? AND status != 'BLOCKED' LIMIT 1");
+  $getWalletStmt = $connection->prepare("SELECT * FROM `wallets` WHERE user_id = ? AND status != 'BLOCKED' LIMIT 1");
   $getWalletStmt->bind_param("i", $user_id);
   $getWalletStmt->execute();
   if ($getWalletStmt->errno) {

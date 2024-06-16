@@ -23,7 +23,7 @@ try {
 
   $groupId = $_POST["group_id"];
 
-  $getGroupStmt = $connection->prepare("SELECT * FROM groups WHERE id = ? LIMIT 1");
+  $getGroupStmt = $connection->prepare("SELECT * FROM `groups` WHERE id = ? LIMIT 1");
   $getGroupStmt->bind_param("i", $groupId);
   $getGroupStmt->execute();
   if ($getGroupStmt->errno) {
@@ -48,7 +48,7 @@ try {
   $type = $_POST["type"];
 
   $connection->begin_transaction();
-  $createNewProductStmt = $connection->prepare("INSERT INTO products(group_id, code_value, price, type) VALUES (?, ?, ?, ?)");
+  $createNewProductStmt = $connection->prepare("INSERT INTO `products`(group_id, code_value, price, type) VALUES (?, ?, ?, ?)");
   $createNewProductStmt->bind_param("ssss", $groupId, $codeValue, $price, $type);
   $createNewProductStmt->execute();
   if ($createNewProductStmt->errno) {

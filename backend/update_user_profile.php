@@ -17,7 +17,7 @@ if ($_SESSION["user_id"] == "") {
 try {
   // get the user
   $user_id = (int) $_SESSION["user_id"];
-  $getUserStmt = $connection->prepare("SELECT * FROM users WHERE id = ? AND status != 'BLOCKED' LIMIT 1");
+  $getUserStmt = $connection->prepare("SELECT * FROM `users` WHERE id = ? AND status != 'BLOCKED' LIMIT 1");
   $getUserStmt->bind_param("i", $user_id);
   $getUserStmt->execute();
   if ($getUserStmt->errno) {
@@ -70,7 +70,7 @@ try {
   $username = $user["username"];
   if (isset($_POST["username"]) && $_POST["username"] != "") {
     $newUsername = $_POST["username"];
-    $checkUsernameUniquenessStmt = $connection->prepare("SELECT id FROM users WHERE username = ? LIMIT 1");
+    $checkUsernameUniquenessStmt = $connection->prepare("SELECT id FROM `users` WHERE username = ? LIMIT 1");
     $checkUsernameUniquenessStmt->bind_param("s", $newUsername);
     $checkUsernameUniquenessStmt->execute();
     if ($checkUsernameUniquenessStmt->errno) {
@@ -109,7 +109,7 @@ try {
 
   $connection->begin_transaction();
 
-  $updateUserProfilePictureStmt = $connection->prepare("UPDATE users SET username = ?, `password` = ?, profile_picture = ? WHERE id = ?");
+  $updateUserProfilePictureStmt = $connection->prepare("UPDATE `users` SET username = ?, `password` = ?, profile_picture = ? WHERE id = ?");
   $updateUserProfilePictureStmt->bind_param("sssi", $username,  $hashPassword, $uploadPathRelative, $user_id);
   $updateUserProfilePictureStmt->execute();
   if ($updateUserProfilePictureStmt->errno) {

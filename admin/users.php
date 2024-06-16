@@ -13,7 +13,7 @@ if (
   exit;
 }
 
-$getUsersStmt = $connection->prepare("SELECT * FROM users");
+$getUsersStmt = $connection->prepare("SELECT * FROM `users`");
 $getUsersStmt->execute();
 if ($getUsersStmt->errno) {
   $_SESSION['flash_message'] = $getUsersStmt->error;

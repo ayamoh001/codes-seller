@@ -24,7 +24,7 @@ try {
   $productId = $_POST["product_id"];
 
   $connection->begin_transaction();
-  $deleteProductStmt = $connection->prepare("DELETE FROM products WHERE id = ? AND payment_id IS NULL LIMIT 1");
+  $deleteProductStmt = $connection->prepare("DELETE FROM `products` WHERE id = ? AND payment_id IS NULL LIMIT 1");
   $deleteProductStmt->bind_param("i", $productId);
   $deleteProductStmt->execute();
   if ($deleteProductStmt->errno) {

@@ -80,16 +80,17 @@ try {
         echo "Payment was successful. Transaction ID: " . $transactionId;
 
         $prepayID = $responseData["prepayID"];
-        $getPaymentStmt = $connection->prepare("SELECT * FROM `payments` WHERE (prepay_id = ?) AND (`status` != 'PAID') AND (user_id = ?) LIMIT 1");
+        $getPaymentStmt = $connection->prepare("SELECT * FROM `charges` WHERE (prepay_id = ?) AND (`status` != 'PAID') AND (user_id = ?) LIMIT 1");
         $getPaymentStmt->bind_param("ss", $prepayID, $userId);
         $getPaymentStmt->execute();
         if ($getPaymentStmt->errno) {
           // $_SESSION['flash_message'] = "Error in the Server! please contact the support.";
           $_SESSION['flash_message'] = $getPaymentStmt->error;
           $_SESSION['flash_type'] = "danger";
-          header("Location: $baseURL/");
+          header("Location: $baseURL/profile/wallet.php");
           exit;
         }
+
         $paymentResult = $getPaymentStmt->get_result();
         $payment = $groupResult->fetch_assoc();
         $getPaymentStmt->close();
@@ -97,7 +98,7 @@ try {
         if (!$payment) {
           $_SESSION['flash_message'] = "No payment found in the DB.";
           $_SESSION['flash_type'] = "danger";
-          header("Location: $baseURL/");
+          header("Location: $baseURL/profile/wallet.php");
           exit;
         }
 
@@ -114,29 +115,35 @@ try {
           $connection->rollback();
           exit;
         }
+        if ($updatePaymentStatusStmt->affected_rows == 0) {
+          $_SESSION['flash_message'] = "No new payment to confirm!";
+          $_SESSION['flash_type'] = "danger";
+          header("Location: $baseURL/profile/wallet.php");
+          exit;
+        }
         $updatePaymentStatusStmt->close();
 
         $connection->commit();
       } else {
         $_SESSION['flash_message'] = "Payment statuses: " . $paymentStatus . " / " . $responseData["status"] . " / " . $responseData["data"]["status"];
         $_SESSION['flash_type'] = "danger";
-        header("Location: $baseURL/");
+        header("Location: $baseURL/profile/wallet.php");
       }
     } else {
       $_SESSION['flash_message'] = "Invalid signature. Payment verification failed.";
       $_SESSION['flash_type'] = "danger";
-      header("Location: $baseURL/");
+      header("Location: $baseURL/profile/wallet.php");
     }
   } else {
     $_SESSION['flash_message'] = "Missing parameters. Payment verification failed.";
     $_SESSION['flash_type'] = "danger";
-    header("Location: $baseURL/");
+    header("Location: $baseURL/profile/wallet.php");
   }
 } catch (Throwable $e) {
   // $_SESSION['flash_message'] = "Error in the server!";
   $_SESSION['flash_message'] = $e->getMessage();
   $_SESSION['flash_type'] = "danger";
-  header("Location: $baseURL/");
+  header("Location: $baseURL/profile/wallet.php");
 
   $errorMessage = $e->getFile() . " | " . $e->getLine() . " | " . $e->getMessage();
   file_put_contents($errorLogsFilePath, $errorMessage, FILE_APPEND);

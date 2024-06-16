@@ -24,7 +24,7 @@ try {
   $groupId = $_POST["group_id"];
 
   $connection->begin_transaction();
-  $deleteGroupStmt = $connection->prepare("DELETE FROM groups WHERE id = ? LIMIT 1");
+  $deleteGroupStmt = $connection->prepare("DELETE FROM `groups` WHERE id = ? LIMIT 1");
   $deleteGroupStmt->bind_param("i", $groupId);
   $deleteGroupStmt->execute();
   if ($deleteGroupStmt->errno) {
@@ -36,7 +36,7 @@ try {
   }
   $deleteGroupStmt->close();
 
-  $deleteRelatedProductsStmt = $connection->prepare("DELETE FROM products WHERE group_id = ? AND payments_id = NULL");
+  $deleteRelatedProductsStmt = $connection->prepare("DELETE FROM `products` WHERE group_id = ? AND payments_id = NULL");
   $deleteRelatedProductsStmt->bind_param("i", $groupId);
   $deleteRelatedProductsStmt->execute();
   if ($deleteRelatedProductsStmt->errno) {

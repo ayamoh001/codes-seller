@@ -16,7 +16,7 @@ if (
 // TODO: optimize for clients
 $getGroupsWithProuductsStmt = $connection->prepare("SELECT g.*, p.id AS product_id, p.code_value, p.type, p.price, p.payment_id
                                                     FROM `groups` g
-                                                    LEFT JOIN products p ON g.id = p.group_id
+                                                    LEFT JOIN `products` p ON g.id = p.group_id
                                                     WHERE p.payment_id IS NULL
                                                     ORDER BY g.sort_index, g.id");
 

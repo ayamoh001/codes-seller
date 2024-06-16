@@ -13,25 +13,34 @@ $user = null;
 
 // get the user
 $user_id = (int) $_SESSION["user_id"];
-$getUserStmt = $connection->prepare("SELECT * FROM users WHERE id = ? AND status != 'BLOCKED' LIMIT 1");
+$getUserStmt = $connection->prepare("SELECT * FROM `users` WHERE id = ? AND status != 'BLOCKED' LIMIT 1");
 $getUserStmt->bind_param("i", $user_id);
 $getUserStmt->execute();
 if ($getUserStmt->errno) {
-  echo json_encode(["error" => "Error in the auth proccess! please try again."]);
-  echo json_encode(["error" => $getUserStmt->error]);
+  $_SESSION['flash_message'] = "Error in user retrivin proccess! please try again.";
+  $_SESSION['flash_message'] = $getUserStmt->error;
+  $_SESSION['flash_type'] = "danger";
+  header("location: $baseURL/login.php");
   exit;
 }
 $userResult = $getUserStmt->get_result();
 $user = $userResult->fetch_assoc();
+if (!$user) {
+  $_SESSION['flash_message'] = "No user found with this ID!";
+  $_SESSION['flash_type'] = "danger";
+  header("location: $baseURL/login.php");
+  exit;
+}
 $getUserStmt->close();
 
 // get the wallet
-$getWalletStmt = $connection->prepare("SELECT * FROM wallet WHERE user_id = ? AND status != 'BLOCKED' LIMIT 1");
+$getWalletStmt = $connection->prepare("SELECT * FROM `wallets` WHERE user_id = ? AND status != 'BLOCKED' LIMIT 1");
 $getWalletStmt->bind_param("i", $user_id);
 $getWalletStmt->execute();
 if ($getWalletStmt->errno) {
-  echo json_encode(["error" => "Error in the wallet retriving process! please try again."]);
-  echo json_encode(["error" => $getWalletStmt->error]);
+  $_SESSION['flash_message'] = "Error in the wallet retriving process! please try again.";
+  $_SESSION['flash_message'] = $getWalletStmt->error;
+  $_SESSION['flash_type'] = "danger";
   exit;
 }
 $walletResult = $getWalletStmt->get_result();

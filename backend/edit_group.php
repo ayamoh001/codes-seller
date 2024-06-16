@@ -23,7 +23,7 @@ try {
 
   $groupId = $_POST["group_id"];
 
-  $getGroupStmt = $connection->prepare("SELECT * FROM groups WHERE id = ? LIMIT 1");
+  $getGroupStmt = $connection->prepare("SELECT * FROM `groups` WHERE id = ? LIMIT 1");
   $getGroupStmt->bind_param("i", $groupId);
   $getGroupStmt->execute();
   if ($getGroupStmt->errno) {
@@ -79,7 +79,7 @@ try {
   // exit;
 
   $connection->begin_transaction();
-  $createNewGroupStmt = $connection->prepare("UPDATE groups SET title = ?, description = ?, sort_index = ?, visibility = ?, image = ? WHERE id = ?");
+  $createNewGroupStmt = $connection->prepare("UPDATE `groups` SET title = ?, description = ?, sort_index = ?, visibility = ?, image = ? WHERE id = ?");
   $createNewGroupStmt->bind_param("ssiisi", $title, $description, $sortIndex, $visibility, $uploadPathRelative, $groupId);
   $createNewGroupStmt->execute();
   if ($createNewGroupStmt->errno) {

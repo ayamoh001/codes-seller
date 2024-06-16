@@ -15,9 +15,9 @@ if (
 
 
 $getPaymentsStmt = $connection->prepare("SELECT py.*, pr.id AS product_id, pr.date AS product_date, pr.* FROM 
-                                        payments As py
+                                        `payments` As py
                                         INNER JOIN 
-                                        products AS pr
+                                        `products` AS pr
                                         WHERE pr.payment_id = py.id");
 $getPaymentsStmt->execute();
 if ($getPaymentsStmt->errno) {
@@ -52,9 +52,6 @@ while ($row = $paymentsResult->fetch_assoc()) {
     'price' => $row["price"],
   ];
 }
-
-// Convert associative array to indexed array
-// $payments = array_values($payments);
 
 $title = "Admin Dashboard - Payments";
 

@@ -12,7 +12,11 @@
         <i class="bi bi-telegram"></i>
       </a>
     </nav>
-    <p class="p-0 m-0">&copy; <?php echo date("Y"); ?> Crypto Cards. All rights reserved.</p>
+    <div class="d-flex gap-2 gap-md-3 flex-column flex-md-row align-items-center justify-content-between">
+      <a href="<?php echo $baseURL; ?>/policies.php" class="underline text-white ">Our Terms & Policies</a>
+      <div class="d-none d-md-block vr" style="height: 20px;"></div>
+      <p class="p-0 m-0">&copy;<?php echo date("Y"); ?> Crypto Cards. All rights reserved.</p>
+    </div>
   </div>
 </footer>
 
@@ -21,8 +25,6 @@
     <img src="<?php echo $baseURL; ?>/assets/images/icons/whatsapp-logo.webp" width="42" alt="التواصل عبر الواتساب">
   </a>
 </span>
-
-
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 <script src="<?php echo $baseURL; ?>/assets/js/app.js"></script>

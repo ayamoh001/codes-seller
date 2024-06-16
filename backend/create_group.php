@@ -55,7 +55,7 @@ try {
   }
 
   $connection->begin_transaction();
-  $createNewGroupStmt = $connection->prepare("INSERT INTO groups(title, description, image, sort_index, visibility) VALUES (?, ?, ?, ?, ?)");
+  $createNewGroupStmt = $connection->prepare("INSERT INTO `groups`(title, description, image, sort_index, visibility) VALUES (?, ?, ?, ?, ?)");
   $createNewGroupStmt->bind_param("sssii", $title, $description, $uploadPathRelative, $sortIndex, $visibility);
   $createNewGroupStmt->execute();
   if ($createNewGroupStmt->errno) {
