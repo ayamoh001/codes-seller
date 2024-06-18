@@ -1,19 +1,19 @@
 <?php
-require_once "../include/config.php";
-
-if (
-  !isset($_SERVER['PHP_AUTH_USER']) ||
-  !isset($_SERVER['PHP_AUTH_PW']) ||
-  $_SERVER['PHP_AUTH_USER'] !== $adminUsername ||
-  $_SERVER['PHP_AUTH_PW'] !== $adminPassword
-) {
-  header('WWW-Authenticate: Basic realm="Restricted Area"');
-  header('HTTP/1.0 401 Unauthorized');
-  echo 'Authentication required.';
-  exit;
-}
-
 try {
+  require_once "../include/config.php";
+
+  if (
+    !isset($_SERVER['PHP_AUTH_USER']) ||
+    !isset($_SERVER['PHP_AUTH_PW']) ||
+    $_SERVER['PHP_AUTH_USER'] !== $adminUsername ||
+    $_SERVER['PHP_AUTH_PW'] !== $adminPassword
+  ) {
+    header('WWW-Authenticate: Basic realm="Restricted Area"');
+    header('HTTP/1.0 401 Unauthorized');
+    echo 'Authentication required.';
+    exit;
+  }
+
   if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     $_SESSION['flash_message'] = "Not allowed HTTP method!";
     $_SESSION['flash_type'] = "danger";

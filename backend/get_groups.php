@@ -1,8 +1,7 @@
 <?php
-
-require_once "../include/config.php";
-
 try {
+  require_once "../include/config.php";
+
   $getGroupsWithProuductsStmt = $connection->prepare("SELECT g.*, p.id AS product_id, p.type, p.price
                                                     FROM `groups` g
                                                     LEFT JOIN `products` p ON g.id = p.group_id

@@ -82,19 +82,27 @@ $title = "Crypto Cards - Home";
 require_once "./include/header.php";
 ?>
 
-<main>
-  <!-- Hero Section -->
-  <section class="hero-section bg-dark text-light py-5">
-    <div class="container text-center">
-      <h1 class="display-4 fw-bold">INSTANT DELIVERY</h1>
-      <p class="lead">Choose your code type</p>
-      <a href="<?php echo $baseURL . ($user_id == "" ? "/login.php" : "/profile/"); ?>" class="btn btn-primary btn-lg px-5 fw-bold mt-2"><?php echo $user_id == "" ? "LOGIN NOW" : "Your Account"; ?></a>
-    </div>
-  </section>
+<main class="py-5 bg-dark">
+  <div class="container my-5">
+    <?php
+    if (isset($_SESSION['flash_message'])) {
+      echo '<div class="alert alert-' . $_SESSION['flash_type'] . '">' . $_SESSION['flash_message'] . '</div>';
 
-  <!-- Cards Section -->
-  <section id="products-groups-list" class="cards-section bg-dark pb-5">
-    <div class="container">
+      unset($_SESSION['flash_message']);
+      unset($_SESSION['flash_type']);
+    }
+    ?>
+    <!-- Hero Section -->
+    <section class="hero-section bg-dark text-light mb-5">
+      <div class="text-center">
+        <h1 class="display-4 fw-bold">INSTANT DELIVERY</h1>
+        <p class="lead">Choose your code type</p>
+        <a href="<?php echo $baseURL . ($user_id == "" ? "/login.php" : "/profile/"); ?>" class="btn btn-primary btn-lg px-5 fw-bold mt-2"><?php echo $user_id == "" ? "LOGIN NOW" : "Your Account"; ?></a>
+      </div>
+    </section>
+
+    <!-- Cards Section -->
+    <section id="products-groups-list" class="cards-section">
       <div class="row align-items-center justify-content-center">
         <?php foreach ($groups as $group) : ?>
           <div class="col-md-4 p-3">
@@ -103,7 +111,7 @@ require_once "./include/header.php";
                 <div class="d-flex gap-2 mb-3">
                   <img src="<?php echo $baseURL . $group["image"]; ?>" class="w-50 rounded" style="aspect-ratio: 16/9 !important;" alt="<?php echo $group["title"]; ?>">
                   <div class="w-50 d-flex flex-column xalign-items-center justify-content-center">
-                    <h5 class="card-title fs-6 w-75 my-auto line-clamp-2"><?php echo $group["title"]; ?></h5>
+                    <h5 class="card-title fs-6 w-75 line-clamp-2"><?php echo $group["title"]; ?></h5>
                     <p class="card-text line-clamp-2 text-muted"><?php echo $group["description"]; ?></p>
                   </div>
                 </div>
@@ -170,8 +178,7 @@ require_once "./include/header.php";
 
         <?php endforeach; ?>
       </div>
-    </div>
-  </section>
+    </section>
 </main>
 
 <script type="module">

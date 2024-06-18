@@ -1,7 +1,7 @@
 <?php
-require_once '../include/config.php';
-
 try {
+  require_once '../include/config.php';
+
   if (isset($_GET['paymentStatus']) && isset($_GET['merchantTradeNo']) && isset($_GET['transactionId']) && isset($_GET['timestamp']) && isset($_GET['signature'])) {
     $userId = "";
 

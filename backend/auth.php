@@ -1,8 +1,8 @@
 <?php
-require '../include/config.php';
-header('Clear-Site-Data: "cache"');
-
 try {
+  require '../include/config.php';
+  header('Clear-Site-Data: "cache"');
+
   if (isset($_POST["do"])) {
     $do = $_POST["do"];
 
@@ -69,33 +69,40 @@ try {
         exit;
       }
 
-      // TODO: change the guest ids for this session to the user id
-
       // Insert new user
       $connection->begin_transaction();
       $createUserQuery = "INSERT INTO `users` (username, email, password, otp_code, status) VALUES (?, ?, ?, ?, 'ACTIVE')";
       $stmt = $connection->prepare($createUserQuery);
       $stmt->bind_param("ssss", $username, $email, $hashPassword, $otp_code);
-      if ($stmt->execute()) {
-        $user_id = $connection->insert_id;
-        $_SESSION['user_id'] = $user_id;
-
-        // Create user wallet
-        $createUserWalletQuery = "INSERT INTO `wallets` (user_id, balance) VALUES (?, 0)";
-        $stmt = $connection->prepare($createUserWalletQuery);
-        $stmt->bind_param("i", $user_id);
-        if ($stmt->execute()) {
-          header("Location: $baseURL/profile/");
-          $connection->commit();
-          exit;
-        }
-      } else {
+      $stmt->execute();
+      if ($stmt->errno) {
+        $connection->rollback();
         $_SESSION['flash_message'] = "Failed to create new user! Please try again later.";
         $_SESSION['flash_type'] = "danger";
         header("location: $baseURL/signup.php");
-        $connection->rollback();
         exit;
       }
+      $user_id = $connection->insert_id;
+      $_SESSION['user_id'] = $user_id;
+
+      // Create user wallet
+      $createUserWalletQuery = "INSERT INTO `wallets` (user_id, balance) VALUES (?, 0)";
+      $stmt = $connection->prepare($createUserWalletQuery);
+      $stmt->bind_param("i", $user_id);
+      $stmt->execute();
+      if ($stmt->errno) {
+        $connection->rollback();
+        $_SESSION['flash_message'] = "Failed to create new user wallet! Please try again later.";
+        $_SESSION['flash_message'] = $stmt->error;
+        $_SESSION['flash_type'] = "danger";
+        header("location: $baseURL/signup.php");
+        exit;
+      }
+      // TODO: change the guest ids for this session to the user id
+
+      $connection->commit();
+      header("Location: $baseURL/profile/");
+      exit;
     } else if ($do == "logout") {
       session_destroy();
       header("Location: $baseURL/login.php");

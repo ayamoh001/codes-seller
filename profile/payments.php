@@ -44,6 +44,12 @@ if ($getWalletStmt->errno) {
 $walletResult = $getWalletStmt->get_result();
 $wallet = $walletResult->fetch_assoc();
 $getWalletStmt->close();
+if (!$wallet) {
+  $_SESSION['flash_message'] = "No wallet found for this user!";
+  $_SESSION['flash_type'] = "danger";
+  header("location: $baseURL/profile/");
+  exit;
+}
 
 $getPaymentsStmt = $connection->prepare("SELECT py.*, pr.id AS product_id, pr.date AS product_date, pr.* FROM 
                                         `payments` As py

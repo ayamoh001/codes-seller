@@ -44,6 +44,12 @@ if ($getWalletStmt->errno) {
 $walletResult = $getWalletStmt->get_result();
 $wallet = $walletResult->fetch_assoc();
 $getWalletStmt->close();
+if (!$wallet) {
+  $_SESSION['flash_message'] = "No wallet found for this user!";
+  $_SESSION['flash_type'] = "danger";
+  header("location: $baseURL/profile/");
+  exit;
+}
 
 // get charges
 $getChargesStmt = $connection->prepare("SELECT * FROM `charges` WHERE wallet_id = ? AND `status` != 'BLOCKED' LIMIT 1");
@@ -53,6 +59,7 @@ if ($getChargesStmt->errno) {
   $_SESSION['flash_message'] = "Error in the charges retriving process! please try again.";
   $_SESSION['flash_message'] = $getChargesStmt->error;
   $_SESSION['flash_type'] = "danger";
+  header("location: $baseURL/profile/");
   exit;
 }
 $chargesResult = $getChargesStmt->get_result();
@@ -68,7 +75,7 @@ require_once "../include/profile/header.php";
 
 <section>
   <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between mb-5">
-    <h1 class="h2 fw-bold text-white">Your Wallet & Previoud Charges</h1>
+    <h1 class="h2 fw-bold text-white">Your Wallet & Previous Charges</h1>
     <h2 class="h1 fw-bold text-info"><?php echo number_format($wallet["balance"], 2); ?> USD</h2>
   </div>
 

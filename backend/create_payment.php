@@ -1,8 +1,7 @@
 <?php
-require_once "../include/config.php";
-
-
 try {
+  require_once "../include/config.php";
+
   $userId = "";
 
   if (isset($_SESSION["user_id"]) && $_SESSION["user_id"] != "") {

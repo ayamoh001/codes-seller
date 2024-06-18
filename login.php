@@ -1,9 +1,9 @@
 <?php
 require_once "./include/config.php";
 
-if (isset($_SESSION["user_id"]) && $_SESSION["user_id"] != "") {
-  header("location: $baseURL/profile/");
-}
+// if (isset($_SESSION["user_id"]) && $_SESSION["user_id"] != "") {
+//   header("location: $baseURL/profile/");
+// }
 
 $canonicalPath = "/login.php";
 $title = "Crypto Cards - Login";

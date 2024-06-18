@@ -46,6 +46,12 @@ if ($getWalletStmt->errno) {
 $walletResult = $getWalletStmt->get_result();
 $wallet = $walletResult->fetch_assoc();
 $getWalletStmt->close();
+if (!$wallet) {
+  $_SESSION['flash_message'] = "No wallet found for this user!";
+  $_SESSION['flash_type'] = "danger";
+  header("location: $baseURL/profile/");
+  exit;
+}
 
 $title = "Crypto Cards - Account Settings";
 $breadcrumbs = [

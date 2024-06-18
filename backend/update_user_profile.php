@@ -1,20 +1,20 @@
 <?php
-require_once "../include/config.php";
-
-if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-  $_SESSION['flash_message'] = "Not allowed HTTP method!";
-  $_SESSION['flash_type'] = "danger";
-  header("Location: $baseURL/profile/index.php");
-  exit;
-}
-
-if ($_SESSION["user_id"] == "") {
-  $_SESSION['flash_message'] = "Not Athenticated!";
-  $_SESSION['flash_type'] = "danger";
-  exit;
-}
-
 try {
+  require_once "../include/config.php";
+
+  if ($_SERVER["REQUEST_METHOD"] !== "POST") {
+    $_SESSION['flash_message'] = "Not allowed HTTP method!";
+    $_SESSION['flash_type'] = "danger";
+    header("Location: $baseURL/profile/index.php");
+    exit;
+  }
+
+  if ($_SESSION["user_id"] == "") {
+    $_SESSION['flash_message'] = "Not Athenticated!";
+    $_SESSION['flash_type'] = "danger";
+    exit;
+  }
+
   // get the user
   $user_id = (int) $_SESSION["user_id"];
   $getUserStmt = $connection->prepare("SELECT * FROM `users` WHERE id = ? AND status != 'BLOCKED' LIMIT 1");
