@@ -1,81 +1,16 @@
 <?php
 require_once "./include/config.php";
+require_once "./include/functions.php";
 
+$returnPath = "";
 $user_id = "";
-$user = null;
 if (isset($_SESSION["user_id"]) && $_SESSION["user_id"] != "") {
-  // get the user
   $user_id = (int) $_SESSION["user_id"];
-  $getUserStmt = $connection->prepare("SELECT * FROM `users` WHERE id = ? AND status != 'BLOCKED' LIMIT 1");
-  $getUserStmt->bind_param("i", $user_id);
-  $getUserStmt->execute();
-  if ($getUserStmt->errno) {
-    echo json_encode(["error" => "Error in the auth proccess! please try again."]);
-    echo json_encode(["error" => $getUserStmt->error]);
-    exit;
-  }
-  $userResult = $getUserStmt->get_result();
-  $user = $userResult->fetch_assoc();
-  $getUserStmt->close();
-
-  // get the wallet
-  $getWalletStmt = $connection->prepare("SELECT * FROM `wallets` WHERE user_id = ? AND status != 'BLOCKED' LIMIT 1");
-  $getWalletStmt->bind_param("i", $user_id);
-  $getWalletStmt->execute();
-  if ($getWalletStmt->errno) {
-    echo json_encode(["error" => "Error in the wallet retriving process! please try again."]);
-    echo json_encode(["error" => $getWalletStmt->error]);
-    exit;
-  }
-  $walletResult = $getWalletStmt->get_result();
-  $wallet = $walletResult->fetch_assoc();
-  $getWalletStmt->close();
+  $user = getUser($user_id, $returnPath);
+  $wallet = getUserWallet($user_id, $returnPath);
 }
 
-
-// Get groups and classify products by its type
-$getGroupsWithProuductsStmt = $connection->prepare("SELECT g.*, p.id AS product_id, p.type, p.price
-                                                    FROM `groups` g
-                                                    LEFT JOIN `products` p ON g.id = p.group_id
-                                                    WHERE p.payment_id IS NULL AND g.visibility = 1
-                                                    ORDER BY g.sort_index, g.id");
-
-$getGroupsWithProuductsStmt->execute();
-if ($getGroupsWithProuductsStmt->errno) {
-  $_SESSION['flash_message'] = $getGroupsWithProuductsStmt->error;
-  $_SESSION['flash_type'] = "danger";
-  header("Location: $baseURL/admin/");
-  exit;
-}
-$getGroupsWithProuductsResults = $getGroupsWithProuductsStmt->get_result();
-$getGroupsWithProuductsStmt->close();
-
-$groups = [];
-
-while ($row = $getGroupsWithProuductsResults->fetch_assoc()) {
-  // var_dump($row);
-  if (!isset($groups[$row["id"]])) {
-    $groups[$row["id"]] = [
-      'id' => $row["id"],
-      'title' => $row["title"],
-      'description' => $row["description"],
-      'image' => $row["image"],
-      'sort_index' => $row["sort_index"],
-      'visibility' => $row["visibility"],
-      'date' => $row["date"],
-      'products' => []
-    ];
-  }
-
-  if (isset($row["product_id"])) {
-    $groups[$row["id"]]["products"][$row["type"]][] = [
-      'id' => $row["product_id"],
-      'type' => $row["type"],
-      'price' => $row["price"],
-      'date' => $row["date"],
-    ];
-  }
-}
+$groups = getGroups();
 
 $canonicalPath = "";
 $title = "Crypto Cards - Home";
@@ -85,19 +20,14 @@ require_once "./include/header.php";
 <main class="py-5 bg-dark">
   <div class="container my-5">
     <?php
-    if (isset($_SESSION['flash_message'])) {
-      echo '<div class="alert alert-' . $_SESSION['flash_type'] . '">' . $_SESSION['flash_message'] . '</div>';
-
-      unset($_SESSION['flash_message']);
-      unset($_SESSION['flash_type']);
-    }
+    printFlashMessages();
     ?>
     <!-- Hero Section -->
     <section class="hero-section bg-dark text-light mb-5">
       <div class="text-center">
         <h1 class="display-4 fw-bold">INSTANT DELIVERY</h1>
         <p class="lead">Choose your code type</p>
-        <a href="<?php echo $baseURL . ($user_id == "" ? "/login.php" : "/profile/"); ?>" class="btn btn-primary btn-lg px-5 fw-bold mt-2"><?php echo $user_id == "" ? "LOGIN NOW" : "Your Account"; ?></a>
+        <a href="<?php echo $baseURL . ((isset($user_id) && $user_id != "") ? "/profile/" : "/login.php"); ?>" class="btn btn-primary btn-lg px-5 fw-bold mt-2"><?php echo $user_id == "" ? "LOGIN NOW" : "Your Account"; ?></a>
       </div>
     </section>
 
@@ -183,7 +113,9 @@ require_once "./include/header.php";
 
 <script type="module">
   const groups = await fetch("./backend/get_groups.php").then(res => res.json())
-
+  // console.log({
+  //   groups
+  // })
   async function submitPayment(groupId, quantity, type, button) {
     console.log({
       groupId,
@@ -193,26 +125,27 @@ require_once "./include/header.php";
     })
     button.disabled = true
     try {
-      const createPaymentResult = await fetch("<?php echo $baseURL; ?>/backend/create_payment.php", {
-        credentials: "include",
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          quantity,
-          type,
-          groupId,
-        })
-      })
-      const createPaymentResultData = await createPaymentResult
-        // .json()
-        .text()
+      window.location.href = "./checkout.php?groupId=" + groupId + "&quantity=" + quantity + "&type=" + type
+      // const createPaymentResult = await fetch("<?php echo $baseURL; ?>/backend/create_payment.php", {
+      //   credentials: "include",
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      //   body: JSON.stringify({
+      //     quantity,
+      //     type,
+      //     groupId,
+      //   })
+      // })
+      // const createPaymentResultData = await createPaymentResult
+      //   // .json()
+      //   .text()
 
-      console.log({
-        createPaymentResultData
-      })
-      window.location.href = createPaymentResultData.data.checkoutUrl
+      // console.log({
+      //   createPaymentResultData
+      // })
+      // window.location.href = createPaymentResultData.data.checkoutUrl
     } catch (e) {
       alert("Error in the proccess! Please contact the support.")
       console.log({

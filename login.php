@@ -1,5 +1,6 @@
 <?php
 require_once "./include/config.php";
+require_once "./include/functions.php";
 
 // if (isset($_SESSION["user_id"]) && $_SESSION["user_id"] != "") {
 //   header("location: $baseURL/profile/");
@@ -11,17 +12,12 @@ require_once "./include/header.php";
 ?>
 
 <!-- Login form  -->
-<section class="py-5 bg-dark">
+<main class="py-5 bg-dark">
   <div class="container my-5">
     <?php
-    if (isset($_SESSION['flash_message'])) {
-      echo '<div class="alert alert-' . $_SESSION['flash_type'] . '">' . $_SESSION['flash_message'] . '</div>';
-
-      unset($_SESSION['flash_message']);
-      unset($_SESSION['flash_type']);
-    }
+    printFlashMessages();
     ?>
-    <main class="row justify-content-center py-5">
+    <section class="row justify-content-center py-5">
       <div class="col-md-6 col-lg-5">
         <div class="card shadow-sm">
           <div class="card-body p-4">
@@ -46,9 +42,9 @@ require_once "./include/header.php";
           </div>
         </div>
       </div>
-    </main>
+    </section>
   </div>
-</section>
+</main>
 
 <?php
 require_once "./include/footer.php";

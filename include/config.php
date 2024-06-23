@@ -19,4 +19,4 @@ $adminPassword = "admin";
 
 $guestIdPrefix = "Guest_";
 
-$errorLogsFilePath = "/logs.txt";
+$errorLogsFilePath = realpath(__DIR__ . '/../') . '/logs.txt';

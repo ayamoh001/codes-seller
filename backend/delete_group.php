@@ -1,6 +1,9 @@
 <?php
 try {
   require_once "../include/config.php";
+  require_once "../include/functions.php";
+
+  $returnPath = "admin/index.php";
 
   if (
     !isset($_SERVER['PHP_AUTH_USER']) ||
@@ -15,9 +18,7 @@ try {
   }
 
   if ($_SERVER["REQUEST_METHOD"] !== "POST") { // DELETE is not supported by the HTML forms
-    $_SESSION['flash_message'] = "Not allowed HTTP method!";
-    $_SESSION['flash_type'] = "danger";
-    header("Location: $baseURL/admin/");
+    showSessionAlert("Not allowed HTTP method!", "danger", true, $returnPath);
     exit;
   }
 
@@ -28,10 +29,8 @@ try {
   $deleteGroupStmt->bind_param("i", $groupId);
   $deleteGroupStmt->execute();
   if ($deleteGroupStmt->errno) {
-    $_SESSION['flash_message'] = $deleteGroupStmt->error;
-    $_SESSION['flash_type'] = "danger";
-    header("Location: $baseURL/admin/");
     $connection->rollback();
+    showSessionAlert("Error in the deleting process!", "danger", true, $returnPath);
     exit;
   }
   $deleteGroupStmt->close();
@@ -40,26 +39,18 @@ try {
   $deleteRelatedProductsStmt->bind_param("i", $groupId);
   $deleteRelatedProductsStmt->execute();
   if ($deleteRelatedProductsStmt->errno) {
-    $_SESSION['flash_message'] = $deleteRelatedProductsStmt->error;
-    $_SESSION['flash_type'] = "danger";
-    header("Location: $baseURL/admin/");
     $connection->rollback();
+    showSessionAlert("Error in the deleting process!", "danger", true, $returnPath);
     exit;
   }
   $deleteRelatedProductsStmt->close();
 
   $connection->commit();
-  $_SESSION['flash_message'] = "Group and its codes were deleted successfully!";
-  $_SESSION['flash_type'] = "success";
+  showSessionAlert("Group and its codes were deleted successfully!", "success");
   header("Location: $baseURL/admin/");
   exit;
 } catch (Throwable $e) {
-  $_SESSION['flash_message'] = "Error in the server!";
-  $_SESSION['flash_message'] = $e->getMessage();
-  $_SESSION['flash_type'] = "danger";
-  header("Location: $baseURL/admin/");
-
-  $errorMessage = $e->getFile() . " | " . $e->getLine() . " | " . $e->getMessage();
-  file_put_contents($errorLogsFilePath, $errorMessage, FILE_APPEND);
+  showSessionAlert("Error in the server!", "danger", true, $returnPath);
+  logErrors($e);
   exit;
 }

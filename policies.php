@@ -1,35 +1,20 @@
 <?php
 require_once "./include/config.php";
+require_once "./include/functions.php";
 
 $user_id = "";
 $user = null;
+$returnPath = "policies.php";
 if (isset($_SESSION["user_id"]) && $_SESSION["user_id"] != "") {
-  // get the user
-  $user_id = (int) $_SESSION["user_id"];
-  $getUserStmt = $connection->prepare("SELECT * FROM `users` WHERE id = ? AND status != 'BLOCKED' LIMIT 1");
-  $getUserStmt->bind_param("i", $user_id);
-  $getUserStmt->execute();
-  if ($getUserStmt->errno) {
-    echo json_encode(["error" => "Error in the auth proccess! please try again."]);
-    echo json_encode(["error" => $getUserStmt->error]);
+  try {
+    $user_id = (int) $_SESSION["user_id"];
+    $user = getUser($user_id, $returnPath);
+    $wallet = getUserWallet($user_id, $returnPath);
+  } catch (Throwable $e) {
+    showSessionAlert("Error in the server!", "danger", true, $returnPath);
+    logErrors($e);
     exit;
   }
-  $userResult = $getUserStmt->get_result();
-  $user = $userResult->fetch_assoc();
-  $getUserStmt->close();
-
-  // get the wallet
-  $getWalletStmt = $connection->prepare("SELECT * FROM `wallets` WHERE user_id = ? AND status != 'BLOCKED' LIMIT 1");
-  $getWalletStmt->bind_param("i", $user_id);
-  $getWalletStmt->execute();
-  if ($getWalletStmt->errno) {
-    echo json_encode(["error" => "Error in the wallet retriving process! please try again."]);
-    echo json_encode(["error" => $getWalletStmt->error]);
-    exit;
-  }
-  $walletResult = $getWalletStmt->get_result();
-  $wallet = $walletResult->fetch_assoc();
-  $getWalletStmt->close();
 }
 
 $canonicalPath = "/policies.php";

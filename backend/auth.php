@@ -1,12 +1,18 @@
 <?php
 try {
-  require '../include/config.php';
+  require_once '../include/config.php';
+  require_once "../include/functions.php";
+
   header('Clear-Site-Data: "cache"');
 
   if (isset($_POST["do"])) {
     $do = $_POST["do"];
 
+    $returnPath = "login.php"; // default return path
+
     if ($do == "login") {
+      $returnPath = "login.php";
+
       $email = trim($_POST['email']);
       $password = trim($_POST['password']);
 
@@ -22,16 +28,15 @@ try {
           $_SESSION['user_id'] = $user['id'];
           header("Location: $baseURL/profile/");
         } else {
-          $_SESSION['flash_message'] = "Invalid Credentials!";
-          $_SESSION['flash_type'] = "danger";
-          header("Location: $baseURL/login.php");
+          showSessionAlert("Invalid Credentials!", "danger", true, $returnPath);
+          exit;
         }
       } else {
-        $_SESSION['flash_message'] = "Invalid Credentials!";
-        $_SESSION['flash_type'] = "danger";
-        header("Location: $baseURL/login.php");
+        showSessionAlert("Invalid Credentials!", "danger", true, $returnPath);
       }
     } else if ($do == "signup") {
+      $returnPath = "signup.php";
+
       $username = trim($_POST['username']);
       $email = trim($_POST['email']);
       $password = trim($_POST['password']);
@@ -48,9 +53,7 @@ try {
       $row = $result->fetch_assoc();
 
       if ($row['count'] >= 1) {
-        $_SESSION['flash_message'] = "Duplicated Email!";
-        $_SESSION['flash_type'] = "danger";
-        header("location: $baseURL/signup.php");
+        showSessionAlert("Duplicated Email!", "danger", true, $returnPath);
         exit;
       }
 
@@ -63,9 +66,7 @@ try {
       $row = $result->fetch_assoc();
 
       if ($row['count'] >= 1) {
-        $_SESSION['flash_message'] = "Duplicated Username!";
-        $_SESSION['flash_type'] = "danger";
-        header("location: $baseURL/signup.php");
+        showSessionAlert("Duplicated Username!", "danger", true, $returnPath);
         exit;
       }
 
@@ -77,9 +78,7 @@ try {
       $stmt->execute();
       if ($stmt->errno) {
         $connection->rollback();
-        $_SESSION['flash_message'] = "Failed to create new user! Please try again later.";
-        $_SESSION['flash_type'] = "danger";
-        header("location: $baseURL/signup.php");
+        showSessionAlert("Failed to create new user! Please try again later.", "danger", true, $returnPath);
         exit;
       }
       $user_id = $connection->insert_id;
@@ -92,15 +91,13 @@ try {
       $stmt->execute();
       if ($stmt->errno) {
         $connection->rollback();
-        $_SESSION['flash_message'] = "Failed to create new user wallet! Please try again later.";
-        $_SESSION['flash_message'] = $stmt->error;
-        $_SESSION['flash_type'] = "danger";
-        header("location: $baseURL/signup.php");
+        showSessionAlert("Failed to create new user wallet! Please try again later.", "danger", true, $returnPath);
         exit;
       }
-      // TODO: change the guest ids for this session to the user id
 
+      // TODO: change the guest ids for this session to the user id
       $connection->commit();
+      showSessionAlert("You have signed up successfully!", "success");
       header("Location: $baseURL/profile/");
       exit;
     } else if ($do == "logout") {
@@ -109,16 +106,11 @@ try {
       exit;
     }
   } else {
-    echo "Invalid HTTP method or missing action!";
+    showSessionAlert("Failed to create new user wallet! Please try again later.", "danger", true, $returnPath);
     exit;
   }
 } catch (Throwable $e) {
-  $_SESSION['flash_message'] = "Error in the server!";
-  $_SESSION['flash_message'] = $e->getMessage();
-  $_SESSION['flash_type'] = "danger";
-  header("Location: $baseURL/login.php");
-
-  $errorMessage = $e->getFile() . " | " . $e->getLine() . " | " . $e->getMessage();
-  file_put_contents($errorLogsFilePath, $errorMessage, FILE_APPEND);
+  showSessionAlert("Error in the server!", "danger", true, $returnPath);
+  logErrors($e);
   exit;
 }

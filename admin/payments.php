@@ -1,5 +1,6 @@
 <?php
 require_once "../include/config.php";
+require_once "../include/functions.php";
 
 if (
   !isset($_SERVER['PHP_AUTH_USER']) ||
@@ -13,7 +14,7 @@ if (
   exit;
 }
 
-
+$returnPath = "admin/payments.php";
 $getPaymentsStmt = $connection->prepare("SELECT py.*, pr.id AS product_id, pr.date AS product_date, pr.* FROM 
                                         `payments` As py
                                         INNER JOIN 
@@ -21,9 +22,7 @@ $getPaymentsStmt = $connection->prepare("SELECT py.*, pr.id AS product_id, pr.da
                                         WHERE pr.payment_id = py.id");
 $getPaymentsStmt->execute();
 if ($getPaymentsStmt->errno) {
-  $_SESSION['flash_message'] = $getPaymentsStmt->error;
-  $_SESSION['flash_type'] = "danger";
-  header("Location: $baseURL/admin/payments.php");
+  showSessionAlert($getPaymentsStmt->error, "danger", true, $returnPath);
   exit;
 }
 $paymentsResult = $getPaymentsStmt->get_result();
@@ -62,12 +61,7 @@ require_once "../include/admin/header.php";
 <main class="py-5 bg-dark" style="min-height: 100vh;">
   <div class="container py-5">
     <?php
-    if (isset($_SESSION['flash_message'])) {
-      echo '<div class="alert alert-' . $_SESSION['flash_type'] . '">' . $_SESSION['flash_message'] . '</div>';
-
-      unset($_SESSION['flash_message']);
-      unset($_SESSION['flash_type']);
-    }
+    printFlashMessages();
     ?>
     <section>
       <h1 class="mb-5 pb-5 h1 fw-bold text-white">All Platform Payments By Users/Geusts</h1>

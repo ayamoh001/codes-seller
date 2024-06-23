@@ -1,6 +1,9 @@
 <?php
 try {
   require_once "../include/config.php";
+  require_once "../include/functions.php";
+
+  $returnPath = "admin/users.php";
 
   if (
     !isset($_SERVER['PHP_AUTH_USER']) ||
@@ -14,9 +17,7 @@ try {
     exit;
   }
   if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    $_SESSION['flash_message'] = "Not allowed HTTP method!";
-    $_SESSION['flash_type'] = "danger";
-    header("Location: $baseURL/admin/");
+    showSessionAlert("Not allowed HTTP method!", "danger", true, $returnPath);
     exit;
   }
   $user_id = (int) $_POST["user_id"];
@@ -28,26 +29,18 @@ try {
   $updateUserStatusStmt->bind_param("si", $new_status, $user_id);
   $updateUserStatusStmt->execute();
   if ($updateUserStatusStmt->errno) {
-    $_SESSION['flash_message'] = $updateUserStatusStmt->error;
-    $_SESSION['flash_type'] = "danger";
-    header("Location: $baseURL/admin/");
     $connection->rollback();
+    showSessionAlert($updateUserStatusStmt->error, "danger", true, $returnPath);
     exit;
   }
   $updateUserStatusStmt->close();
 
   $connection->commit();
-  $_SESSION['flash_message'] = "User Status Changed successfully!";
-  $_SESSION['flash_type'] = "success";
+  showSessionAlert("User Status Changed successfully!", "success");
   header("Location: $baseURL/admin/users.php");
   exit;
 } catch (Throwable $e) {
-  $_SESSION['flash_message'] = "Error in the server!";
-  $_SESSION['flash_message'] = $e->getMessage();
-  $_SESSION['flash_type'] = "danger";
-  header("Location: $baseURL/admin/");
-
-  $errorMessage = $e->getFile() . " | " . $e->getLine() . " | " . $e->getMessage();
-  file_put_contents($errorLogsFilePath, $errorMessage, FILE_APPEND);
+  showSessionAlert("Error in the server!", "danger", true, $returnPath);
+  logErrors($e);
   exit;
 }

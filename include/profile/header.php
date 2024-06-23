@@ -69,6 +69,9 @@
             <li class="nav-item">
               <a class="nav-link text-capitalize" href="<?php echo $baseURL; ?>/profile/wallet.php">wallet</a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link text-capitalize" href="<?php echo $baseURL; ?>/profile/settings.php">settings</a>
+            </li>
             <div class="d-flex gap-3 gap-lg-0 align-items-center">
               <div class="d-flex flex-row-reverse flex-lg-row gap-3 gap-lg-0 justify-content-end">
                 <li class="nav-item">
@@ -102,12 +105,7 @@
     <div class="container py-5">
 
       <?php
-      if (isset($_SESSION['flash_message'])) {
-        echo '<div class="alert alert-' . $_SESSION['flash_type'] . '">' . $_SESSION['flash_message'] . '</div>';
-
-        unset($_SESSION['flash_message']);
-        unset($_SESSION['flash_type']);
-      };
+      printFlashMessages();
       ?>
 
       <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">

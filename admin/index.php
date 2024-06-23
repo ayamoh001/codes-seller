@@ -1,5 +1,6 @@
 <?php
 require_once "../include/config.php";
+require_once "../include/functions.php";
 
 if (
   !isset($_SERVER['PHP_AUTH_USER']) ||
@@ -13,7 +14,8 @@ if (
   exit;
 }
 
-// TODO: optimize for clients
+$returnPath = "admin/index.php";
+
 $getGroupsWithProuductsStmt = $connection->prepare("SELECT g.*, p.id AS product_id, p.code_value, p.type, p.price, p.payment_id
                                                     FROM `groups` g
                                                     LEFT JOIN `products` p ON g.id = p.group_id
@@ -22,10 +24,7 @@ $getGroupsWithProuductsStmt = $connection->prepare("SELECT g.*, p.id AS product_
 
 $getGroupsWithProuductsStmt->execute();
 if ($getGroupsWithProuductsStmt->errno) {
-  $_SESSION['flash_message'] = $getGroupsWithProuductsStmt->error;
-  $_SESSION['flash_type'] = "danger";
-  header("Location: $baseURL/admin/");
-  // $connection->rollback();
+  showSessionAlert($getGroupsWithProuductsStmt->error, "danger", true, $returnPath);
   exit;
 }
 $getGroupsWithProuductsResults = $getGroupsWithProuductsStmt->get_result();
@@ -71,12 +70,7 @@ require_once "../include/admin/header.php";
 <main class="py-5 bg-dark" style="min-height: 100vh;">
   <div class="container py-5">
     <?php
-    if (isset($_SESSION['flash_message'])) {
-      echo '<div class="alert alert-' . $_SESSION['flash_type'] . '">' . $_SESSION['flash_message'] . '</div>';
-
-      unset($_SESSION['flash_message']);
-      unset($_SESSION['flash_type']);
-    }
+    printFlashMessages();
     ?>
 
 

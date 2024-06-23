@@ -1,6 +1,9 @@
 <?php
 try {
   require_once "../include/config.php";
+  require_once "../include/functions.php";
+
+  $returnPath = "admin/products.php";
 
   if (
     !isset($_SERVER['PHP_AUTH_USER']) ||
@@ -15,9 +18,7 @@ try {
   }
 
   if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    $_SESSION['flash_message'] = "Not allowed HTTP method!";
-    $_SESSION['flash_type'] = "danger";
-    header("Location: $baseURL/admin/");
+    showSessionAlert("Not allowed HTTP method!", "danger", true, $returnPath);
     exit;
   }
 
@@ -27,9 +28,7 @@ try {
   $getGroupStmt->bind_param("i", $groupId);
   $getGroupStmt->execute();
   if ($getGroupStmt->errno) {
-    $_SESSION['flash_message'] = $getGroupStmt->error;
-    $_SESSION['flash_type'] = "danger";
-    header("Location: $baseURL/admin/");
+    showSessionAlert("Error in the getting process!", "danger", true, $returnPath);
     exit;
   }
   $groupResult = $getGroupStmt->get_result();
@@ -37,9 +36,7 @@ try {
   $getGroupStmt->close();
 
   if (!$group) {
-    $_SESSION['flash_message'] = "No group with this ID!";
-    $_SESSION['flash_type'] = "danger";
-    header("Location: $baseURL/admin/");
+    showSessionAlert("No group with this ID!", "danger", true, $returnPath);
     exit;
   }
 
@@ -52,26 +49,18 @@ try {
   $createNewProductStmt->bind_param("ssss", $groupId, $codeValue, $price, $type);
   $createNewProductStmt->execute();
   if ($createNewProductStmt->errno) {
-    $_SESSION['flash_message'] = $createNewProductStmt->error;
-    $_SESSION['flash_type'] = "danger";
-    header("Location: $baseURL/admin/");
+    showSessionAlert("Error in the creating process!", "danger", true, $returnPath);
     $connection->rollback();
     exit;
   }
   $createNewProductStmt->close();
 
   $connection->commit();
-  $_SESSION['flash_message'] = "New Product was created for the group successfully!";
-  $_SESSION['flash_type'] = "success";
+  showSessionAlert("New Product was created for the group successfully!", "success");
   header("Location: $baseURL/admin/");
   exit;
 } catch (Throwable $e) {
-  $_SESSION['flash_message'] = "Error in the server!";
-  $_SESSION['flash_message'] = $e->getMessage();
-  $_SESSION['flash_type'] = "danger";
-  header("Location: $baseURL/admin/");
-
-  $errorMessage = $e->getFile() . " | " . $e->getLine() . " | " . $e->getMessage();
-  file_put_contents($errorLogsFilePath, $errorMessage, FILE_APPEND);
+  showSessionAlert("Error in the server!", "danger", true, $returnPath);
+  logErrors($e);
   exit;
 }

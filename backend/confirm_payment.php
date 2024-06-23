@@ -1,31 +1,15 @@
 <?php
 try {
   require_once '../include/config.php';
+  require_once '../include/functions.php';
 
   if (isset($_GET['paymentStatus']) && isset($_GET['merchantTradeNo']) && isset($_GET['transactionId']) && isset($_GET['timestamp']) && isset($_GET['signature'])) {
     $userId = "";
+    $returnPath = "checkout.php";
 
     if (isset($_SESSION["user_id"]) && $_SESSION["user_id"] != "") {
       $user_id = (int) $_SESSION["user_id"];
-      $getUserStmt = $connection->prepare("SELECT * FROM `users` WHERE id = ? AND status != 'BLOCKED' LIMIT 1");
-      $getUserStmt->bind_param("i", $user_id);
-      $getUserStmt->execute();
-      if ($getUserStmt->errno) {
-        // $_SESSION['flash_message'] = "Error in the auth proccess! please try again.";
-        $_SESSION['flash_message'] = $getUserStmt->error;
-        $_SESSION['flash_type'] = "danger";
-        header("Location: $baseURL/");
-        exit;
-      }
-      $userResult = $getUserStmt->get_result();
-      $user = $userResult->fetch_assoc();
-      if (!$user) {
-        $_SESSION['flash_message'] = "No user found! Please login in first.";
-        $_SESSION['flash_type'] = "danger";
-        header("Location: $baseURL/");
-        exit;
-      }
-      $getUserStmt->close();
+      $user = getUser($user_id, $returnPath);
       $userId = $user["id"];
     } else {
       $userId = $guestIdPrefix . session_id();
@@ -69,7 +53,8 @@ try {
 
       $result = curl_exec($ch);
       if (curl_errno($ch)) {
-        echo 'Error:' . curl_error($ch);
+        showSessionAlert("Error in binance connection!", "danger", true, $returnPath);
+        exit;
       }
       curl_close($ch);
       // var_dump($result);
@@ -77,17 +62,14 @@ try {
       $responseData = json_decode($result, true);
 
       if ($paymentStatus === 'SUCCESS' && $responseData["status"] == "SUCCESS" && $responseData["data"]["status"] == "PAID") {
-        echo "Payment was successful. Transaction ID: " . $transactionId;
+        // echo "Payment was successful. Transaction ID: " . $transactionId;
 
         $prepayID = $responseData["prepayID"];
         $getPaymentStmt = $connection->prepare("SELECT * FROM `payments` WHERE (prepay_id = ?) AND (`status` != 'PAID') AND (user_id = ?) LIMIT 1");
         $getPaymentStmt->bind_param("ss", $prepayID, $userId);
         $getPaymentStmt->execute();
         if ($getPaymentStmt->errno) {
-          // $_SESSION['flash_message'] = "Error in the Server! please contact the support.";
-          $_SESSION['flash_message'] = $getPaymentStmt->error;
-          $_SESSION['flash_type'] = "danger";
-          header("Location: $baseURL/");
+          showSessionAlert($getPaymentStmt->error, "danger", true, $returnPath);
           exit;
         }
         $paymentResult = $getPaymentStmt->get_result();
@@ -95,9 +77,7 @@ try {
         $getPaymentStmt->close();
 
         if (!$payment) {
-          $_SESSION['flash_message'] = "No payment found in the DB.";
-          $_SESSION['flash_type'] = "danger";
-          header("Location: $baseURL/");
+          showSessionAlert("No payment found in the DB.", "danger", true, $returnPath);
           exit;
         }
 
@@ -107,38 +87,27 @@ try {
         $updatePaymentStatusStmt = $connection->prepare("UPDATE `payments` SET `status` = ? WHERE id = ?");
         $updatePaymentStatusStmt->bind_param("si", $newStatus, $product["id"]);
         if ($updatePaymentStatusStmt->errno) {
-          // $_SESSION['flash_message'] = "Error in saving the payment success status!";
-          $_SESSION['flash_message'] = $updatePaymentStatusStmt->error;
-          $_SESSION['flash_type'] = "danger";
-          header("Location: $baseURL/");
           $connection->rollback();
+          showSessionAlert($updatePaymentStatusStmt->error, "danger", true, $returnPath);
           exit;
         }
         $updatePaymentStatusStmt->close();
 
         $connection->commit();
       } else {
-        $_SESSION['flash_message'] = "Payment statuses: " . $paymentStatus . " / " . $responseData["status"] . " / " . $responseData["data"]["status"];
-        $_SESSION['flash_type'] = "danger";
-        header("Location: $baseURL/");
+        showSessionAlert(("Payment statuses: " . $paymentStatus . " / " . $responseData["status"] . " / " . $responseData["data"]["status"]), "danger", true, $returnPath);
+        exit;
       }
     } else {
-      $_SESSION['flash_message'] = "Invalid signature. Payment verification failed.";
-      $_SESSION['flash_type'] = "danger";
-      header("Location: $baseURL/");
+      showSessionAlert("Invalid signature. Payment verification failed.", "danger", true, $returnPath);
+      exit;
     }
   } else {
-    $_SESSION['flash_message'] = "Missing parameters. Payment verification failed.";
-    $_SESSION['flash_type'] = "danger";
-    header("Location: $baseURL/");
+    showSessionAlert("Missing parameters. Payment verification failed.", "danger", true, $returnPath);
+    exit;
   }
 } catch (Throwable $e) {
-  // $_SESSION['flash_message'] = "Error in the server!";
-  $_SESSION['flash_message'] = $e->getMessage();
-  $_SESSION['flash_type'] = "danger";
-  header("Location: $baseURL/");
-
-  $errorMessage = $e->getFile() . " | " . $e->getLine() . " | " . $e->getMessage();
-  file_put_contents($errorLogsFilePath, $errorMessage, FILE_APPEND);
+  showSessionAlert("Error in the server!", "danger", true, $returnPath);
+  logErrors($e);
   exit;
 }

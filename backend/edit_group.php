@@ -1,6 +1,9 @@
 <?php
 try {
   require_once "../include/config.php";
+  require_once "../include/functions.php";
+
+  $returnPath = "admin/index.php";
 
   if (
     !isset($_SERVER['PHP_AUTH_USER']) ||
@@ -15,9 +18,7 @@ try {
   }
 
   if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    $_SESSION['flash_message'] = "Not allowed HTTP method!";
-    $_SESSION['flash_type'] = "danger";
-    header("Location: $baseURL/admin/");
+    showSessionAlert("Not allowed HTTP method!", "danger", true, $returnPath);
     exit;
   }
 
@@ -27,9 +28,7 @@ try {
   $getGroupStmt->bind_param("i", $groupId);
   $getGroupStmt->execute();
   if ($getGroupStmt->errno) {
-    $_SESSION['flash_message'] = $getGroupStmt->error;
-    $_SESSION['flash_type'] = "danger";
-    header("Location: $baseURL/admin/");
+    showSessionAlert($getGroupStmt->error, "danger", true, $returnPath);
     exit;
   }
   $groupResult = $getGroupStmt->get_result();
@@ -37,9 +36,7 @@ try {
   $getGroupStmt->close();
 
   if (!$group) {
-    $_SESSION['flash_message'] = "No group with this ID!";
-    $_SESSION['flash_type'] = "danger";
-    header("Location: $baseURL/admin/");
+    showSessionAlert("No group with this ID!", "danger", true, $returnPath);
     exit;
   }
 
@@ -64,9 +61,7 @@ try {
     $uploadPathRelative = $storageDirRelative . $newFileName;
 
     if (!move_uploaded_file($file_tmp, $uploadPathAbsolute)) {
-      $_SESSION['flash_message'] = "Image file not stored successfully!";
-      $_SESSION['flash_type'] = "danger";
-      header("Location: $baseURL/admin/");
+      showSessionAlert("Image file not stored successfully!", "danger", true, $returnPath);
       exit;
     }
   }
@@ -83,26 +78,18 @@ try {
   $createNewGroupStmt->bind_param("ssiisi", $title, $description, $sortIndex, $visibility, $uploadPathRelative, $groupId);
   $createNewGroupStmt->execute();
   if ($createNewGroupStmt->errno) {
-    $_SESSION['flash_message'] = $createNewGroupStmt->error;
-    $_SESSION['flash_type'] = "danger";
-    header("Location: $baseURL/admin/");
+    showSessionAlert($createNewGroupStmt->error, "danger", true, $returnPath);
     $connection->rollback();
     exit;
   }
   $createNewGroupStmt->close();
 
   $connection->commit();
-  $_SESSION['flash_message'] = "The group was edited successfully!";
-  $_SESSION['flash_type'] = "success";
+  showSessionAlert("The group was edited successfully!", "success");
   header("Location: $baseURL/admin/");
   exit;
 } catch (Throwable $e) {
-  $_SESSION['flash_message'] = "Error in the server!";
-  $_SESSION['flash_message'] = $e->getMessage();
-  $_SESSION['flash_type'] = "danger";
-  header("Location: $baseURL/admin/");
-
-  $errorMessage = $e->getFile() . " | " . $e->getLine() . " | " . $e->getMessage();
-  file_put_contents($errorLogsFilePath, $errorMessage, FILE_APPEND);
+  showSessionAlert("Error in the server!", "danger", true, $returnPath);
+  logErrors($e);
   exit;
 }

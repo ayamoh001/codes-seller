@@ -1,69 +1,20 @@
 <?php
 require_once "../include/config.php";
+require_once "../include/functions.php";
+
+$returnPath = "profile/wallet.php";
 
 if (!isset($_SESSION["user_id"]) || $_SESSION["user_id"] == "") {
-  $_SESSION['flash_message'] = "You are not logged in!";
-  $_SESSION['flash_type'] = "danger";
-  header("location: $baseURL/login.php");
+  showSessionAlert("You are not logged in!", "danger", true, "login.php");
   exit;
 }
 
-$user_id = "";
-$user = null;
-
-// get the user
 $user_id = (int) $_SESSION["user_id"];
-$getUserStmt = $connection->prepare("SELECT * FROM `users` WHERE id = ? AND `status` != 'BLOCKED' LIMIT 1");
-$getUserStmt->bind_param("i", $user_id);
-$getUserStmt->execute();
-if ($getUserStmt->errno) {
-  echo json_encode(["error" => "Error in the auth proccess! please try again."]);
-  echo json_encode(["error" => $getUserStmt->error]);
-  exit;
-}
-$userResult = $getUserStmt->get_result();
-$user = $userResult->fetch_assoc();
-$getUserStmt->close();
-if (!$user) {
-  $_SESSION['flash_message'] = "No user found with this ID!";
-  $_SESSION['flash_type'] = "danger";
-  header("location: $baseURL/login.php");
-  exit;
-}
-
-// get the wallet
-$getWalletStmt = $connection->prepare("SELECT * FROM `wallets` WHERE user_id = ? AND `status` != 'BLOCKED' LIMIT 1");
-$getWalletStmt->bind_param("i", $user_id);
-$getWalletStmt->execute();
-if ($getWalletStmt->errno) {
-  $_SESSION['flash_message'] = "Error in the wallet retriving process! please try again.";
-  $_SESSION['flash_message'] = $getWalletStmt->error;
-  $_SESSION['flash_type'] = "danger";
-  exit;
-}
-$walletResult = $getWalletStmt->get_result();
-$wallet = $walletResult->fetch_assoc();
-$getWalletStmt->close();
-if (!$wallet) {
-  $_SESSION['flash_message'] = "No wallet found for this user!";
-  $_SESSION['flash_type'] = "danger";
-  header("location: $baseURL/profile/");
-  exit;
-}
+$user = getUser($user_id, $returnPath);
+$wallet = getUserWallet($user_id, $returnPath);
 
 // get charges
-$getChargesStmt = $connection->prepare("SELECT * FROM `charges` WHERE wallet_id = ? AND `status` != 'BLOCKED' LIMIT 1");
-$getChargesStmt->bind_param("i", $wallet["id"]);
-$getChargesStmt->execute();
-if ($getChargesStmt->errno) {
-  $_SESSION['flash_message'] = "Error in the charges retriving process! please try again.";
-  $_SESSION['flash_message'] = $getChargesStmt->error;
-  $_SESSION['flash_type'] = "danger";
-  header("location: $baseURL/profile/");
-  exit;
-}
-$chargesResult = $getChargesStmt->get_result();
-$getChargesStmt->close();
+$charges = getWalletCharges($wallet["id"], $returnPath);
 
 $title = "Crypto Cards - Wallet";
 $breadcrumbs = [
@@ -93,7 +44,7 @@ require_once "../include/profile/header.php";
         </thead>
         <tbody>
           <?php
-          while ($charge = $chargesResult->fetch_assoc()) :
+          foreach ($charges as $charge) :
           ?>
             <tr>
               <th scope="row"><?php echo $charge["id"]; ?></th>
@@ -103,7 +54,7 @@ require_once "../include/profile/header.php";
               <td><?php echo $charge["date"]; ?></td>
             </tr>
           <?php
-          endwhile;
+          endforeach;
           ?>
         </tbody>
       </table>

@@ -98,7 +98,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
 
-<body class="inter-without-weight">
+<body class="inter-without-weight min-vh-100">
   <header class="d-block bg-dark bg-gradient py-3">
     <div class="container">
       <nav class="navbar navbar-expand-lg navbar-dark">

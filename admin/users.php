@@ -1,5 +1,6 @@
 <?php
 require_once "../include/config.php";
+require_once "../include/functions.php";
 
 if (
   !isset($_SERVER['PHP_AUTH_USER']) ||
@@ -13,12 +14,11 @@ if (
   exit;
 }
 
+$returnPath = "admin/users.php";
 $getUsersStmt = $connection->prepare("SELECT * FROM `users`");
 $getUsersStmt->execute();
 if ($getUsersStmt->errno) {
-  $_SESSION['flash_message'] = $getUsersStmt->error;
-  $_SESSION['flash_type'] = "danger";
-  header("Location: $baseURL/admin/users.php");
+  showSessionAlert($getUsersStmt->error, "danger", true, $returnPath);
   exit;
 }
 $usersResult = $getUsersStmt->get_result();
@@ -32,12 +32,7 @@ require_once "../include/admin/header.php";
 <main class="py-5 bg-dark" style="min-height: 100vh;">
   <div class="container py-5">
     <?php
-    if (isset($_SESSION['flash_message'])) {
-      echo '<div class="alert alert-' . $_SESSION['flash_type'] . '">' . $_SESSION['flash_message'] . '</div>';
-
-      unset($_SESSION['flash_message']);
-      unset($_SESSION['flash_type']);
-    }
+    printFlashMessages();
     ?>
 
     <section>

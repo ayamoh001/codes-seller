@@ -1,59 +1,28 @@
 <?php
 try {
   require_once "../include/config.php";
+  require_once "../include/functions.php";
 
   $userId = "";
+  $returnPath = "profile/wallet.php";
 
   if (isset($_SESSION["user_id"]) && $_SESSION["user_id"] != "") {
     $user_id = (int) $_SESSION["user_id"];
-    $getUserStmt = $connection->prepare("SELECT * FROM `users` WHERE id = ? AND status != 'BLOCKED' LIMIT 1");
-    $getUserStmt->bind_param("i", $user_id);
-    $getUserStmt->execute();
-    if ($getUserStmt->errno) {
-      $_SESSION['flash_message'] = "Error in the auth proccess! please try again.";
-      $_SESSION['flash_message'] = $getUserStmt->error;
-      $_SESSION['flash_type'] = "danger";
-      header("Location: $baseURL/profile/wallet.php");
-      exit;
-    }
-    $userResult = $getUserStmt->get_result();
-    $user = $userResult->fetch_assoc();
-    $getUserStmt->close();
+    $user = getUser($user_id, $returnPath);
     $userId = $user["id"];
   } else {
-    $_SESSION['flash_message'] = "You are not logged in!";
-    $_SESSION['flash_type'] = "danger";
-    header("Location: $baseURL/login.php");
+    showSessionAlert("You are not logged in!", "danger", true, "login.php");
     exit;
   }
 
   // get Wallet ID
-  $getWalletStmt = $connection->prepare("SELECT id FROM `wallets` WHERE user_id = ? AND status != 'BLOCKED' LIMIT 1");
-  $getWalletStmt->bind_param("i", $userId);
-  $getWalletStmt->execute();
-  if ($getWalletStmt->errno) {
-    $_SESSION['flash_message'] = "Error in the Server! please contact the support.";
-    $_SESSION['flash_type'] = "danger";
-    header("Location: $baseURL/profile/wallet.php");
-    exit;
-  }
-  $walletResult = $getWalletStmt->get_result();
-  $wallet = $walletResult->fetch_assoc();
-  if (!$wallet) {
-    $_SESSION['flash_message'] = "No active wallet found! Please contact the support for your wallet status.";
-    $_SESSION['flash_type'] = "danger";
-    header("Location: $baseURL/login.php");
-    exit;
-  }
-  $getWalletStmt->close();
+  $walletId = getUserWallet($user_id, $returnPath);
   $walletId = $wallet["id"];
 
   $amount = (int) $_POST["amount"];
 
   if ($amount < 1) {
-    $_SESSION['flash_message'] = "Amount must be at least 1 USD.";
-    $_SESSION['flash_type'] = "danger";
-    header("Location: $baseURL/profile/wallet.php");
+    showSessionAlert("Amount must be at least 1 USD!", "danger", true, $returnPath);
     exit;
   }
 
@@ -66,9 +35,8 @@ try {
   $createChargeStmt = $connection->prepare("INSERT INTO `charges`(wallet_id, amount, `status`, metadata1, metadata2) VALUES (?,?,?,?,?)");
   $createChargeStmt->bind_param("idsss", $walletId, $amount, $status, $metadata1, $metadata2);
   if ($createChargeStmt->errno) {
-    echo json_encode(["error" => "Error in the Server! please contact the support."]);
-    echo json_encode(["error" => $createChargeStmt->error]);
     $connection->rollback();
+    showSessionAlert($createChargeStmt->error, "danger", true, $returnPath);
     exit;
   }
   $insertedChargeId = $createChargeStmt->insert_id;
@@ -134,21 +102,17 @@ try {
   $result = curl_exec($ch);
   if (curl_errno($ch)) {
     $connection->rollback();
-    $_SESSION['flash_message'] = "Error in binance connection: " . curl_error($ch);
-    $_SESSION['flash_type'] = "danger";
-    header("Location: $baseURL/profile/wallet.php");
+    showSessionAlert("Error in binance connection!", "danger", true, $returnPath);
     exit;
   }
   curl_close($ch);
 
-  var_dump($result);
+  // var_dump($result);
 
   $responseData = json_decode($result, true);
   if (!!$responseData["msg"] || !!$responseData["errorMessage"] || $responseData["status"] != "SUCCESS") {
     $connection->rollback();
-    $_SESSION['flash_message'] = "Error in the Binance side: " . ($responseData["errorMessage"] ? $responseData["errorMessage"] : ($responseData["msg"] ? $responseData["msg"] : $responseData["code"]));
-    $_SESSION['flash_type'] = "danger";
-    header("Location: $baseURL/profile/wallet.php");
+    showSessionAlert("Error in the Binance side: " . ($responseData["errorMessage"] ? $responseData["errorMessage"] : ($responseData["msg"] ? $responseData["msg"] : $responseData["code"])), "danger", true, $returnPath);
     exit;
   }
 
@@ -158,9 +122,8 @@ try {
   $updateChargeStmt = $connection->prepare("UPDATE `charges` SET prepay_id = ?, `status` = ? WHERE id = ?");
   $updateChargeStmt->bind_param("ssi", $prepayID, $newStatus, $insertedChargeId);
   if ($updateChargeStmt->errno) {
-    echo json_encode(["error" => "Error in storing binance prepay ID."]);
-    echo json_encode(["error" => $updateChargeStmt->error]);
     $connection->rollback();
+    showSessionAlert("Error in storing Binance prepay ID.", "danger", true, $returnPath);
     exit;
   }
   $updateChargeStmt->close();
@@ -171,12 +134,7 @@ try {
   header("location: $checkoutUrl");
   exit;
 } catch (Throwable $e) {
-  $_SESSION['flash_message'] = "Error in the server!";
-  $_SESSION['flash_message'] = $e->getMessage();
-  $_SESSION['flash_type'] = "danger";
-  header("Location: $baseURL/profile/wallet.php");
-
-  $errorMessage = $e->getFile() . " | " . $e->getLine() . " | " . $e->getMessage();
-  file_put_contents($errorLogsFilePath, $errorMessage, FILE_APPEND);
+  showSessionAlert("Error in the server!", "danger", true, $returnPath);
+  logErrors($e);
   exit;
 }

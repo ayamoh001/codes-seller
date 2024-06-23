@@ -1,41 +1,30 @@
 <?php
 try {
   require_once "../include/config.php";
+  require_once "../include/functions.php";
 
-  $userId = "";
+  $type = $_POST["type"];
+  $quantity = (int) $_POST["quantity"] ?? 1;
+  $groupId = (int) $_POST["groupId"];
+  $useWallet = (bool) $_POST["useWallet"];
+
+  $returnPath = "checkout.php?groupId=" . $groupId . "&quantity=" . $quantity . "&type=" . $type;
 
   if (isset($_SESSION["user_id"]) && $_SESSION["user_id"] != "") {
     $user_id = (int) $_SESSION["user_id"];
-    $getUserStmt = $connection->prepare("SELECT * FROM `users` WHERE id = ? AND status != 'BLOCKED' LIMIT 1");
-    $getUserStmt->bind_param("i", $user_id);
-    $getUserStmt->execute();
-    if ($getUserStmt->errno) {
-      $_SESSION['flash_message'] = "Error in the auth proccess! please try again.";
-      $_SESSION['flash_message'] = $getUserStmt->error;
-      $_SESSION['flash_type'] = "danger";
-      header("Location: $baseURL/login.php");
-    }
-    $userResult = $getUserStmt->get_result();
-    $user = $userResult->fetch_assoc();
-    $getUserStmt->close();
+    $user = getUser($user_id, $returnPath);
     $userId = $user["id"];
   } else {
     $userId = $guestIdPrefix . session_id();
   }
 
-  // start the process
-  $requestData = json_decode(file_get_contents("php://input"), true);
-  $type = $requestData["type"];
-  $quantity = (int) $requestData["quantity"] ?? 1;
-  $groupId = (int) $requestData["groupId"];
-  $useWallet = (bool) $requestData["useWallet"];
+
 
   $getGroupStmt = $connection->prepare("SELECT * FROM `groups` WHERE id = ? LIMIT 1");
   $getGroupStmt->bind_param("i", $groupId);
   $getGroupStmt->execute();
   if ($getGroupStmt->errno) {
-    echo json_encode(["error" => "Error in the Server! please contact the support."]);
-    echo json_encode(["error" => $getGroupStmt->error]);
+    showSessionAlert("Error in the Server! please contact the support.", "danger", true, $returnPath);
     exit;
   }
   $groupResult = $getGroupStmt->get_result();
@@ -44,7 +33,7 @@ try {
   // var_dump($group);
 
   if (!$group) {
-    echo json_encode(["error" => "No group with this ID!"]);
+    showSessionAlert("No group with this ID!", "danger", true, $returnPath);
     exit;
   }
 
@@ -54,8 +43,7 @@ try {
   $getProductsStmt->bind_param("isi", $groupId, $type, $quantity);
   $getProductsStmt->execute();
   if ($getProductsStmt->errno) {
-    echo json_encode(["error" => "Error in the Server! please contact the support."]);
-    echo json_encode(["error" => $getProductsStmt->error]);
+    showSessionAlert("Error in the Server! please contact the support.", "danger", true, $returnPath);
     exit;
   }
   $productsResult = $getProductsStmt->get_result();
@@ -70,7 +58,7 @@ try {
 
   // check products count
   if (count($products) < $quantity) {
-    echo json_encode(["error" => "No enough quantity! Please chose less quantity or contact us."]);
+    showSessionAlert("No enough quantity! Please chose less quantity or contact us.", "danger", true, $returnPath);
     exit;
   }
 
@@ -84,9 +72,8 @@ try {
   $createPaymentStmt = $connection->prepare("INSERT INTO `payments`(user_id, group_id, `status`, price, products, metadata1, metadata2) VALUES (?,?,?,?,?,?,?)");
   $createPaymentStmt->bind_param("iisdsss", $userId, $groupId, $status, $totalPrice, $encodedProductsIds, $metadata1, $metadata2);
   if ($createPaymentStmt->errno) {
-    echo json_encode(["error" => "Error in the Server! please contact the support."]);
-    echo json_encode(["error" => $createPaymentStmt->error]);
     $connection->rollback();
+    showSessionAlert("Error in the Server! please contact the support.", "danger", true, $returnPath);
     exit;
   }
   $insertedPaymentId = $createPaymentStmt->insert_id;
@@ -99,15 +86,14 @@ try {
   }
 
   $prepayID = "";
-  if ($useWallet) {
+  if ($useWallet == "TRUE") {
     // use wallet balance
     $getWalletStmt = $connection->prepare("SELECT id FROM `wallets` WHERE user_id = ? LIMIT 1");
     $getWalletStmt->bind_param("i", $userId);
     $getWalletStmt->execute();
     if ($getWalletStmt->errno) {
-      echo json_encode(["error" => "Error in the Server! please contact the support."]);
-      echo json_encode(["error" => $getWalletStmt->error]);
       $connection->rollback();
+      showSessionAlert("Error in the Server! please contact the support.", "danger", true, $returnPath);
       exit;
     }
     $walletResult = $getWalletStmt->get_result();
@@ -116,8 +102,8 @@ try {
     $getWalletStmt->close();
 
     if ($wallet["balance"] < $totalPrice) {
-      echo json_encode(["error" => "Not enough balance! please charge your wallet first."]);
       $connection->rollback();
+      showSessionAlert("Not enough balance! please charge your wallet first.", "danger", true, $returnPath);
       exit;
     }
 
@@ -125,9 +111,8 @@ try {
     $subtractBalanceStmt = $connection->prepare("UPDATE `wallets` SET balance = balance - ? WHERE id = ?");
     $subtractBalanceStmt->bind_param("di", $totalPrice, $walletId);
     if ($subtractBalanceStmt->errno) {
-      echo json_encode(["error" => "Error in the Server! please contact the support."]);
-      echo json_encode(["error" => $subtractBalanceStmt->error]);
       $connection->rollback();
+      showSessionAlert("Error in the Server! please contact the support.", "danger", true, $returnPath);
       exit;
     }
     $subtractBalanceStmt->close();
@@ -188,7 +173,7 @@ try {
 
     $result = curl_exec($ch);
     if (curl_errno($ch)) {
-      echo json_encode(["error" => "Error in binance connection: " . curl_error($ch)]);
+      showSessionAlert("Error in binance connection!", "danger", true, $returnPath);
       $connection->rollback();
       exit;
     }
@@ -214,8 +199,9 @@ try {
 
     $responseData = json_decode($result, true);
     if (!!$responseData["msg"] || !!$responseData["errorMessage"] || $responseData["status"] != "SUCCESS") {
-      echo json_encode(["error" => "Error in the Binance side: " . ($responseData["errorMessage"] ? $responseData["errorMessage"] : ($responseData["msg"] ? $responseData["msg"] : $responseData["code"]))]);
       $connection->rollback();
+      showSessionAlert("Error in the Binance side: " . ($responseData["errorMessage"] ? $responseData["errorMessage"] : ($responseData["msg"] ? $responseData["msg"] : $responseData["code"])), "danger", true, $returnPath);
+
       exit;
     }
 
@@ -228,26 +214,19 @@ try {
   $updatePaymentStmt = $connection->prepare("UPDATE `payments` SET prepay_id = ?, `status` = ?, type = ? WHERE id = ?");
   $updatePaymentStmt->bind_param("sssi", $prepayID, $newStatus, $type, $insertedPaymentId);
   if ($updatePaymentStmt->errno) {
-    echo json_encode(["error" => "Error in storing binance prepay ID."]);
-    echo json_encode(["error" => $updatePaymentStmt->error]);
     $connection->rollback();
+    showSessionAlert("Error in storing binance prepay ID.", "danger", true, $returnPath);
     exit;
   }
   $updatePaymentStmt->close();
 
+
+  $paymentCheckoutURL = $responseData["checkoutUrl"];
+
   $connection->commit();
-
-  // $paymentCheckoutURL = $responseData["checkoutUrl"];
-
-  echo json_encode([
-    "status" => "SUCCESS",
-    "message" => "Payment Page Created Successfully!",
-    "data" => $responseData,
-  ]);
+  header("location: $paymentCheckoutURL");
 } catch (Throwable $e) {
-  $errorMessage = $e->getFile() . " | " . $e->getLine() . " | " . $e->getMessage();
-  echo json_encode(["error" => "Error in the server!"]);
-  echo json_encode(["error" => $errorMessage]);
-  file_put_contents($errorLogsFilePath, $errorMessage, FILE_APPEND);
+  showSessionAlert("Error in the server!", "danger", true, $returnPath);
+  logErrors($e);
   exit;
 }
