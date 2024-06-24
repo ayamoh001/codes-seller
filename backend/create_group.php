@@ -56,8 +56,8 @@ try {
   $createNewGroupStmt->bind_param("sssii", $title, $description, $uploadPathRelative, $sortIndex, $visibility);
   $createNewGroupStmt->execute();
   if ($createNewGroupStmt->errno) {
-    showSessionAlert($createNewGroupStmt->error, "danger", true, $returnPath);
     $connection->rollback();
+    showSessionAlert($createNewGroupStmt->error, "danger", true, $returnPath);
     exit;
   }
   $createNewGroupStmt->close();

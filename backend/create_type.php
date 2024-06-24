@@ -51,8 +51,8 @@ try {
   $createNewProductStmt->bind_param("isdi", $groupId, $typeName, $price, $sortIndex);
   $createNewProductStmt->execute();
   if ($createNewProductStmt->errno) {
-    showSessionAlert("Error in the creating process!", "danger", true, $returnPath);
     $connection->rollback();
+    showSessionAlert("Error in the creating process!", "danger", true, $returnPath);
     exit;
   }
   $createNewProductStmt->close();

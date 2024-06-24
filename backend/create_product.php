@@ -3,7 +3,7 @@ try {
   require_once "../include/config.php";
   require_once "../include/functions.php";
 
-  $returnPath = "admin/products.php";
+  $returnPath = "admin/index.php";
 
   if (
     !isset($_SERVER['PHP_AUTH_USER']) ||
@@ -22,7 +22,7 @@ try {
     exit;
   }
 
-  $typeId = $_POST["type_id"];
+  $typeId = (int) $_POST["type_id"];
 
   $getTypeStmt = $connection->prepare("SELECT * FROM `types` WHERE id = ? LIMIT 1");
   $getTypeStmt->bind_param("i", $typeId);
@@ -40,18 +40,50 @@ try {
     exit;
   }
 
-  $codeValue = $_POST["code_value"];
-
   $connection->begin_transaction();
-  $createNewProductStmt = $connection->prepare("INSERT INTO `products`(type_id, code_value) VALUES (?, ?)");
-  $createNewProductStmt->bind_param("ss", $typeId, $codeValue);
-  $createNewProductStmt->execute();
-  if ($createNewProductStmt->errno) {
-    showSessionAlert("Error in the creating process!", "danger", true, $returnPath);
-    $connection->rollback();
-    exit;
+
+  // check if a file is uploaded otherwise ignore it
+  if (isset($_FILES["file"]) && $_FILES["file"]["error"] === UPLOAD_ERR_OK) {
+    $file = $_FILES["file"];
+    $fileName = $file["name"];
+    $fileType = $file["type"];
+    $fileSize = $file["size"];
+    $fileTmpName = $file["tmp_name"];
+    // check if the file is a text file
+    if (in_array($fileType, ["text/plain", "text/csv"])) {
+      $fileContent = file_get_contents($fileTmpName);
+      $fileContent = str_replace("\r\n", "\n", $fileContent);
+      $fileContent = explode("\n", $fileContent);
+      $fileContent = array_filter($fileContent, 'trim');
+      foreach ($fileContent as $code) {
+        $code = (string) trim($code);
+        if ($code != "" && !empty($code) && !!$code) {
+          $createNewProductStmt = $connection->prepare("INSERT INTO `products`(type_id, code_value) VALUES (?, ?)");
+          $createNewProductStmt->bind_param("is", $typeId, $code);
+          $createNewProductStmt->execute();
+          if ($createNewProductStmt->errno) {
+            $connection->rollback();
+            showSessionAlert("Error in the creating process!", "danger", true, $returnPath);
+            exit;
+          }
+          $createNewProductStmt->close();
+        }
+      }
+    }
   }
-  $createNewProductStmt->close();
+
+  if (isset($_POST["code_value"])) {
+    $codeValue = $_POST["code_value"];
+    $createNewProductStmt = $connection->prepare("INSERT INTO `products`(type_id, code_value) VALUES (?, ?)");
+    $createNewProductStmt->bind_param("is", $typeId, $codeValue);
+    $createNewProductStmt->execute();
+    if ($createNewProductStmt->errno) {
+      $connection->rollback();
+      showSessionAlert("Error in the creating process!", "danger", true, $returnPath);
+      exit;
+    }
+    $createNewProductStmt->close();
+  }
 
   $connection->commit();
   showSessionAlert("New Product was created for the type successfully!", "success");

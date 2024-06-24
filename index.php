@@ -65,15 +65,16 @@ require_once "./include/header.php";
                   <div id="quantities-container-<?php echo $group["id"]; ?>">
                     <?php
                     $isFirst = true;
-                    foreach ($group["types"] as $type => $products) :
+                    foreach ($group["types"] as $type => $typeData) :
                     ?>
-                      <input type="number" min="1" max="<?php echo count($products); ?>" class="form-control mb-3" id="products-of-type-quantity-<?php echo $group["id"] . "-" . $type; ?>" placeholder="1" style="display: <?php echo $isFirst ? "block" : "none";
-                                                                                                                                                                                                                            $isFirst && $isFirst = false ?>;">
+                      <input type="number" min="1" max="<?php echo count($typeData["products"]); ?>" class="form-control mb-3" id="products-of-type-quantity-<?php echo $group["id"] . "-" . $type; ?>" placeholder="1" style="display: <?php echo $isFirst ? "block" : "none";
+                                                                                                                                                                                                                                        $isFirst && $isFirst = false ?>;">
                     <?php endforeach; ?>
                   </div>
                 <?php else : ?>
                   <div class="alert alert-warning p-3" role="alert">
                     <h4 class="alert-heading m-0">Out of stock!</h4>
+                    <p class="alert-text m-0">Sorry, but this cards are out of stock.</p>
                   </div>
                 <?php endif; ?>
                 <div class="d-flex gap-2 mt-auto">
@@ -94,6 +95,9 @@ require_once "./include/header.php";
 
 <script type="module">
   const groups = await fetch("./backend/get_groups.php").then(res => res.json())
+  // make the groups variable global
+  window.groups = groups
+
   // console.log({
   //   groups
   // })
@@ -113,12 +117,14 @@ require_once "./include/header.php";
   })
 
   for (let i in groups) {
+    if (groups[i].types.length == 0) continue;
+
     let total = 0
-    let selectedType = ""
+    let selectedType = Object.keys(groups[i].types)[0]
     let selectedQuantity = 1
     let typeSelectInput = document.querySelector(`#products-types-select-${i}`)
     const quantitiesContainer = document.querySelector(`#quantities-container-${i}`)
-    const products = groups[i].products
+    const types = groups[i].types
     const submitButton = document.querySelector(`#button-for-group-${i}`)
     const totalPriceButton = document.querySelector(`#total-price-for-group-${i}`)
 
@@ -128,17 +134,28 @@ require_once "./include/header.php";
 
     function updateTotalPrice() {
       totalPriceButton.disabled = false
-      total = 0
-      groups[i].products[selectedType].map((product, i) => {
-        if (i < selectedQuantity) {
-          total = (Number(total) + Number(product.price)).toString()
-        }
-      })
+      total = groups[i].types[selectedType].price * selectedQuantity
       console.log({
         total
       })
       totalPriceButton.innerHTML = total
     }
+    updateTotalPrice()
+
+    const quantitiesInputsForType = quantitiesContainer.querySelectorAll(`[id^="products-of-type-quantity-"]`)
+    quantitiesInputsForType.forEach(quantityOfTypeInput => {
+      quantityOfTypeInput.addEventListener("change", () => {
+        let value = quantityOfTypeInput.value
+        if (value > types[selectedType].products.length) {
+          quantityOfTypeInput.value = types[selectedType].products.length
+        }
+        selectedQuantity = quantityOfTypeInput.value
+        console.log({
+          selectedQuantity
+        })
+        updateTotalPrice()
+      })
+    })
 
     typeSelectInput.addEventListener("change", () => {
       selectedType = typeSelectInput.value
@@ -146,19 +163,9 @@ require_once "./include/header.php";
       const quantitiesInputsForType = quantitiesContainer.querySelectorAll(`[id^="products-of-type-quantity-"]`)
       quantitiesInputsForType.forEach(quantityOfTypeInput => {
         quantityOfTypeInput.style.display = "none"
-        quantityOfTypeInput.addEventListener("change", () => {
-          let value = quantityOfTypeInput.value
-          if (value > products[selectedType].length) {
-            quantityOfTypeInput.value = products[selectedType].length
-          }
-          selectedQuantity = quantityOfTypeInput.value
-          console.log({
-            selectedQuantity
-          })
-          updateTotalPrice()
-        })
       })
-      // show target qunatity
+
+      // show target qunatity input
       const quantityOfType = document.querySelector(`#products-of-type-quantity-${i}-${CSS.escape(selectedType)}`)
       quantityOfType.style.display = "block"
 

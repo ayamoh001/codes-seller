@@ -3,7 +3,7 @@ try {
   require_once "../include/config.php";
   require_once "../include/functions.php";
 
-  $returnPath = "admin/products.php";
+  $returnPath = "admin/index.php";
 
   if (
     !isset($_SERVER['PHP_AUTH_USER']) ||
@@ -29,13 +29,13 @@ try {
   $deleteProductStmt->bind_param("i", $productId);
   $deleteProductStmt->execute();
   if ($deleteProductStmt->errno) {
-    showSessionAlert($deleteProductStmt->error, "danger", true, $returnPath);
     $connection->rollback();
+    showSessionAlert($deleteProductStmt->error, "danger", true, $returnPath);
     exit;
   }
   if ($deleteProductStmt->affected_rows == 0) {
-    showSessionAlert("No product was deleted, be sure the product is exists and not sold yet.", "danger", true, $returnPath);
     $connection->rollback();
+    showSessionAlert("No product was deleted, be sure the product is exists and not sold yet.", "danger", true, $returnPath);
     exit;
   };
 

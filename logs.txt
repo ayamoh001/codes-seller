@@ -1,2 +1,0 @@
-Array | 50 | Column 'sort_index' cannot be null
-Array | 38 | Unknown column 'payments_id' in 'where clause'
