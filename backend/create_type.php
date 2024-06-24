@@ -3,7 +3,7 @@ try {
   require_once "../include/config.php";
   require_once "../include/functions.php";
 
-  $returnPath = "admin/products.php";
+  $returnPath = "admin/";
 
   if (
     !isset($_SERVER['PHP_AUTH_USER']) ||
@@ -22,29 +22,33 @@ try {
     exit;
   }
 
-  $typeId = $_POST["type_id"];
+  $groupId = $_POST["group_id"];
 
-  $getTypeStmt = $connection->prepare("SELECT * FROM `types` WHERE id = ? LIMIT 1");
-  $getTypeStmt->bind_param("i", $typeId);
-  $getTypeStmt->execute();
-  if ($getTypeStmt->errno) {
+  $getGroupStmt = $connection->prepare("SELECT * FROM `groups` WHERE id = ? LIMIT 1");
+  $getGroupStmt->bind_param("i", $groupId);
+  $getGroupStmt->execute();
+  if ($getGroupStmt->errno) {
     showSessionAlert("Error in the getting process!", "danger", true, $returnPath);
     exit;
   }
-  $typeResult = $getTypeStmt->get_result();
-  $type = $typeResult->fetch_assoc();
-  $getTypeStmt->close();
+  $groupResult = $getGroupStmt->get_result();
+  $group = $groupResult->fetch_assoc();
+  $getGroupStmt->close();
 
-  if (!$type) {
-    showSessionAlert("No type with this ID!", "danger", true, $returnPath);
+  if (!$group) {
+    showSessionAlert("No group with this ID!", "danger", true, $returnPath);
     exit;
   }
 
-  $codeValue = $_POST["code_value"];
+  $typeName = $_POST["type_name"];
+  $sortIndex = (int)$_POST["sort_index"];
+  $price = (float)$_POST["price"];
+  // var_dump($price);
+  // exit;
 
   $connection->begin_transaction();
-  $createNewProductStmt = $connection->prepare("INSERT INTO `products`(type_id, code_value) VALUES (?, ?)");
-  $createNewProductStmt->bind_param("ss", $typeId, $codeValue);
+  $createNewProductStmt = $connection->prepare("INSERT INTO `types`(group_id, name, price, sort_index) VALUES (?, ?, ?, ?)");
+  $createNewProductStmt->bind_param("isdi", $groupId, $typeName, $price, $sortIndex);
   $createNewProductStmt->execute();
   if ($createNewProductStmt->errno) {
     showSessionAlert("Error in the creating process!", "danger", true, $returnPath);
@@ -54,7 +58,7 @@ try {
   $createNewProductStmt->close();
 
   $connection->commit();
-  showSessionAlert("New Product was created for the type successfully!", "success");
+  showSessionAlert("New Type was created for the group successfully!", "success");
   header("Location: $baseURL/admin/");
   exit;
 } catch (Throwable $e) {

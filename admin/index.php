@@ -16,51 +16,10 @@ if (
 
 $returnPath = "admin/index.php";
 
-$getGroupsWithProuductsStmt = $connection->prepare("SELECT g.*, p.id AS product_id, p.code_value, p.type, p.price, p.payment_id
-                                                    FROM `groups` g
-                                                    LEFT JOIN `products` p ON g.id = p.group_id
-                                                    WHERE p.payment_id IS NULL
-                                                    ORDER BY g.sort_index, g.id");
-
-$getGroupsWithProuductsStmt->execute();
-if ($getGroupsWithProuductsStmt->errno) {
-  showSessionAlert($getGroupsWithProuductsStmt->error, "danger", true, $returnPath);
-  exit;
-}
-$getGroupsWithProuductsResults = $getGroupsWithProuductsStmt->get_result();
-$getGroupsWithProuductsStmt->close();
-
-$groups = [];
-
-while ($row = $getGroupsWithProuductsResults->fetch_assoc()) {
-  // var_dump($row);
-  if (!isset($groups[$row["id"]])) {
-    $groups[$row["id"]] = [
-      'id' => $row["id"],
-      'title' => $row["title"],
-      'description' => $row["description"],
-      'image' => $row["image"],
-      'sort_index' => $row["sort_index"],
-      'visibility' => $row["visibility"],
-      'date' => $row["date"],
-      'products' => []
-    ];
-  }
-
-  if (isset($row["product_id"])) {
-    $groups[$row["id"]]["products"][$row["type"]][] = [
-      'id' => $row["product_id"],
-      'code_value' => $row["code_value"],
-      'type' => $row["type"],
-      'payment_id' => $row["payment_id"],
-      'price' => $row["price"],
-      'date' => $row["date"],
-    ];
-  }
-}
-
-// Convert associative array to indexed array
-$groups = array_values($groups);
+$groups = getGroups();
+echo "<pre>";
+var_dump($groups);
+echo "</pre>";
 
 $title = "Admin Dashboard - Home";
 
@@ -142,37 +101,37 @@ require_once "../include/admin/header.php";
               <table class="table table-secondary w-100">
                 <thead>
                   <tr>
-                    <th scope="col">Product ID</th>
+                    <th scope="col">Type ID</th>
+                    <th scope="col">Type Name</th>
                     <th scope="col">Price</th>
-                    <th scope="col">Type</th>
-                    <th scope="col">Code Value</th>
-                    <th scope="col">Payment ID</th>
-                    <th scope="col">Create Date</th>
+                    <th scope="col">Products</th>
+                    <th scope="col">Sort Index</th>
                     <th scope="col">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   <?php
-                  foreach ($group["products"] as $type => $productsByType) :
-                    foreach ($productsByType as $product) :
-                      // var_dump($product);
+                  foreach ($group["types"] as $type) :
+                    // var_dump($type);
                   ?>
-                      <tr>
-                        <th scope="row"><?php echo $product["id"]; ?></th>
-                        <td><?php echo $product["price"]; ?></td>
-                        <td><?php echo $product["type"]; ?></td>
-                        <td><?php echo $product["code_value"]; ?></td>
-                        <td><?php echo $product["payment_id"] ?? "<span class='small text-white bg-secondary py-1 px-3 rounded-pill'>Not Sold Yet<span>"; ?></td>
-                        <td><?php echo $product["date"]; ?></td>
-                        <td>
-                          <form action="<?php echo $baseURL; ?>/backend/delete_product.php" method="POST">
-                            <input type="hidden" name="product_id" value="<?php echo $product["id"]; ?>">
-                            <button class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></button>
-                          </form>
-                        </td>
-                      </tr>
+                    <tr>
+                      <th scope="row"><?php echo $type["id"]; ?></th>
+                      <td><?php echo $type["name"]; ?></td>
+                      <td><?php echo $type["price"]; ?></td>
+                      <td><?php echo count($type["products"]); ?></td>
+                      <td><?php echo $type["sort_index"]; ?></td>
+                      <td class="d-flex gap-2">
+                        <div>
+                          <input type="hidden" name="type_id" value="<?php echo $type["id"]; ?>">
+                          <button class="btn btn-warning btn-sm"><i class="bi bi-pencil-square"></i></button>
+                        </div>
+                        <form action="<?php echo $baseURL; ?>/backend/delete_type.php" method="POST">
+                          <input type="hidden" name="type_id" value="<?php echo $type["id"]; ?>">
+                          <button class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></button>
+                        </form>
+                      </td>
+                    </tr>
                   <?php
-                    endforeach;
                   endforeach;
                   ?>
                 </tbody>
@@ -180,36 +139,36 @@ require_once "../include/admin/header.php";
             </div>
             <div class="d-flex gap-2">
               <!-- Add Product button -->
-              <button type="button" class="btn btn-primary fw-bold w-100 d-flex gap-2 justify-content-center" data-bs-toggle="modal" data-bs-target="#add-product-modal-<?php echo $group["id"]; ?>">
+              <button type="button" class="btn btn-primary fw-bold w-100 d-flex gap-2 justify-content-center" data-bs-toggle="modal" data-bs-target="#add-type-modal-<?php echo $group["id"]; ?>">
                 <i class="bi bi-plus-circle-fill"></i>
-                <span>Add Product</span>
+                <span>Add New Type</span>
               </button>
-              <!-- Add Product Modal -->
-              <div class="modal fade" id="add-product-modal-<?php echo $group["id"] ?>" aria-labelledby="add-product-label-<?php echo $group["id"] ?>" tabindex="-1" role="dialog" aria-hidden="true">
+              <!-- Add type Modal -->
+              <div class="modal fade" id="add-type-modal-<?php echo $group["id"] ?>" aria-labelledby="add-type-label-<?php echo $group["id"] ?>" tabindex="-1" role="dialog" aria-hidden="true">
                 <div class="modal-dialog" role="document">
                   <div class="modal-content">
                     <div class="modal-header">
-                      <h5 class="modal-title" id="add-product-label-<?php echo $group["id"] ?>">Add new product for this group</h5>
+                      <h5 class="modal-title" id="add-type-label-<?php echo $group["id"] ?>">Add new cards type for this group</h5>
                       <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                       <div class="row justify-content-center">
                         <div class="col-md-6 w-100 m-0">
-                          <form action="<?php echo $baseURL; ?>/backend/create_product.php" method="POST" enctype="multipart/form-data">
+                          <form action="<?php echo $baseURL; ?>/backend/create_type.php" method="POST" enctype="multipart/form-data">
                             <input type="hidden" name="group_id" value="<?php echo $group["id"] ?>">
                             <div class="mb-3">
-                              <label for="code_value" class="form-label">Code Value</label>
-                              <input type="text" class="form-control" id="code_value" name="code_value" placeholder="code value (ZpkdKOFJdXkfadfDPl)" required>
-                            </div>
-                            <div class="mb-3">
-                              <label for="type" class="form-label">Type/Class (to classify products)</label>
-                              <input type="text" class="form-control" id="type" name="type" placeholder="25$" required>
+                              <label for="type" class="form-label">Type Name (e.g 50$)</label>
+                              <input type="text" class="form-control" id="type_name" name="type_name" placeholder="25$" required>
                             </div>
                             <div class="mb-3">
                               <label for="price" class="form-label">Price ($)</label>
                               <input type="number" min="0.01" step="0.01" class="form-control" id="price" name="price" placeholder="00.00" required>
                             </div>
-                            <button type="submit" class="btn btn-primary w-100 fw-bold">Add</button>
+                            <div class="mb-3">
+                              <label for="sort" class="form-label">Sort</label>
+                              <input type="number" min="1" class="form-control" id="sort" name="sort_index" placeholder="0" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100 fw-bold">Add New Type</button>
                           </form>
                         </div>
                       </div>
@@ -227,7 +186,7 @@ require_once "../include/admin/header.php";
                 <div class="modal-dialog" role="document">
                   <div class="modal-content">
                     <div class="modal-header">
-                      <h5 class="modal-title" id="edit-group-label-<?php echo $group["id"] ?>">Edit this group of products</h5>
+                      <h5 class="modal-title" id="edit-group-label-<?php echo $group["id"] ?>">Edit this group of types</h5>
                       <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">

@@ -22,33 +22,31 @@ try {
     exit;
   }
 
-  $groupId = $_POST["group_id"];
+  $typeId = $_POST["type_id"];
 
   $connection->begin_transaction();
-  $deleteGroupStmt = $connection->prepare("DELETE FROM `groups` WHERE id = ? LIMIT 1");
-  $deleteGroupStmt->bind_param("i", $groupId);
-  $deleteGroupStmt->execute();
-  if ($deleteGroupStmt->errno) {
+  $deleteTypeStmt = $connection->prepare("DELETE FROM `types` WHERE id = ? LIMIT 1");
+  $deleteTypeStmt->bind_param("i", $typeId);
+  $deleteTypeStmt->execute();
+  if ($deleteTypeStmt->errno) {
     $connection->rollback();
     showSessionAlert("Error in the deleting process!", "danger", true, $returnPath);
     exit;
   }
-  $deleteGroupStmt->close();
+  $deleteTypeStmt->close();
 
-  $deleteRelatedTypesStmt = $connection->prepare("DELETE FROM `types` WHERE group_id = ?");
-  $deleteRelatedTypesStmt->bind_param("i", $groupId);
-  $deleteRelatedTypesStmt->execute();
-  if ($deleteRelatedTypesStmt->errno) {
+  $deleteRelatedProductsStmt = $connection->prepare("DELETE FROM `products` WHERE type_id = ?");
+  $deleteRelatedProductsStmt->bind_param("i", $typeId);
+  $deleteRelatedProductsStmt->execute();
+  if ($deleteRelatedProductsStmt->errno) {
     $connection->rollback();
     showSessionAlert("Error in the deleting process!", "danger", true, $returnPath);
     exit;
   }
-  $deleteRelatedTypesStmt->close();
-
-  // FOR NOW THE PRODUCTS ARE NOT DELETED DUE TO THE MORE OVERHEAD (CASCADE NOT SUITABLE FOR THIS)
+  $deleteRelatedProductsStmt->close();
 
   $connection->commit();
-  showSessionAlert("Group and its codes were deleted successfully!", "success");
+  showSessionAlert("Type and its codes were deleted successfully!", "success");
   header("Location: $baseURL/admin/");
   exit;
 } catch (Throwable $e) {

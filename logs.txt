@@ -1,6 +1,2 @@
-Array | 71 | You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near ''50$')
-                                                      -- AND (p.type ...' at line 4
-Array | 71 | Unknown column '50$' in 'where clause'
-Array | 71 | You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '= `50$`)
-                                                      -- AND (p.typ...' at line 4
-Array | 77 | The number of variables must match the number of parameters in the prepared statement
+Array | 50 | Column 'sort_index' cannot be null
+Array | 38 | Unknown column 'payments_id' in 'where clause'

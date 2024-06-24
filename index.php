@@ -2,6 +2,8 @@
 require_once "./include/config.php";
 require_once "./include/functions.php";
 
+// printFlashMessages();
+// exit;
 $returnPath = "";
 $user_id = "";
 if (isset($_SESSION["user_id"]) && $_SESSION["user_id"] != "") {
@@ -11,6 +13,9 @@ if (isset($_SESSION["user_id"]) && $_SESSION["user_id"] != "") {
 }
 
 $groups = getGroups();
+// echo "<pre>";
+// var_dump($groups);
+// echo "</pre>";
 
 $canonicalPath = "";
 $title = "Crypto Cards - Home";
@@ -19,15 +24,13 @@ require_once "./include/header.php";
 
 <main class="py-5 bg-dark">
   <div class="container my-5">
-    <?php
-    printFlashMessages();
-    ?>
+
     <!-- Hero Section -->
     <section class="hero-section bg-dark text-light mb-5">
       <div class="text-center">
         <h1 class="display-4 fw-bold">INSTANT DELIVERY</h1>
-        <p class="lead">Choose your code type</p>
-        <a href="<?php echo $baseURL . ((isset($user_id) && $user_id != "") ? "/profile/" : "/login.php"); ?>" class="btn btn-primary btn-lg px-5 fw-bold mt-2"><?php echo $user_id == "" ? "LOGIN NOW" : "Your Account"; ?></a>
+        <a href="<?php echo $baseURL . ((isset($user_id) && $user_id != "") ? "/profile/" : "/login.php"); ?>" class="btn btn-primary btn-lg px-5 fw-bold my-2"><?php echo $user_id == "" ? "LOGIN NOW" : "Your Account"; ?></a>
+        <p class="lead">And buy your code type</p>
       </div>
     </section>
 
@@ -45,67 +48,45 @@ require_once "./include/header.php";
                     <p class="card-text line-clamp-2 text-muted"><?php echo $group["description"]; ?></p>
                   </div>
                 </div>
-                <ul id="types-radios-container-<?php echo $group["id"]; ?>" class="d-flex gap-2 list-unstyled">
-                  <?php
-                  $isFirst = true;
-                  foreach ($group["products"] as $type => $products) :
-                  ?>
-                    <li data-type-id="radio-type-<?php echo $group["id"] . "-" . $type ?>">
-                      <div class="form-check">
-                        <input class="form-check-input" type="radio" name="products-types-radio<?php echo $group["id"]; ?>" id="products-types-radio-<?php echo $group["id"] . "-" . $type ?>">
-                        <label class="form-check-label" for="products-types-radio-label-<?php echo $group["id"] ?>">
-                          <?php echo $type ?>
-                        </label>
-                      </div>
-                    </li>
-                  <?php endforeach; ?>
-                </ul>
-                <div id="quantities-container-<?php echo $group["id"]; ?>">
-                  <?php
-                  $isFirst = true;
-                  foreach ($group["products"] as $type => $products) :
-                  ?>
-                    <input type="number" min="1" max="<?php echo count($products); ?>" class="form-control mb-3" id="products-of-type-quantity-<?php echo $group["id"] . "-" . $type; ?>" placeholder="1" style="display: <?php echo $isFirst ? "block" : "none";
-                                                                                                                                                                                                                          $isFirst = false; ?>;">
-                  <?php endforeach; ?>
-                </div>
+                <?php
+                if (count($group["types"])) :
+                ?>
+                  <select id="products-types-select-<?php echo $group["id"]; ?>" class="form-select mb-2">
+                    <?php
+                    $isFirst = true;
+                    foreach ($group["types"] as $type => $products) :
+                    ?>
+                      <option <?php if ($isFirst) {
+                                echo "selected";
+                                $isFirst = false;
+                              } ?> value="<?php echo $type; ?>"><?php echo $type; ?></option>
+                    <?php endforeach; ?>
+                  </select>
+                  <div id="quantities-container-<?php echo $group["id"]; ?>">
+                    <?php
+                    $isFirst = true;
+                    foreach ($group["types"] as $type => $products) :
+                    ?>
+                      <input type="number" min="1" max="<?php echo count($products); ?>" class="form-control mb-3" id="products-of-type-quantity-<?php echo $group["id"] . "-" . $type; ?>" placeholder="1" style="display: <?php echo $isFirst ? "block" : "none";
+                                                                                                                                                                                                                            $isFirst && $isFirst = false ?>;">
+                    <?php endforeach; ?>
+                  </div>
+                <?php else : ?>
+                  <div class="alert alert-warning p-3" role="alert">
+                    <h4 class="alert-heading m-0">Out of stock!</h4>
+                  </div>
+                <?php endif; ?>
                 <div class="d-flex gap-2 mt-auto">
                   <button id="button-for-group-<?php echo $group["id"]; ?>" type="button" class="btn btn-primary fw-bold w-100">
-                    <span id="total-price-for-group-<?php echo $group["id"]; ?>">---</span> USD
+                    <span id="total-price-for-group-<?php echo $group["id"]; ?>">0.0</span> USD
                   </button>
-                  <a type="button" class="btn btn-outline-primary fw-bold w-100" href="https://wa.me/+601167999817" target="_blank" rel="noopener noreferrer">
-                    Ask
+                  <a type="button" class="btn btn-outline-primary fw-bold w-100" href="https://wa.me/+60176940955" target="_blank" rel="noopener noreferrer">
+                    Ask for it
                   </a>
                 </div>
               </div>
             </div>
           </div>
-
-          <!-- Modal -->
-          <!-- <div class="modal fade" id="group-modal-<?php echo $group["id"]; ?>" aria-labelledby="group-modal-label-<?php echo $group["id"]; ?>" tabindex="-1" role="dialog" aria-hidden="true">
-            <div class="modal-dialog" role="document">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h5 class="modal-title" id="group-modal-label-<?php echo $group["id"]; ?>"><?php echo $group["title"]; ?></h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                  <div id="loader-for-group-modal-<?php echo $group["id"]; ?>" style="display: none;">
-                    <div class='loader-container my-5'>
-                      <div id='loader' class='loader'></div>
-                    </div>
-                  </div>
-                  <div id="payment-status-for-group-modal-<?php echo $group["id"]; ?>" style="display: block;">
-
-                  </div>
-                </div>
-                <div class="modal-footer">
-                  <button id="submit-payment-button-<?php echo $group["id"]; ?>" type="button" class="btn btn-primary btn-lg w-100 fw-bold">Buy for <span id="total-price-for-group-modal-<?php echo $group["id"]; ?>">---</span> USD</button>
-                </div>
-              </div>
-            </div>
-          </div> -->
-
         <?php endforeach; ?>
       </div>
     </section>
@@ -116,7 +97,7 @@ require_once "./include/header.php";
   // console.log({
   //   groups
   // })
-  async function submitPayment(groupId, quantity, type, button) {
+  async function proccedToCheckout(groupId, quantity, type, button) {
     console.log({
       groupId,
       quantity,
@@ -124,36 +105,7 @@ require_once "./include/header.php";
       button
     })
     button.disabled = true
-    try {
-      window.location.href = "./checkout.php?groupId=" + groupId + "&quantity=" + quantity + "&type=" + type
-      // const createPaymentResult = await fetch("<?php echo $baseURL; ?>/backend/create_payment.php", {
-      //   credentials: "include",
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify({
-      //     quantity,
-      //     type,
-      //     groupId,
-      //   })
-      // })
-      // const createPaymentResultData = await createPaymentResult
-      //   // .json()
-      //   .text()
-
-      // console.log({
-      //   createPaymentResultData
-      // })
-      // window.location.href = createPaymentResultData.data.checkoutUrl
-    } catch (e) {
-      alert("Error in the proccess! Please contact the support.")
-      console.log({
-        e
-      })
-    } finally {
-      button.disabled = false
-    }
+    window.location.href = "./checkout.php?groupId=" + groupId + "&quantity=" + quantity + "&type=" + type
   }
 
   console.log({
@@ -164,16 +116,18 @@ require_once "./include/header.php";
     let total = 0
     let selectedType = ""
     let selectedQuantity = 1
+    let typeSelectInput = document.querySelector(`#products-types-select-${i}`)
     const quantitiesContainer = document.querySelector(`#quantities-container-${i}`)
     const products = groups[i].products
     const submitButton = document.querySelector(`#button-for-group-${i}`)
     const totalPriceButton = document.querySelector(`#total-price-for-group-${i}`)
 
     submitButton.addEventListener("click", () => {
-      submitPayment(groups[i].id, selectedQuantity, selectedType, submitButton)
+      proccedToCheckout(groups[i].id, selectedQuantity, selectedType, submitButton)
     })
 
     function updateTotalPrice() {
+      totalPriceButton.disabled = false
       total = 0
       groups[i].products[selectedType].map((product, i) => {
         if (i < selectedQuantity) {
@@ -186,43 +140,30 @@ require_once "./include/header.php";
       totalPriceButton.innerHTML = total
     }
 
-    for (let type in products) {
-      if (selectedType == "") {
-        selectedType = type
-      }
+    typeSelectInput.addEventListener("change", () => {
+      selectedType = typeSelectInput.value
+      // hide siblings
       const quantitiesInputsForType = quantitiesContainer.querySelectorAll(`[id^="products-of-type-quantity-"]`)
-      // console.log({
-      //   quantitiesInputsForType
-      // })
-      const radioCheck = document.querySelector(`#products-types-radio-${i}-${CSS.escape(type)}`)
-
-      radioCheck.addEventListener("click", () => {
-        selectedType = type
-        // hide siblings
-        quantitiesInputsForType.forEach(quantityOfTypeInput => {
-          quantityOfTypeInput.style.display = "none"
-          quantityOfTypeInput.addEventListener("change", () => {
-            let value = quantityOfTypeInput.value
-            if (value > products[type].length) {
-              quantityOfTypeInput.value = products[type].length
-            }
-            selectedQuantity = quantityOfTypeInput.value
-            console.log({
-              selectedQuantity
-            })
-            updateTotalPrice()
+      quantitiesInputsForType.forEach(quantityOfTypeInput => {
+        quantityOfTypeInput.style.display = "none"
+        quantityOfTypeInput.addEventListener("change", () => {
+          let value = quantityOfTypeInput.value
+          if (value > products[selectedType].length) {
+            quantityOfTypeInput.value = products[selectedType].length
+          }
+          selectedQuantity = quantityOfTypeInput.value
+          console.log({
+            selectedQuantity
           })
+          updateTotalPrice()
         })
-        // show target qunatity
-        const quantityOfType = document.querySelector(`#products-of-type-quantity-${i}-${CSS.escape(type)}`)
-        quantityOfType.style.display = "block"
-
-        updateTotalPrice()
       })
-    }
-    // const quantitiesContainer = document.querySelector(`#quantities-container-${groups[i].id}`)
+      // show target qunatity
+      const quantityOfType = document.querySelector(`#products-of-type-quantity-${i}-${CSS.escape(selectedType)}`)
+      quantityOfType.style.display = "block"
 
-    const groupModal = document.querySelector(`#group-modal-${groups[i].id}`)
+      updateTotalPrice()
+    })
   }
 </script>
 <?php

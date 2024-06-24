@@ -47,15 +47,16 @@ function getGroups(string $returnPath = ""): array
 {
   global $connection;
   try {
-    $getGroupsWithProuductsStmt = $connection->prepare("SELECT g.*, p.id AS product_id, p.type, p.price
+    $getGroupsWithProuductsStmt = $connection->prepare("SELECT g.*, t.id AS type_id, t.name AS type_name, t.price AS type_price, p.id AS product_id, t.sort_index AS type_sort_index
                                                       FROM `groups` g
-                                                      LEFT JOIN `products` p ON g.id = p.group_id
+                                                      LEFT JOIN `types` t ON g.id = t.group_id
+                                                      LEFT JOIN `products` p ON t.id = p.type_id
                                                       WHERE p.payment_id IS NULL AND g.visibility = 1
-                                                      ORDER BY g.sort_index, g.id");
+                                                      ORDER BY g.sort_index, g.id, t.sort_index, t.id, p.date");
 
     $getGroupsWithProuductsStmt->execute();
     if ($getGroupsWithProuductsStmt->errno) {
-      showSessionAlert($getGroupsWithProuductsStmt->error, "danger", true, $returnPath);
+      showSessionAlert($getGroupsWithProuductsStmt->error, "danger");
       exit;
     }
     $getGroupsWithProuductsResults = $getGroupsWithProuductsStmt->get_result();
@@ -74,23 +75,32 @@ function getGroups(string $returnPath = ""): array
           'sort_index' => $row["sort_index"],
           'visibility' => $row["visibility"],
           'date' => $row["date"],
-          'products' => []
+          'types' => []
         ];
       }
 
-      if (isset($row["product_id"])) {
-        $groups[$row["id"]]["products"][$row["type"]][] = [
-          'id' => $row["product_id"],
-          'type' => $row["type"],
-          'price' => $row["price"],
-          'date' => $row["date"],
-        ];
+      if (isset($row["type_name"])) {
+        if (!isset($groups[$row["id"]]["types"][$row["type_name"]])) {
+          $groups[$row["id"]]["types"][$row["type_name"]] = [
+            'id' => $row["type_id"],
+            'name' => $row["type_name"],
+            'price' => $row["type_price"],
+            'sort_index' => $row["type_sort_index"],
+            'products' => []
+          ];
+        }
+
+        if (isset($row["product_id"])) {
+          $groups[$row["id"]]["types"][$row["type_name"]]["products"][] = [
+            'id' => $row["product_id"],
+          ];
+        }
       }
     }
 
     return $groups;
   } catch (Throwable $e) {
-    showSessionAlert("Unexpected error! Please contact the support.", "danger", true, $returnPath);
+    showSessionAlert("Unexpected error! Please contact the support.", "danger");
     logErrors($e);
     exit;
   }
@@ -110,7 +120,7 @@ function getGroupProductsOfType(int $groupId, string $type, int $quantity, strin
 
     $getGroupWithProuductsStmt->execute();
     if ($getGroupWithProuductsStmt->errno) {
-      showSessionAlert($getGroupWithProuductsStmt->error, "danger", true, $returnPath);
+      showSessionAlert($getGroupWithProuductsStmt->error, "danger");
       exit;
     }
     $getGroupsWithProuductsResults = $getGroupWithProuductsStmt->get_result();
@@ -145,7 +155,7 @@ function getGroupProductsOfType(int $groupId, string $type, int $quantity, strin
 
     return $group;
   } catch (Throwable $e) {
-    showSessionAlert("Unexpected error! Please contact the support.", "danger", true, $returnPath);
+    showSessionAlert("Unexpected error! Please contact the support.", "danger");
     logErrors($e);
     exit;
   }
@@ -159,20 +169,20 @@ function getUser(int $user_id, string $returnPath = ""): mixed
     $getUserStmt->bind_param("i", $user_id);
     $getUserStmt->execute();
     if ($getUserStmt->errno) {
-      showSessionAlert($getUserStmt->error, "danger", true, $returnPath);
+      showSessionAlert($getUserStmt->error, "danger");
       exit;
     }
     $userResult = $getUserStmt->get_result();
     $user = $userResult->fetch_assoc();
     $getUserStmt->close();
     if (!$user) {
-      showSessionAlert("No user found! Please login in first.", "danger", true, $returnPath);
+      showSessionAlert("No user found! Please login in first.", "danger");
       exit;
     }
 
     return $user;
   } catch (Throwable $e) {
-    showSessionAlert("Unexpected error! Please contact the support.", "danger", true, $returnPath);
+    showSessionAlert("Unexpected error! Please contact the support.", "danger");
     logErrors($e);
     exit;
   }
@@ -186,19 +196,19 @@ function getUserWallet(int $user_id, string $returnPath = ""): mixed
     $getWalletStmt->bind_param("i", $user_id);
     $getWalletStmt->execute();
     if ($getWalletStmt->errno) {
-      showSessionAlert($getWalletStmt->error, "danger", true, $returnPath);
+      showSessionAlert($getWalletStmt->error, "danger");
       exit;
     }
     $walletResult = $getWalletStmt->get_result();
     $wallet = $walletResult->fetch_assoc();
     $getWalletStmt->close();
     if (!$wallet) {
-      showSessionAlert("No wallet found! Please contact the support.", "danger", true, $returnPath);
+      showSessionAlert("No wallet found! Please contact the support.", "danger");
       exit;
     }
     return $wallet;
   } catch (Throwable $e) {
-    showSessionAlert("Unexpected error! Please contact the support.", "danger", true, $returnPath);
+    showSessionAlert("Unexpected error! Please contact the support.", "danger");
     logErrors($e);
     exit;
   }
@@ -218,7 +228,7 @@ function getUserPayments(int $user_id, string $returnPath = ""): array
     $getPaymentsStmt->bind_param("i", $user_id);
     $getPaymentsStmt->execute();
     if ($getPaymentsStmt->errno) {
-      showSessionAlert($getPaymentsStmt->error, "danger", true, $returnPath);
+      showSessionAlert($getPaymentsStmt->error, "danger");
       exit;
     }
     $paymentsResult = $getPaymentsStmt->get_result();
@@ -247,7 +257,7 @@ function getUserPayments(int $user_id, string $returnPath = ""): array
     }
     return $payments;
   } catch (Throwable $e) {
-    showSessionAlert("Unexpected error! Please contact the support.", "danger", true, $returnPath);
+    showSessionAlert("Unexpected error! Please contact the support.", "danger");
     logErrors($e);
     exit;
   }
@@ -263,7 +273,7 @@ function getUserProducts(int $user_id, string $returnPath = ""): array
     $getProductsStmt->bind_param("i", $user_id);
     $getProductsStmt->execute();
     if ($getProductsStmt->errno) {
-      showSessionAlert($getProductsStmt->error, "danger", true, $returnPath);
+      showSessionAlert($getProductsStmt->error, "danger");
       exit;
     }
     $productsResult = $getProductsStmt->get_result();
@@ -276,7 +286,7 @@ function getUserProducts(int $user_id, string $returnPath = ""): array
     }
     return $products;
   } catch (Throwable $e) {
-    showSessionAlert("Unexpected error! Please contact the support.", "danger", true, $returnPath);
+    showSessionAlert("Unexpected error! Please contact the support.", "danger");
     logErrors($e);
     exit;
   }
@@ -290,7 +300,7 @@ function getWalletCharges(int $wallet_id, string $returnPath = ""): array
     $getChargesStmt->bind_param("i", $wallet_id);
     $getChargesStmt->execute();
     if ($getChargesStmt->errno) {
-      showSessionAlert($getChargesStmt->error, "danger", true, $returnPath);
+      showSessionAlert($getChargesStmt->error, "danger");
       exit;
     }
     $chargesResult = $getChargesStmt->get_result();
@@ -303,7 +313,7 @@ function getWalletCharges(int $wallet_id, string $returnPath = ""): array
     }
     return $charges;
   } catch (Throwable $e) {
-    showSessionAlert("Unexpected error! Please contact the support.", "danger", true, $returnPath);
+    showSessionAlert("Unexpected error! Please contact the support.", "danger");
     logErrors($e);
     exit;
   }
