@@ -24,7 +24,9 @@ require_once "./include/header.php";
 
 <main class="py-5 bg-dark">
   <div class="container my-5">
-
+    <?php
+    printFlashMessages();
+    ?>
     <!-- Hero Section -->
     <section class="hero-section bg-dark text-light mb-5">
       <div class="text-center">
@@ -102,14 +104,17 @@ require_once "./include/header.php";
   //   groups
   // })
   async function proccedToCheckout(groupId, quantity, type, button) {
-    console.log({
-      groupId,
-      quantity,
-      type,
-      button
-    })
     button.disabled = true
-    window.location.href = "./checkout.php?groupId=" + groupId + "&quantity=" + quantity + "&type=" + type
+    const typeId = groups[groupId].types[type].id
+    // console.log({
+    //   groupId,
+    //   quantity,
+    //   type,
+    //   typeId,
+    //   button
+    // })
+    window.location.href = "./checkout.php?groupId=" + groupId + "&typeId=" + typeId + "&quantity=" + quantity
+    button.disabled = false
   }
 
   console.log({

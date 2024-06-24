@@ -105,18 +105,82 @@ function getGroups(string $returnPath = ""): array
     exit;
   }
 }
+function getGroupsForAdmin(string $returnPath = ""): array
+{
+  global $connection;
+  try {
+    $getGroupsWithProuductsStmt = $connection->prepare("SELECT g.*, t.id AS type_id, t.name AS type_name, t.price AS type_price, p.id AS product_id, t.sort_index AS type_sort_index, p.code_value
+                                                      FROM `groups` g
+                                                      LEFT JOIN `types` t ON g.id = t.group_id
+                                                      LEFT JOIN `products` p ON t.id = p.type_id
+                                                      WHERE p.payment_id IS NULL AND g.visibility = 1
+                                                      ORDER BY g.sort_index, g.id, t.sort_index, t.id, p.date");
 
-function getGroupProductsOfType(int $groupId, string $type, int $quantity, string $returnPath = ""): array
+    $getGroupsWithProuductsStmt->execute();
+    if ($getGroupsWithProuductsStmt->errno) {
+      showSessionAlert($getGroupsWithProuductsStmt->error, "danger");
+      exit;
+    }
+    $getGroupsWithProuductsResults = $getGroupsWithProuductsStmt->get_result();
+    $getGroupsWithProuductsStmt->close();
+
+    $groups = [];
+
+    while ($row = $getGroupsWithProuductsResults->fetch_assoc()) {
+      // var_dump($row);
+      if (!isset($groups[$row["id"]])) {
+        $groups[$row["id"]] = [
+          'id' => $row["id"],
+          'title' => $row["title"],
+          'description' => $row["description"],
+          'image' => $row["image"],
+          'sort_index' => $row["sort_index"],
+          'visibility' => $row["visibility"],
+          'date' => $row["date"],
+          'types' => []
+        ];
+      }
+
+      if (isset($row["type_name"])) {
+        if (!isset($groups[$row["id"]]["types"][$row["type_name"]])) {
+          $groups[$row["id"]]["types"][$row["type_name"]] = [
+            'id' => $row["type_id"],
+            'name' => $row["type_name"],
+            'price' => $row["type_price"],
+            'sort_index' => $row["type_sort_index"],
+            'products' => []
+          ];
+        }
+
+        if (isset($row["product_id"])) {
+          $groups[$row["id"]]["types"][$row["type_name"]]["products"][] = [
+            'id' => $row["product_id"],
+            'code_value' => $row["code_value"],
+          ];
+        }
+      }
+    }
+
+    return $groups;
+  } catch (Throwable $e) {
+    showSessionAlert("Unexpected error! Please contact the support.", "danger");
+    logErrors($e);
+    exit;
+  }
+}
+
+function getGroupWithType(int $groupId, int $typeId, int $quantity, string $returnPath = ""): array
 {
   global $connection;
 
   try {
-    $getGroupWithProuductsStmt = $connection->prepare("SELECT g.*, p.id AS product_id, p.type, p.price
+    $getGroupWithProuductsStmt = $connection->prepare("SELECT g.*, t.id AS type_id, t.name AS type_name, t.price
                                                       FROM `groups` g
-                                                      LEFT JOIN `products` p ON g.id = p.group_id
-                                                      WHERE (p.payment_id IS NULL) AND (g.visibility = 1) AND (g.id = ?) AND (p.type = ?)
+                                                      LEFT JOIN `types` t ON g.id = t.group_id 
+                                                      LEFT JOIN `products` p ON t.id = p.type_id 
+                                                      WHERE (p.payment_id IS NULL) AND (g.visibility = 1) AND (g.id = ?) AND (t.id = ?)
                                                       LIMIT ?");
-    $getGroupWithProuductsStmt->bind_param("isi", $groupId, $type, $quantity);
+    $getGroupWithProuductsStmt->bind_param("iii", $groupId, $typeId, $quantity);
 
     $getGroupWithProuductsStmt->execute();
     if ($getGroupWithProuductsStmt->errno) {
@@ -126,32 +190,7 @@ function getGroupProductsOfType(int $groupId, string $type, int $quantity, strin
     $getGroupsWithProuductsResults = $getGroupWithProuductsStmt->get_result();
     $getGroupWithProuductsStmt->close();
 
-    $group = [];
-
-    while ($row = $getGroupsWithProuductsResults->fetch_assoc()) {
-      // var_dump($row);
-      if (!isset($group["id"])) {
-        $group = [
-          'id' => $row["id"],
-          'title' => $row["title"],
-          'description' => $row["description"],
-          'image' => $row["image"],
-          'sort_index' => $row["sort_index"],
-          'visibility' => $row["visibility"],
-          'date' => $row["date"],
-          'products' => []
-        ];
-      }
-
-      if (isset($row["product_id"])) {
-        $group["products"][] = [
-          'id' => $row["product_id"],
-          'type' => $row["type"],
-          'price' => $row["price"],
-          'date' => $row["date"],
-        ];
-      }
-    }
+    $group = $getGroupsWithProuductsResults->fetch_assoc();
 
     return $group;
   } catch (Throwable $e) {

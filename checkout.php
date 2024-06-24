@@ -16,20 +16,16 @@ if (isset($_SESSION["user_id"]) && $_SESSION["user_id"] != "") {
 }
 
 $groupId = (int) $_GET['groupId'];
+$typeId = $_GET['typeId'];
 $quantity = (int)$_GET['quantity'];
-$type = $_GET['type'];
 
-$group = getGroupProductsOfType($groupId, $type, $quantity, $returnPath);
+$group = getGroupWithType($groupId, $typeId, $quantity, $returnPath);
 
 // echo "<pre>";
 // var_dump($group);
+// echo "</pre>";
 
-$totalPrice = 0.0;
-foreach ($group["products"] as $product) {
-  $totalPrice += (float) $product["price"];
-}
-
-// TODO: calculate total price
+$totalPrice = $group["price"] * $quantity;
 
 $canonicalPath = "/checkout.php";
 $title = "Crypto Cards - Checkout";
@@ -59,7 +55,7 @@ require_once "./include/header.php";
                       <p class="text-muted fs-6"><?php echo $group["description"]; ?></p>
                     </div>
                     <div>
-                      <h6 class="mb-2"><span class="fw-bold"><?php echo $type; ?></span> Type</h6>
+                      <h6 class="mb-2"><span class="fw-bold"><?php echo $group["type_name"]; ?></span> Type</h6>
                     </div>
                     <div>
                       <label class="text-muted">Quantity: </label>
@@ -79,8 +75,9 @@ require_once "./include/header.php";
                 <div class="row gap-2 gap-md-0">
                   <div class="col col-12 col-md-6">
                     <form action="<?php echo $baseURL; ?>/backend/create_payment.php" method="POST" class="m-0">
+                      <!-- <input type="hidden" name="useWallet" value="FALSE"> -->
                       <input type="hidden" name="groupId" value="<?php echo $groupId; ?>">
-                      <input type="hidden" name="type" value="<?php echo $type; ?>">
+                      <input type="hidden" name="typeId" value="<?php echo $typeId; ?>">
                       <input type="hidden" name="quantity" value="<?php echo $quantity; ?>">
                       <button type="submit" class="w-100 btn btn-secondary btn-lg" disabled>Binance Pay (soon)</button>
                     </form>
@@ -92,7 +89,7 @@ require_once "./include/header.php";
                       <form action="<?php echo $baseURL; ?>/backend/create_payment.php" method="POST" class="m-0">
                         <input type="hidden" name="useWallet" value="TRUE">
                         <input type="hidden" name="groupId" value="<?php echo $groupId; ?>">
-                        <input type="hidden" name="type" value="<?php echo $type; ?>">
+                        <input type="hidden" name="typeId" value="<?php echo $typeId; ?>">
                         <input type="hidden" name="quantity" value="<?php echo $quantity; ?>">
                         <button type="submit" class="w-100 btn btn-outline-primary btn-lg">Wallet Balance</button>
                       </form>

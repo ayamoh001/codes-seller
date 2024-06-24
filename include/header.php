@@ -99,7 +99,7 @@
 </head>
 
 <body class="inter-without-weight min-vh-100">
-  <header class="d-block bg-dark bg-gradient py-3">
+  <header class="d-block bg-white-gradient py-3">
     <div class="container">
       <nav class="navbar navbar-expand-lg navbar-dark">
         <a class="navbar-brand ratio-16x9" href="<?php echo $baseURL; ?>" width="120">

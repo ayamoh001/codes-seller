@@ -6,6 +6,10 @@
   font-variation-settings: "slnt" 0;
 }
 
+.bg-white-gradient {
+  background: linear-gradient(180deg, #d5d5d5 0%, #8b8b8b 50%, #212529 100%);
+}
+
 .line-clamp-1 {
   display: -webkit-box;
   -webkit-line-clamp: 1;
