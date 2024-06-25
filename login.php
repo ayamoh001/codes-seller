@@ -2,10 +2,6 @@
 require_once "./include/config.php";
 require_once "./include/functions.php";
 
-// if (isset($_SESSION["user_id"]) && $_SESSION["user_id"] != "") {
-//   header("location: $baseURL/profile/");
-// }
-
 $canonicalPath = "/login.php";
 $title = "Crypto Cards - Login";
 require_once "./include/header.php";

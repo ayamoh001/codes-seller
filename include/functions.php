@@ -1,10 +1,14 @@
 <?php
 // require_once "./include/config.php";
 
-function logErrors($e)
+function logErrors($e, $type = "error")
 {
   global $errorLogsFilePath;
-  $errorMessage = $e->getTrace() . " | " . $e->getLine() . " | " . $e->getMessage();
+  if ($type == "error") {
+    $errorMessage = $e->getTrace() . " | " . $e->getLine() . " | " . $e->getMessage();
+  } else if ($type == "string") {
+    $errorMessage = $e;
+  }
   file_put_contents($errorLogsFilePath, $errorMessage . PHP_EOL, FILE_APPEND);
 }
 
@@ -57,6 +61,7 @@ function getGroups(string $returnPath = ""): array
     $getGroupsWithProuductsStmt->execute();
     if ($getGroupsWithProuductsStmt->errno) {
       showSessionAlert($getGroupsWithProuductsStmt->error, "danger");
+      logErrors($getGroupsWithProuductsStmt->error, "string");
       exit;
     }
     $getGroupsWithProuductsResults = $getGroupsWithProuductsStmt->get_result();
@@ -119,6 +124,7 @@ function getGroupsForAdmin(string $returnPath = ""): array
     $getGroupsWithProuductsStmt->execute();
     if ($getGroupsWithProuductsStmt->errno) {
       showSessionAlert($getGroupsWithProuductsStmt->error, "danger");
+      logErrors($getGroupsWithProuductsStmt->error, "string");
       exit;
     }
     $getGroupsWithProuductsResults = $getGroupsWithProuductsStmt->get_result();
@@ -185,6 +191,7 @@ function getGroupWithType(int $groupId, int $typeId, int $quantity, string $retu
     $getGroupWithProuductsStmt->execute();
     if ($getGroupWithProuductsStmt->errno) {
       showSessionAlert($getGroupWithProuductsStmt->error, "danger");
+      logErrors($getGroupWithProuductsStmt->error, "string");
       exit;
     }
     $getGroupsWithProuductsResults = $getGroupWithProuductsStmt->get_result();
@@ -209,6 +216,7 @@ function getUser(int $user_id, string $returnPath = ""): mixed
     $getUserStmt->execute();
     if ($getUserStmt->errno) {
       showSessionAlert($getUserStmt->error, "danger");
+      logErrors($getUserStmt->error, "string");
       exit;
     }
     $userResult = $getUserStmt->get_result();
@@ -216,6 +224,7 @@ function getUser(int $user_id, string $returnPath = ""): mixed
     $getUserStmt->close();
     if (!$user) {
       showSessionAlert("No user found! Please login in first.", "danger");
+      logErrors("No user found! Please login in first.", "string");
       exit;
     }
 
@@ -230,19 +239,25 @@ function getUser(int $user_id, string $returnPath = ""): mixed
 function getUserWallet(int $user_id, string $returnPath = ""): mixed
 {
   global $connection;
+  // var_dump($user_id);
+  // exit;
   try {
-    $getWalletStmt = $connection->prepare("SELECT * FROM `wallets` WHERE user_id = ? AND `status` != 'BLOCKED' LIMIT 1");
+    $getWalletStmt = $connection->prepare("SELECT * FROM `wallets` WHERE (user_id = ?) AND (`status` != 'BLOCKED') OR (`status` IS NULL) LIMIT 1");
     $getWalletStmt->bind_param("i", $user_id);
     $getWalletStmt->execute();
     if ($getWalletStmt->errno) {
       showSessionAlert($getWalletStmt->error, "danger");
+      logErrors($getWalletStmt->error, "string");
       exit;
     }
     $walletResult = $getWalletStmt->get_result();
     $wallet = $walletResult->fetch_assoc();
+    // var_dump($wallet);
+    // exit;
     $getWalletStmt->close();
     if (!$wallet) {
       showSessionAlert("No wallet found! Please contact the support.", "danger");
+      logErrors("No wallet found! Please contact the support.", "string");
       exit;
     }
     return $wallet;
@@ -268,6 +283,7 @@ function getUserPayments(int $user_id, string $returnPath = ""): array
     $getPaymentsStmt->execute();
     if ($getPaymentsStmt->errno) {
       showSessionAlert($getPaymentsStmt->error, "danger");
+      logErrors($getPaymentsStmt->error, "string");
       exit;
     }
     $paymentsResult = $getPaymentsStmt->get_result();
@@ -313,6 +329,7 @@ function getUserProducts(int $user_id, string $returnPath = ""): array
     $getProductsStmt->execute();
     if ($getProductsStmt->errno) {
       showSessionAlert($getProductsStmt->error, "danger");
+      logErrors($getProductsStmt->error, "string");
       exit;
     }
     $productsResult = $getProductsStmt->get_result();
@@ -340,6 +357,7 @@ function getWalletCharges(int $wallet_id, string $returnPath = ""): array
     $getChargesStmt->execute();
     if ($getChargesStmt->errno) {
       showSessionAlert($getChargesStmt->error, "danger");
+      logErrors($getChargesStmt->error, "string");
       exit;
     }
     $chargesResult = $getChargesStmt->get_result();

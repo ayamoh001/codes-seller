@@ -23,7 +23,7 @@ require_once "./include/header.php";
 ?>
 
 <main class="py-5 bg-dark">
-  <div class="container my-5">
+  <div class="container my-md-5 mt-0">
     <?php
     printFlashMessages();
     ?>
@@ -39,7 +39,14 @@ require_once "./include/header.php";
     <!-- Cards Section -->
     <section id="products-groups-list" class="cards-section">
       <div class="row align-items-center justify-content-center">
-        <?php foreach ($groups as $group) : ?>
+        <?php foreach ($groups as $group) :
+          $hasStock = false;
+          foreach ($group["types"] as $type => $typeData) {
+            if (count($typeData["products"]) != 0) {
+              $hasStock = true;
+            }
+          }
+        ?>
           <div class="col-md-4 p-3">
             <div class="card h-100">
               <div class="card-body h-100">
@@ -51,9 +58,9 @@ require_once "./include/header.php";
                   </div>
                 </div>
                 <?php
-                if (count($group["types"])) :
+                if ($hasStock) :
                 ?>
-                  <select id="products-types-select-<?php echo $group["id"]; ?>" class="form-select mb-2">
+                  <select id="products-types-select-<?php echo $group["id"]; ?>" class="form-select mb-2" autocomplete="off">
                     <?php
                     $isFirst = true;
                     foreach ($group["types"] as $type => $products) :
@@ -69,8 +76,8 @@ require_once "./include/header.php";
                     $isFirst = true;
                     foreach ($group["types"] as $type => $typeData) :
                     ?>
-                      <input type="number" min="1" max="<?php echo count($typeData["products"]); ?>" class="form-control mb-3" id="products-of-type-quantity-<?php echo $group["id"] . "-" . $type; ?>" placeholder="1" style="display: <?php echo $isFirst ? "block" : "none";
-                                                                                                                                                                                                                                        $isFirst && $isFirst = false ?>;">
+                      <input type="number" min="1" max="<?php echo count($typeData["products"]); ?>" class="form-control mb-3" id="products-of-type-quantity-<?php echo $group["id"] . "-" . $type; ?>" placeholder="qunaitity..." style="display: <?php echo $isFirst ? "block" : "none";
+                                                                                                                                                                                                                                                    $isFirst && $isFirst = false ?>;">
                     <?php endforeach; ?>
                   </div>
                 <?php else : ?>
@@ -93,12 +100,17 @@ require_once "./include/header.php";
         <?php endforeach; ?>
       </div>
     </section>
+  </div>
 </main>
 
 <script type="module">
   const groups = await fetch("./backend/get_groups.php").then(res => res.json())
   // make the groups variable global
   window.groups = groups
+
+  var settings = {
+
+  };
 
   // console.log({
   //   groups
@@ -127,7 +139,7 @@ require_once "./include/header.php";
     let total = 0
     let selectedType = Object.keys(groups[i].types)[0]
     let selectedQuantity = 1
-    let typeSelectInput = document.querySelector(`#products-types-select-${i}`)
+    let typeSelectInput = new TomSelect(`#products-types-select-${i}`, settings)
     const quantitiesContainer = document.querySelector(`#quantities-container-${i}`)
     const types = groups[i].types
     const submitButton = document.querySelector(`#button-for-group-${i}`)
@@ -139,17 +151,17 @@ require_once "./include/header.php";
 
     function updateTotalPrice() {
       totalPriceButton.disabled = false
-      total = groups[i].types[selectedType].price * selectedQuantity
+      total = Number((groups[i].types[selectedType].price * selectedQuantity).toFixed(2))
       console.log({
         total
       })
       totalPriceButton.innerHTML = total
     }
-    updateTotalPrice()
+    // updateTotalPrice()
 
     const quantitiesInputsForType = quantitiesContainer.querySelectorAll(`[id^="products-of-type-quantity-"]`)
     quantitiesInputsForType.forEach(quantityOfTypeInput => {
-      quantityOfTypeInput.addEventListener("change", () => {
+      quantityOfTypeInput.addEventListener("input", () => {
         let value = quantityOfTypeInput.value
         if (value > types[selectedType].products.length) {
           quantityOfTypeInput.value = types[selectedType].products.length
@@ -162,8 +174,8 @@ require_once "./include/header.php";
       })
     })
 
-    typeSelectInput.addEventListener("change", () => {
-      selectedType = typeSelectInput.value
+    typeSelectInput.on("change", () => {
+      selectedType = typeSelectInput.getValue()
       // hide siblings
       const quantitiesInputsForType = quantitiesContainer.querySelectorAll(`[id^="products-of-type-quantity-"]`)
       quantitiesInputsForType.forEach(quantityOfTypeInput => {

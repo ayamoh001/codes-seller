@@ -1,0 +1,2 @@
+- change the "out of stock" condition logic
+- fix the empty product code insert

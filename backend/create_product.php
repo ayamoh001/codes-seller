@@ -72,7 +72,7 @@ try {
     }
   }
 
-  if (isset($_POST["code_value"])) {
+  if (isset($_POST["code_value"]) && $_POST["code_value"] != "") {
     $codeValue = $_POST["code_value"];
     $createNewProductStmt = $connection->prepare("INSERT INTO `products`(type_id, code_value) VALUES (?, ?)");
     $createNewProductStmt->bind_param("is", $typeId, $codeValue);
