@@ -124,15 +124,15 @@ require_once "../include/admin/header.php";
                         <td class="d-flex gap-2">
                           <div style="height: fit-content;">
                             <!-- List products of this type Button -->
-                            <button type="button" class="btn btn-outline-primary btn-sm fw-bold w-100 d-flex gap-2 justify-content-center" data-bs-toggle="modal" data-bs-target="#add-product-modal-<?php echo $type["id"]; ?>">
+                            <button type="button" class="btn btn-outline-primary btn-sm fw-bold w-100 d-flex gap-2 justify-content-center" data-bs-toggle="modal" data-bs-target="#list-products-modal-<?php echo $type["id"]; ?>">
                               <i class="bi bi-eye"></i>
                             </button>
                             <!-- List products of this type Modal -->
-                            <div class="modal fade" id="add-product-modal-<?php echo $type["id"] ?>" aria-labelledby="add-product-label-<?php echo $type["id"] ?>" tabindex="-1" role="dialog" aria-hidden="true">
+                            <div class="modal fade" id="list-products-modal-<?php echo $type["id"] ?>" aria-labelledby="list-products-label-<?php echo $type["id"] ?>" tabindex="-1" role="dialog" aria-hidden="true">
                               <div class="modal-dialog" role="document">
                                 <div class="modal-content">
                                   <div class="modal-header">
-                                    <h5 class="modal-title" id="add-product-label-<?php echo $type["id"] ?>">All products of this type</h5>
+                                    <h5 class="modal-title" id="list-products-label-<?php echo $type["id"] ?>">All products of this type</h5>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                   </div>
                                   <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
