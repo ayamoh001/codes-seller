@@ -16,7 +16,7 @@ try {
   }
 
   // get Wallet ID
-  $walletId = getUserWallet($user_id, $returnPath);
+  $wallet = getUserWallet($user_id, $returnPath);
   $walletId = $wallet["id"];
 
   $amount = (int) $_POST["amount"];
@@ -62,7 +62,7 @@ try {
       "terminalType" => "WEB"
     ],
     "merchantTradeNo" => mt_rand(982538, 9825382937292),
-    // "orderAmount" => 25.17,
+    // "orderAmount" => $amount,
     // "currency" => "USDT",
     "fiatAmount" => $amount,
     "fiatCurrency" => "USD",
@@ -74,9 +74,9 @@ try {
       "goodsDetail" => "Charge Account Wallet with $amount",
       "goodsQuantity" => 1,
     ],
-    "webhookUrl" => $baseURL . "/backend/binance_payment_webhook.php",
-    "returnUrl" => $baseURL . "/backend/confirm_wallet_charge.php",
-    "cancelUrl" => $baseURL . "/faild_payment.php",
+    "webhookUrl" => "$webhookBaseURL/backend/binance_payment_webhook.php",
+    "returnUrl" => "$baseURL/backend/confirm_wallet_charge.php",
+    "cancelUrl" => "$baseURL/faild_payment.php",
   ];
 
   $json_request = json_encode($request);
@@ -107,10 +107,13 @@ try {
   }
   curl_close($ch);
 
-  // var_dump($result);
+  echo "<pre>";
+  var_dump($result);
 
   $responseData = json_decode($result, true);
-  if (!!$responseData["msg"] || !!$responseData["errorMessage"] || $responseData["status"] != "SUCCESS") {
+  var_dump($responseData);
+
+  if ($responseData["status"] != "SUCCESS") {
     $connection->rollback();
     showSessionAlert("Error in the Binance side: " . ($responseData["errorMessage"] ? $responseData["errorMessage"] : ($responseData["msg"] ? $responseData["msg"] : $responseData["code"])), "danger", true, $returnPath);
     exit;
@@ -130,7 +133,7 @@ try {
 
   $connection->commit();
 
-  $checkoutUrl = $responseData["checkoutUrl"];
+  $checkoutUrl = $responseData["data"]["checkoutUrl"];
   header("location: $checkoutUrl");
   exit;
 } catch (Throwable $e) {

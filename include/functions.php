@@ -4,9 +4,9 @@
 function logErrors($e, $type = "error")
 {
   global $errorLogsFilePath;
-  if ($type == "error") {
-    $errorMessage = $e->getTrace() . " | " . $e->getLine() . " | " . $e->getMessage();
-  } else if ($type == "string") {
+  if ($e instanceof Throwable || $e instanceof Exception) {
+    $errorMessage = $e->getFile() . " | " . $e->getTraceAsString() . " | " . $e->getLine() . " | " . $e->getMessage();
+  } else {
     $errorMessage = $e;
   }
   file_put_contents($errorLogsFilePath, $errorMessage . PHP_EOL, FILE_APPEND);

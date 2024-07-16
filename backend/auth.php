@@ -95,8 +95,18 @@ try {
         exit;
       }
 
-      // TODO: change the guest ids for this session to the user id
+      // Update the guest id to the user id for payments
+      $geustId = $geustIdPrefix . session_id();
+      $updateSessionIdToUserIdStmt = $connection->prepare("UPDATE `payments` SET user_id = ? WHERE user_id = ?");
+      $updateSessionIdToUserIdStmt->bind_param("is", $user_id, $geustId);
+      $updateSessionIdToUserIdStmt->execute();
+      if ($updateSessionIdToUserIdStmt->errno) {
+        $connection->rollback();
+        showSessionAlert("Failed to update session id to user id! Please try again later.", "danger", true, $returnPath);
+        exit;
+      }
       $connection->commit();
+
       showSessionAlert("You have signed up successfully!", "success");
       header("Location: $baseURL/profile/");
       exit;

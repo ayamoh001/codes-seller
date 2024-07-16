@@ -8,7 +8,7 @@ require_once "./include/header.php";
 ?>
 
 <!-- Sign Up form  -->
-<main class="py-5 bg-dark">
+<main class="py-5 bg-dark" style="min-height: 80vh;">
   <div class="container py-5">
     <?php
     printFlashMessages();

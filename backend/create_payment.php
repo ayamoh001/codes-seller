@@ -3,12 +3,12 @@ try {
   require_once "../include/config.php";
   require_once "../include/functions.php";
 
-  $type = $_POST["type"];
-  $quantity = (int) $_POST["quantity"] ?? 1;
   $groupId = (int) $_POST["groupId"];
-  $useWallet = (bool) $_POST["useWallet"];
+  $typeId = (int) $_POST["typeId"];
+  $quantity = (int) $_POST["quantity"] ?? 1;
+  $useWallet = (bool) isset($_POST["useWallet"]) ? $_POST["useWallet"] : false;
 
-  $returnPath = "checkout.php?groupId=" . $groupId . "&quantity=" . $quantity . "&type=" . $type;
+  $returnPath = "checkout.php?groupId=$groupId&typeId=$typeId&quantity=$quantity";
 
   if (isset($_SESSION["user_id"]) && $_SESSION["user_id"] != "") {
     $user_id = (int) $_SESSION["user_id"];
@@ -17,8 +17,6 @@ try {
   } else {
     $userId = $guestIdPrefix . session_id();
   }
-
-
 
   $getGroupStmt = $connection->prepare("SELECT * FROM `groups` WHERE id = ? LIMIT 1");
   $getGroupStmt->bind_param("i", $groupId);
@@ -37,10 +35,27 @@ try {
     exit;
   }
 
+  $getTypeStmt = $connection->prepare("SELECT * FROM `types` WHERE group_id = ? LIMIT 1");
+  $getTypeStmt->bind_param("i", $groupId);
+  $getTypeStmt->execute();
+  if ($getTypeStmt->errno) {
+    showSessionAlert("Error in the Server! please contact the support.", "danger", true, $returnPath);
+    exit;
+  }
+  $groupResult = $getTypeStmt->get_result();
+  $type = $groupResult->fetch_assoc();
+  $getTypeStmt->close();
+  // var_dump($group);
+
+  if (!$type) {
+    showSessionAlert("No type for this group ID!", "danger", true, $returnPath);
+    exit;
+  }
+
   $products = [];
   $productsIds = [];
-  $getProductsStmt = $connection->prepare("SELECT * FROM `products` WHERE (group_id = ?) AND (`type` = ?) AND (payment_id IS NULL) LIMIT ?");
-  $getProductsStmt->bind_param("isi", $groupId, $type, $quantity);
+  $getProductsStmt = $connection->prepare("SELECT * FROM `products` WHERE (type_id = ?) AND (payment_id IS NULL) LIMIT ?");
+  $getProductsStmt->bind_param("ii", $typeId, $quantity);
   $getProductsStmt->execute();
   if ($getProductsStmt->errno) {
     showSessionAlert("Error in the Server! please contact the support.", "danger", true, $returnPath);
@@ -80,10 +95,7 @@ try {
   $createPaymentStmt->close();
 
   // calculate total price
-  $totalPrice = 0.0;
-  foreach ($products as $product) {
-    $totalPrice += (float) $product["price"];
-  }
+  $totalPrice = $type["price"] * $quantity;
 
   $prepayID = "";
   if ($useWallet == "TRUE") {
@@ -134,7 +146,7 @@ try {
         "terminalType" => "WEB"
       ],
       "merchantTradeNo" => mt_rand(982538, 9825382937292),
-      // "orderAmount" => 25.17,
+      // "orderAmount" => $totalPrice,
       // "currency" => "USDT",
       "fiatAmount" => $totalPrice,
       "fiatCurrency" => "USD",
@@ -146,9 +158,9 @@ try {
         "goodsDetail" => $group["description"],
         "goodsQuantity" => $quantity,
       ],
-      "webhookUrl" => $baseURL . "/backend/binance_payment_webhook.php",
-      "returnUrl" => $baseURL . "/backend/confirm_payment.php",
-      "cancelUrl" => $baseURL . "/faild_payment.php",
+      "webhookUrl" => "$webhookBaseURL/backend/binance_payment_webhook.php",
+      "returnUrl" => "$baseURL/backend/confirm_payment.php",
+      "cancelUrl" => "$baseURL/faild_payment.php",
     ];
 
     $json_request = json_encode($request);
@@ -179,6 +191,7 @@ try {
     }
     curl_close($ch);
 
+    echo "<pre>";
     var_dump($result);
 
     // {
@@ -198,10 +211,11 @@ try {
     // }
 
     $responseData = json_decode($result, true);
-    if (!!$responseData["msg"] || !!$responseData["errorMessage"] || $responseData["status"] != "SUCCESS") {
+    var_dump($responseData);
+
+    if ($responseData["status"] != "SUCCESS") {
       $connection->rollback();
       showSessionAlert("Error in the Binance side: " . ($responseData["errorMessage"] ? $responseData["errorMessage"] : ($responseData["msg"] ? $responseData["msg"] : $responseData["code"])), "danger", true, $returnPath);
-
       exit;
     }
 

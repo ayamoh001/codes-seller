@@ -85,7 +85,7 @@ try {
 
         $newStatus = "PAID";
         $updatePaymentStatusStmt = $connection->prepare("UPDATE `payments` SET `status` = ? WHERE id = ?");
-        $updatePaymentStatusStmt->bind_param("si", $newStatus, $product["id"]);
+        $updatePaymentStatusStmt->bind_param("si", $newStatus, $payment["id"]);
         if ($updatePaymentStatusStmt->errno) {
           $connection->rollback();
           showSessionAlert($updatePaymentStatusStmt->error, "danger", true, $returnPath);
@@ -94,6 +94,9 @@ try {
         $updatePaymentStatusStmt->close();
 
         $connection->commit();
+
+
+        header("location: /success.php?paymentId=" . $payment["id"]);
       } else {
         showSessionAlert(("Payment statuses: " . $paymentStatus . " / " . $responseData["status"] . " / " . $responseData["data"]["status"]), "danger", true, $returnPath);
         exit;

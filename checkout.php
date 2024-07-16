@@ -16,7 +16,7 @@ if (isset($_SESSION["user_id"]) && $_SESSION["user_id"] != "") {
 }
 
 $groupId = (int) $_GET['groupId'];
-$typeId = $_GET['typeId'];
+$typeId = (int) $_GET['typeId'];
 $quantity = (int)$_GET['quantity'];
 
 $group = getGroupWithType($groupId, $typeId, $quantity, $returnPath);
@@ -25,6 +25,7 @@ $group = getGroupWithType($groupId, $typeId, $quantity, $returnPath);
 // var_dump($group);
 // echo "</pre>";
 
+// it is acctually the type price
 $totalPrice = $group["price"] * $quantity;
 
 $canonicalPath = "/checkout.php";
@@ -33,7 +34,7 @@ require_once "./include/header.php";
 ?>
 
 <!-- Login form  -->
-<main class="py-5 bg-dark">
+<main class="py-5 bg-dark" style="min-height: 80vh;">
   <div class="container my-5">
     <?php
     printFlashMessages();
@@ -48,14 +49,18 @@ require_once "./include/header.php";
               </div>
               <div class="card-body p-4">
                 <div class="mb-4">
-                  <h4>Product Details:</h4>
+                  <!-- <h4>Product Details:</h4> -->
                   <div class="d-flex flex-column justify-content-between align-items-start">
                     <div>
                       <h5 class="mb-0 fw-bold"><?php echo $group["title"]; ?></h5>
                       <p class="text-muted fs-6"><?php echo $group["description"]; ?></p>
                     </div>
-                    <div>
+                    <!-- <div>
                       <h6 class="mb-2"><span class="fw-bold"><?php echo $group["type_name"]; ?></span> Type</h6>
+                    </div> -->
+                    <div>
+                      <label class="text-muted">Type: </label>
+                      <span><?php echo $group["type_name"]; ?></span>
                     </div>
                     <div>
                       <label class="text-muted">Quantity: </label>
@@ -79,7 +84,7 @@ require_once "./include/header.php";
                       <input type="hidden" name="groupId" value="<?php echo $groupId; ?>">
                       <input type="hidden" name="typeId" value="<?php echo $typeId; ?>">
                       <input type="hidden" name="quantity" value="<?php echo $quantity; ?>">
-                      <button type="submit" class="w-100 btn btn-secondary btn-lg" disabled>Binance Pay (soon)</button>
+                      <button type="submit" class="w-100 btn btn-secondary btn-lg">Binance Pay (soon)</button>
                     </form>
                   </div>
                   <div class="col col-12 col-md-6">

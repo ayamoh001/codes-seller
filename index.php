@@ -22,7 +22,7 @@ $title = "Crypto Cards - Home";
 require_once "./include/header.php";
 ?>
 
-<main class="py-5 bg-dark">
+<main class="py-5 bg-dark" style="min-height: 80vh;">
   <div class="container my-md-5 mt-0">
     <?php
     printFlashMessages();

@@ -29,7 +29,7 @@ $title = "Admin Dashboard - Users";
 require_once "../include/admin/header.php";
 ?>
 
-<main class="py-5 bg-dark" style="min-height: 100vh;">
+<main class="py-5 bg-dark" style="min-height: 80vh;">
   <div class="container py-5">
     <?php
     printFlashMessages();
