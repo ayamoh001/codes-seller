@@ -107,11 +107,11 @@ try {
   }
   curl_close($ch);
 
-  echo "<pre>";
-  var_dump($result);
+  // echo "<pre>";
+  // var_dump($result);
 
   $responseData = json_decode($result, true);
-  var_dump($responseData);
+  // var_dump($responseData);
 
   if ($responseData["status"] != "SUCCESS") {
     $connection->rollback();

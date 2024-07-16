@@ -154,8 +154,8 @@ try {
         "goodsType" => "02",
         "goodsCategory" => "6000",
         "referenceGoodsId" => $insertedPaymentId . time(),
-        "goodsName" => $group["title"],
-        "goodsDetail" => $group["description"],
+        "goodsName" => preg_replace('/[^a-zA-Z0-9]/', '', $group["title"]),
+        "goodsDetail" => preg_replace('/[^a-zA-Z0-9]/', '', $group["description"]),
         "goodsQuantity" => $quantity,
       ],
       "webhookUrl" => "$webhookBaseURL/backend/binance_payment_webhook.php",
@@ -191,8 +191,8 @@ try {
     }
     curl_close($ch);
 
-    echo "<pre>";
-    var_dump($result);
+    // echo "<pre>";
+    // var_dump($result);
 
     // {
     //   "status": "SUCCESS",
@@ -211,7 +211,7 @@ try {
     // }
 
     $responseData = json_decode($result, true);
-    var_dump($responseData);
+    // var_dump($responseData);
 
     if ($responseData["status"] != "SUCCESS") {
       $connection->rollback();
@@ -235,7 +235,7 @@ try {
   $updatePaymentStmt->close();
 
 
-  $paymentCheckoutURL = $responseData["checkoutUrl"];
+  $paymentCheckoutURL = $responseData["data"]["checkoutUrl"];
 
   $connection->commit();
   header("location: $paymentCheckoutURL");
