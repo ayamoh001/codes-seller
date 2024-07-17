@@ -19,7 +19,7 @@ try {
   $wallet = getUserWallet($user_id, $returnPath);
   $walletId = $wallet["id"];
 
-  $amount = (int) $_POST["amount"];
+  $amount = (float) $_POST["amount"];
 
   if ($amount < 1) {
     showSessionAlert("Amount must be at least 1 USD!", "danger", true, $returnPath);

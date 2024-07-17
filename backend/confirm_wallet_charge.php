@@ -2,6 +2,8 @@
 require_once '../include/config.php';
 require_once '../include/functions.php';
 
+logErrors($_SERVER['REQUEST_URI']);
+
 try {
   if (isset($_GET['paymentStatus']) && isset($_GET['merchantTradeNo']) && isset($_GET['transactionId']) && isset($_GET['timestamp']) && isset($_GET['signature'])) {
     $userId = "";

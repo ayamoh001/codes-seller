@@ -6,7 +6,7 @@ try {
   $groupId = (int) $_POST["groupId"];
   $typeId = (int) $_POST["typeId"];
   $quantity = (int) $_POST["quantity"] ?? 1;
-  $useWallet = (bool) isset($_POST["useWallet"]) ? $_POST["useWallet"] : false;
+  $useWallet = (bool) isset($_POST["useWallet"]) ? ($_POST["useWallet"] == "TRUE") : false;
 
   $returnPath = "checkout.php?groupId=$groupId&typeId=$typeId&quantity=$quantity";
 
@@ -35,8 +35,8 @@ try {
     exit;
   }
 
-  $getTypeStmt = $connection->prepare("SELECT * FROM `types` WHERE group_id = ? LIMIT 1");
-  $getTypeStmt->bind_param("i", $groupId);
+  $getTypeStmt = $connection->prepare("SELECT * FROM `types` WHERE group_id = ? AND id = ? LIMIT 1");
+  $getTypeStmt->bind_param("ii", $groupId, $typeId);
   $getTypeStmt->execute();
   if ($getTypeStmt->errno) {
     showSessionAlert("Error in the Server! please contact the support.", "danger", true, $returnPath);
@@ -53,7 +53,6 @@ try {
   }
 
   $products = [];
-  $productsIds = [];
   $getProductsStmt = $connection->prepare("SELECT * FROM `products` WHERE (type_id = ?) AND (payment_id IS NULL) LIMIT ?");
   $getProductsStmt->bind_param("ii", $typeId, $quantity);
   $getProductsStmt->execute();
@@ -62,20 +61,11 @@ try {
     exit;
   }
   $productsResult = $getProductsStmt->get_result();
-  while ($product = $productsResult->fetch_assoc()) {
-    // var_dump($product);
-    $products[] = $product;
-    $productsIds[] = $product["id"];
-  };
-  $getProductsStmt->close();
-
-  // var_dump($products);
-
-  // check products count
-  if (count($products) < $quantity) {
+  if ($productsResult->num_rows < $quantity) {
     showSessionAlert("No enough quantity! Please chose less quantity or contact us.", "danger", true, $returnPath);
     exit;
-  }
+  };
+  $getProductsStmt->close();
 
   $connection->begin_transaction();
 
@@ -83,9 +73,8 @@ try {
   $metadata1 = "";
   $metadata2 = "";
 
-  $encodedProductsIds = json_encode($productsIds);
-  $createPaymentStmt = $connection->prepare("INSERT INTO `payments`(user_id, group_id, `status`, price, products, metadata1, metadata2) VALUES (?,?,?,?,?,?,?)");
-  $createPaymentStmt->bind_param("iisdsss", $userId, $groupId, $status, $totalPrice, $encodedProductsIds, $metadata1, $metadata2);
+  $createPaymentStmt = $connection->prepare("INSERT INTO `payments`(user_id, group_id, type_id, `status`, price, metadata1, metadata2) VALUES (?,?,?,?,?,?,?)");
+  $createPaymentStmt->bind_param("iiisdss", $userId, $groupId, $typeId, $status, $totalPrice, $metadata1, $metadata2);
   if ($createPaymentStmt->errno) {
     $connection->rollback();
     showSessionAlert("Error in the Server! please contact the support.", "danger", true, $returnPath);
@@ -95,7 +84,7 @@ try {
   $createPaymentStmt->close();
 
   // calculate total price
-  $totalPrice = $type["price"] * $quantity;
+  $totalPrice = (float) ($type["price"] * $quantity);
 
   $prepayID = "";
   if ($useWallet == "TRUE") {

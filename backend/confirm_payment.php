@@ -3,6 +3,8 @@ try {
   require_once '../include/config.php';
   require_once '../include/functions.php';
 
+  logErrors($_SERVER['REQUEST_URI']);
+
   if (isset($_GET['paymentStatus']) && isset($_GET['merchantTradeNo']) && isset($_GET['transactionId']) && isset($_GET['timestamp']) && isset($_GET['signature'])) {
     $userId = "";
     $returnPath = "checkout.php";
@@ -93,10 +95,44 @@ try {
         }
         $updatePaymentStatusStmt->close();
 
+        // TODO: get products and linke them to the payment
+        $products = [];
+        $typeId = $payment["type_id"];
+        $getProductsStmt = $connection->prepare("SELECT * FROM `products` WHERE type_id = ? AND payment_id IS NULL LIMIT ?");
+        $getProductsStmt->bind_param("ii", $typeId, $quantity);
+        $getProductsStmt->execute();
+        if ($getProductsStmt->errno) {
+          showSessionAlert("Error in the Server! please contact the support.", "danger", true, $returnPath);
+          exit;
+        }
+        $productsResult = $getProductsStmt->get_result();
+
+        // if ($productsResult->num_rows < $quantity) {
+        //   showSessionAlert("No enough quantity! Please chose less quantity or contact us.", "danger", true, $returnPath);
+        //   exit;
+        // };
+
+        $product = $productsResult->fetch_assoc();
+        $getProductsStmt->close();
+
+        $errors = [];
+        while ($product = $productsResult->fetch_assoc()) {
+          $productId = $product["id"];
+          $setPaymentIdStmt = $connection->prepare("UPDATE `products` SET `payment_id` = ? WHERE id = ? AND `payment_id` IS NULL");
+          $setPaymentIdStmt->bind_param("si", $payment["id"], $productId);
+          if ($setPaymentIdStmt->errno) {
+            $connection->rollback();
+            showSessionAlert($setPaymentIdStmt->error, "danger", true, $returnPath);
+            exit;
+          }
+          if ($setPaymentIdStmt->affected_rows == 0) {
+            $errors[] = "Error: One of the products (ID: $productId) isn't found! It may be already sold, please contact the support.";
+          }
+          $setPaymentIdStmt->close();
+        }
         $connection->commit();
 
-
-        header("location: /success.php?paymentId=" . $payment["id"]);
+        header("location: /success.php?paymentId=" . $payment["id"] . "&errors=" . json_encode($errors));
       } else {
         showSessionAlert(("Payment statuses: " . $paymentStatus . " / " . $responseData["status"] . " / " . $responseData["data"]["status"]), "danger", true, $returnPath);
         exit;

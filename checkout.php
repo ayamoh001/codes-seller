@@ -84,7 +84,7 @@ require_once "./include/header.php";
                       <input type="hidden" name="groupId" value="<?php echo $groupId; ?>">
                       <input type="hidden" name="typeId" value="<?php echo $typeId; ?>">
                       <input type="hidden" name="quantity" value="<?php echo $quantity; ?>">
-                      <button type="submit" class="w-100 btn btn-secondary btn-lg">Binance Pay (soon)</button>
+                      <button type="submit" class="w-100 btn btn-primary btn-lg">Binance Pay</button>
                     </form>
                   </div>
                   <div class="col col-12 col-md-6">

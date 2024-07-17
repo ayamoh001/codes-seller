@@ -1,2 +1,0 @@
-C:\xampp\htdocs\crypto-cards\include\functions.php | #0 C:\xampp\htdocs\crypto-cards\checkout.php(22): getGroupWithType(2, 0, 3, 'checkout.php')
-#1 {main} | 202 | getGroupWithType(): Return value must be of type array, null returned

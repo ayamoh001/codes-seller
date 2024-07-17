@@ -63,7 +63,7 @@ require_once "../include/profile/header.php";
     <form class="col-12" action="<?php echo $baseURL; ?>/backend/wallet_charge.php" method="POST">
       <div class="mb-3">
         <label for="new_password_confirm" class="form-label">Amount to charge your wallet</label>
-        <input type="number" min="1" class="form-control" name="amount" placeholder="amount in USD" required>
+        <input type="number" min="1" step="0.01" class="form-control" name="amount" placeholder="amount in USD" required>
       </div>
       <button type="submit" class="btn btn-lg btn-primary mx-auto w-100 fw-bold">Charge Now With Binance (USD)</button>
     </form>
