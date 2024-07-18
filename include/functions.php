@@ -375,3 +375,23 @@ function getWalletCharges(int $wallet_id, string $returnPath = ""): array
     exit;
   }
 }
+
+function isMobile()
+{
+  $userAgent = $_SERVER['HTTP_USER_AGENT'];
+  $mobileAgents = '/(android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini)/i';
+
+  return preg_match($mobileAgents, $userAgent);
+}
+
+function generateNonce()
+{
+  $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  $nonce = '';
+  for ($i = 1; $i <= 32; $i++) {
+    $pos = mt_rand(0, strlen($chars) - 1);
+    $char = $chars[$pos];
+    $nonce .= $char;
+  }
+  return $nonce;
+}

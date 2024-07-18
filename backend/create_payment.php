@@ -72,6 +72,7 @@ try {
   $status = "INTIATED";
   $metadata1 = "";
   $metadata2 = "";
+  $totalPrice = (float) ($type["price"] * $quantity);
 
   $createPaymentStmt = $connection->prepare("INSERT INTO `payments`(user_id, group_id, type_id, `status`, price, metadata1, metadata2) VALUES (?,?,?,?,?,?,?)");
   $createPaymentStmt->bind_param("iiisdss", $userId, $groupId, $typeId, $status, $totalPrice, $metadata1, $metadata2);
@@ -82,9 +83,6 @@ try {
   }
   $insertedPaymentId = $createPaymentStmt->insert_id;
   $createPaymentStmt->close();
-
-  // calculate total price
-  $totalPrice = (float) ($type["price"] * $quantity);
 
   $prepayID = "";
   if ($useWallet == "TRUE") {
@@ -118,23 +116,17 @@ try {
     }
     $subtractBalanceStmt->close();
   } else {
-    // Generate Nonce
-    $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    $nonce = '';
-    for ($i = 1; $i <= 32; $i++) {
-      $pos = mt_rand(0, strlen($chars) - 1);
-      $char = $chars[$pos];
-      $nonce .= $char;
-    }
-
     $ch = curl_init();
+
+    $nonce = generateNonce();
     $timestamp = round(microtime(true) * 1000);
+    $merchantTradeNo = mt_rand(982538, 9825382937292);
 
     $request = [
       "env" => [
         "terminalType" => "WEB"
       ],
-      "merchantTradeNo" => mt_rand(982538, 9825382937292),
+      "merchantTradeNo" => $merchantTradeNo,
       // "orderAmount" => $totalPrice,
       // "currency" => "USDT",
       "fiatAmount" => $totalPrice,
@@ -143,16 +135,24 @@ try {
         "goodsType" => "02",
         "goodsCategory" => "6000",
         "referenceGoodsId" => $insertedPaymentId . time(),
-        "goodsName" => preg_replace('/[^a-zA-Z0-9]/', '', $group["title"]),
-        "goodsDetail" => preg_replace('/[^a-zA-Z0-9]/', '', $group["description"]),
+        "goodsName" => preg_replace('/[^a-zA-Z0-9 ]/', '', $group["title"]),
+        "goodsDetail" => preg_replace('/[^a-zA-Z0-9 ]/', '', $group["description"]),
         "goodsQuantity" => $quantity,
       ],
       "webhookUrl" => "$webhookBaseURL/backend/binance_payment_webhook.php",
-      "returnUrl" => "$baseURL/backend/confirm_payment.php",
+      "returnUrl" => "$baseURL/backend/confirm_payment.php?merchantTradeNo=$merchantTradeNo",
       "cancelUrl" => "$baseURL/faild_payment.php",
     ];
 
+    // echo "<pre>";
+    // var_dump($request);
+    // exit;
+
     $json_request = json_encode($request);
+    // echo "<pre>";
+    // var_dump($json_request);
+    // exit;
+
     $payload = $timestamp . "\n" . $nonce . "\n" . $json_request . "\n";
     $binance_pay_api_key = $API_KEY;
     $binance_pay_api_secret = $API_SECRET;
@@ -180,7 +180,7 @@ try {
     }
     curl_close($ch);
 
-    // echo "<pre>";
+    echo "<pre>";
     // var_dump($result);
 
     // {
@@ -200,10 +200,13 @@ try {
     // }
 
     $responseData = json_decode($result, true);
-    // var_dump($responseData);
+    var_dump($responseData);
 
     if ($responseData["status"] != "SUCCESS") {
       $connection->rollback();
+      // echo "<pre>";
+      // var_dump($responseData);
+      // exit;
       showSessionAlert("Error in the Binance side: " . ($responseData["errorMessage"] ? $responseData["errorMessage"] : ($responseData["msg"] ? $responseData["msg"] : $responseData["code"])), "danger", true, $returnPath);
       exit;
     }
@@ -213,21 +216,26 @@ try {
 
   // update the payment
   $newStatus = "PENDING";
-  $type = $useWallet ? "WALLET" : "BINANCE";
-  $updatePaymentStmt = $connection->prepare("UPDATE `payments` SET prepay_id = ?, `status` = ?, type = ? WHERE id = ?");
-  $updatePaymentStmt->bind_param("sssi", $prepayID, $newStatus, $type, $insertedPaymentId);
+  $updatePaymentStmt = $connection->prepare("UPDATE `payments` SET prepay_id = ?, merchantTradeNo = ?, `status` = ?, use_wallet = ? WHERE id = ?");
+  $updatePaymentStmt->bind_param("sssbi", $prepayID, $merchantTradeNo, $newStatus, $useWallet, $insertedPaymentId);
   if ($updatePaymentStmt->errno) {
     $connection->rollback();
+    logErrors($updatePaymentStmt->error);
     showSessionAlert("Error in storing binance prepay ID.", "danger", true, $returnPath);
     exit;
   }
   $updatePaymentStmt->close();
 
-
-  $paymentCheckoutURL = $responseData["data"]["checkoutUrl"];
+  // $payemntCheckoutURLCodeLink = $responseData["data"]["qrCodeLink"];
+  // $payemntCheckoutURLQRContent = $responseData["data"]["qrContent"];
+  $payemntCheckoutURLDeepLink = $responseData["data"]["deeplink"];
+  $paymentCheckoutURLWebPage = $responseData["data"]["checkoutUrl"];
 
   $connection->commit();
-  header("location: $paymentCheckoutURL");
+
+  // Redirect to the app or the web page if no app is installed
+  header("location: $baseURL/redirect_to_app_or_page.php?deepLink=$payemntCheckoutURLDeepLink&webLink=$paymentCheckoutURLWebPage");
+  exit;
 } catch (Throwable $e) {
   showSessionAlert("Error in the server!", "danger", true, $returnPath);
   logErrors($e);

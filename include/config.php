@@ -4,7 +4,7 @@ session_start();
 $baseURL = "http://localhost/crypto-cards"; // for dev
 // $baseURL = "https://cryptogamingcards.com"; // for production
 
-$webhookBaseURL = "https://5fd5-105-69-69-129.ngrok-free.app/crypto-cards"; // for dev
+$webhookBaseURL = "https://cryptogamingcards.com"; // for dev
 // $webhookBaseURL = "https://cryptogamingcards.com"; // for production
 
 $binanceURL = "https://bpay.binanceapi.com"; // for dev

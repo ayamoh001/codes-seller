@@ -1,0 +1,2 @@
+C:\xampp\htdocs\crypto-cards\backend\create_payment.php | #0 C:\xampp\htdocs\crypto-cards\backend\create_payment.php(228): mysqli->prepare('UPDATE `payment...')
+#1 {main} | 228 | Unknown column 'type' in 'field list'

@@ -45,23 +45,17 @@ try {
   $binance_pay_api_key = $API_KEY;
   $binance_pay_api_secret = $API_SECRET;
 
-  // Generate Nonce
-  $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  $nonce = '';
-  for ($i = 1; $i <= 32; $i++) {
-    $pos = mt_rand(0, strlen($chars) - 1);
-    $char = $chars[$pos];
-    $nonce .= $char;
-  }
-
   $ch = curl_init();
+
+  $nonce = generateNonce();
   $timestamp = round(microtime(true) * 1000);
+  $merchantTradeNo = mt_rand(982538, 9825382937292);
 
   $request = [
     "env" => [
-      "terminalType" => "WEB"
+      "terminalType" => "APP"
     ],
-    "merchantTradeNo" => mt_rand(982538, 9825382937292),
+    "merchantTradeNo" => $merchantTradeNo,
     // "orderAmount" => $amount,
     // "currency" => "USDT",
     "fiatAmount" => $amount,
@@ -75,7 +69,7 @@ try {
       "goodsQuantity" => 1,
     ],
     "webhookUrl" => "$webhookBaseURL/backend/binance_payment_webhook.php",
-    "returnUrl" => "$baseURL/backend/confirm_wallet_charge.php",
+    "returnUrl" => "$baseURL/backend/confirm_wallet_charge.php?merchantTradeNo=$merchantTradeNo",
     "cancelUrl" => "$baseURL/faild_payment.php",
   ];
 
@@ -122,8 +116,8 @@ try {
   // update the charge
   $prepayID = $responseData["data"]["prepayId"];
   $newStatus = "PENDING";
-  $updateChargeStmt = $connection->prepare("UPDATE `charges` SET prepay_id = ?, `status` = ? WHERE id = ?");
-  $updateChargeStmt->bind_param("ssi", $prepayID, $newStatus, $insertedChargeId);
+  $updateChargeStmt = $connection->prepare("UPDATE `charges` SET prepay_id = ?, merchantTradeNo = ?, `status` = ? WHERE id = ?");
+  $updateChargeStmt->bind_param("sssi", $prepayID, $merchantTradeNo, $newStatus, $insertedChargeId);
   if ($updateChargeStmt->errno) {
     $connection->rollback();
     showSessionAlert("Error in storing Binance prepay ID.", "danger", true, $returnPath);
@@ -131,10 +125,15 @@ try {
   }
   $updateChargeStmt->close();
 
+  // $payemntCheckoutURLCodeLink = $responseData["data"]["qrCodeLink"];
+  // $payemntCheckoutURLQRContent = $responseData["data"]["qrContent"];
+  $payemntCheckoutURLDeepLink = $responseData["data"]["deeplink"];
+  $paymentCheckoutURLWebPage = $responseData["data"]["checkoutUrl"];
+
   $connection->commit();
 
-  $checkoutUrl = $responseData["data"]["checkoutUrl"];
-  header("location: $checkoutUrl");
+  // Redirect to the app or the web page if no app is installed
+  header("location: $baseURL/redirect_to_app_or_page.php?deepLink=$payemntCheckoutURLDeepLink&webLink=$paymentCheckoutURLWebPage");
   exit;
 } catch (Throwable $e) {
   showSessionAlert("Error in the server!", "danger", true, $returnPath);
