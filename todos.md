@@ -1,2 +1,2 @@
-- change the "out of stock" condition logic
-- fix the empty product code insert
+- Add webhook checking logic
+- Add copy to clipboard and copy all buttons for codes

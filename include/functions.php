@@ -348,6 +348,52 @@ function getUserProducts(int $user_id, string $returnPath = ""): array
   }
 }
 
+function getPaymentWithProducts(int $paymentId, string $returnPath = ""): array
+{
+  global $connection;
+  try {
+    $getPaymentStmt = $connection->prepare("SELECT py.*, pd.id AS product_id, pd.date AS product_date, pd.* FROM `payments` AS py INNER JOIN `products` AS pd WHERE py.id = ? AND `py.status` != 'PAID' AND pd.payment_id = py.id LIMIT 1");
+    $getPaymentStmt->bind_param("i", $paymentId);
+    $getPaymentStmt->execute();
+    if ($getPaymentStmt->errno) {
+      showSessionAlert($getPaymentStmt->error, "danger");
+      logErrors($getPaymentStmt->error, "string");
+      exit;
+    }
+    $paymentResult = $getPaymentStmt->get_result();
+    $getPaymentStmt->close();
+
+    $payment = [];
+
+    while ($row = $paymentResult->fetch_assoc()) {
+      // var_dump($row);
+      if (!isset($payment["id"])) {
+        $payment = [
+          'id' => $row["id"],
+          'user_id' => $row["user_id"],
+          'group_id' => $row["group_id"],
+          'prepay_id' => $row["prepay_id"],
+          'type_id' => $row["type_id"],
+          'price' => $row["price"],
+          'quantity' => $row["quantity"],
+          'use_wallet' => $row["use_wallet"],
+          'status' => $row["status"],
+          'products' => []
+        ];
+      }
+
+      $payment["products"][] = [
+        'id' => $row["product_id"],
+        'code_value' => $row["code_value"],
+      ];
+    }
+    return $payment;
+  } catch (Throwable $e) {
+    showSessionAlert("Unexpected error! Please contact the support.", "danger");
+    logErrors($e);
+    exit;
+  }
+}
 function getWalletCharges(int $wallet_id, string $returnPath = ""): array
 {
   global $connection;
@@ -376,13 +422,13 @@ function getWalletCharges(int $wallet_id, string $returnPath = ""): array
   }
 }
 
-function isMobile()
-{
-  $userAgent = $_SERVER['HTTP_USER_AGENT'];
-  $mobileAgents = '/(android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini)/i';
+// function isMobile()
+// {
+//   $userAgent = $_SERVER['HTTP_USER_AGENT'];
+//   $mobileAgents = '/(android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini)/i';
 
-  return preg_match($mobileAgents, $userAgent);
-}
+//   return preg_match($mobileAgents, $userAgent);
+// }
 
 function generateNonce()
 {

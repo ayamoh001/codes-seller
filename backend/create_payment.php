@@ -72,7 +72,9 @@ try {
   $status = "INTIATED";
   $metadata1 = "";
   $metadata2 = "";
-  $totalPrice = (float) ($type["price"] * $quantity);
+  $prepayID = "";
+  $merchantTradeNo = "";
+  $totalPrice = (float) ((float)$type["price"] * $quantity);
 
   $createPaymentStmt = $connection->prepare("INSERT INTO `payments`(user_id, group_id, type_id, `status`, price, metadata1, metadata2) VALUES (?,?,?,?,?,?,?)");
   $createPaymentStmt->bind_param("iiisdss", $userId, $groupId, $typeId, $status, $totalPrice, $metadata1, $metadata2);
@@ -84,10 +86,9 @@ try {
   $insertedPaymentId = $createPaymentStmt->insert_id;
   $createPaymentStmt->close();
 
-  $prepayID = "";
   if ($useWallet == "TRUE") {
     // use wallet balance
-    $getWalletStmt = $connection->prepare("SELECT id FROM `wallets` WHERE user_id = ? LIMIT 1");
+    $getWalletStmt = $connection->prepare("SELECT * FROM `wallets` WHERE user_id = ? LIMIT 1");
     $getWalletStmt->bind_param("i", $userId);
     $getWalletStmt->execute();
     if ($getWalletStmt->errno) {
@@ -97,6 +98,8 @@ try {
     }
     $walletResult = $getWalletStmt->get_result();
     $wallet = $walletResult->fetch_assoc();
+    // var_dump($wallet);
+    // exit;
     $walletId = $wallet["id"];
     $getWalletStmt->close();
 
@@ -233,8 +236,12 @@ try {
 
   $connection->commit();
 
+  if ($useWallet == "TRUE") {
+    header("location: $baseURL/confirm_payment.php?paymentId=$insertedPaymentId");
+  } else {
+    header("location: $baseURL/redirect_to_app_or_page.php?deepLink=$payemntCheckoutURLDeepLink&webLink=$paymentCheckoutURLWebPage");
+  }
   // Redirect to the app or the web page if no app is installed
-  header("location: $baseURL/redirect_to_app_or_page.php?deepLink=$payemntCheckoutURLDeepLink&webLink=$paymentCheckoutURLWebPage");
   exit;
 } catch (Throwable $e) {
   showSessionAlert("Error in the server!", "danger", true, $returnPath);
