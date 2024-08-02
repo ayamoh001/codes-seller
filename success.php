@@ -15,6 +15,8 @@ if (isset($_SESSION["user_id"]) && $_SESSION["user_id"] != "") {
   $wallet = getUserWallet($user_id, $returnPath);
 }
 
+$errors = (int) $_GET['errors'];
+logErrors($errors, "string");
 $paymentId = (int) $_GET['paymentId'];
 $payment = getPaymentWithProducts($paymentId, $returnPath);
 

@@ -7,7 +7,7 @@ function logErrors($e, $type = "error")
   if ($e instanceof Throwable || $e instanceof Exception) {
     $errorMessage = $e->getFile() . " | " . $e->getTraceAsString() . " | " . $e->getLine() . " | " . $e->getMessage();
   } else {
-    $errorMessage = $e;
+    $errorMessage = json_encode($e);
   }
   file_put_contents($errorLogsFilePath, $errorMessage . PHP_EOL, FILE_APPEND);
 }
@@ -345,6 +345,152 @@ function getUserProducts(int $user_id, string $returnPath = ""): array
     showSessionAlert("Unexpected error! Please contact the support.", "danger");
     logErrors($e);
     exit;
+  }
+}
+
+function linkProductsWithPayment(int $paymentId, int $typeId, int $quantity, string $returnPath = ""): array
+{
+  global $connection;
+
+  $errors = [];
+  $products = [];
+
+  try {
+    $connection->begin_transaction();
+
+    $getPaymentStmt = $connection->prepare("SELECT * FROM `payments` WHERE id = ? AND `status` != 'PAID' LIMIT 1");
+    $getPaymentStmt->bind_param("i", $paymentId);
+    $getPaymentStmt->execute();
+    if ($getPaymentStmt->errno) {
+      // showSessionAlert($getPaymentStmt->error, "danger");
+      logErrors($getPaymentStmt->error, "string");
+      throw new Exception($getPaymentStmt->error);
+    }
+
+    $paymentResult = $getPaymentStmt->get_result();
+    $payment = $paymentResult->fetch_assoc();
+    $getPaymentStmt->close();
+
+    if (!$payment) {
+      logErrors("No payment found! Please contact the support.", "string");
+      throw new Exception("No payment found! Please contact the support.");
+    }
+    $newStatus = "PAID";
+    $updatePaymentStatusStmt = $connection->prepare("UPDATE `payments` SET `status` = ? WHERE id = ?");
+    $updatePaymentStatusStmt->bind_param("si", $newStatus, $payment["id"]);
+    if ($updatePaymentStatusStmt->errno) {
+      $connection->rollback();
+      logErrors($updatePaymentStatusStmt->error, "string");
+      return [[], [$updatePaymentStatusStmt->error]];
+      // showSessionAlert($updatePaymentStatusStmt->error, "danger", true, $returnPath);
+      // exit;
+    }
+    $updatePaymentStatusStmt->close();
+
+    $typeId = $payment["type_id"];
+    $getProductsStmt = $connection->prepare("SELECT * FROM `products` WHERE type_id = ? AND payment_id IS NULL LIMIT ?");
+    $getProductsStmt->bind_param("ii", $typeId, $quantity);
+    $getProductsStmt->execute();
+    if ($getProductsStmt->errno) {
+      logErrors($getProductsStmt->errno, "string");
+      return [[], [$getProductsStmt->error]];
+      // showSessionAlert("Error in the Server! please contact the support.", "danger", true, $returnPath);
+      // exit;
+    }
+    $productsResult = $getProductsStmt->get_result();
+
+    if ($productsResult->num_rows < $quantity) {
+      logErrors("No enough products quantity! it may be sold during your purchase. Please chose less quantity or contact us.", "string");
+      $errors[] = "No enough products quantity! it may be sold during your purchase. Please chose less quantity or contact us.";
+      // showSessionAlert("No enough quantity! Please chose less quantity or contact us.", "danger", true, $returnPath);
+    };
+
+    while ($product = $productsResult->fetch_assoc()) {
+      $productId = $product["id"];
+      $products[] = $product["code_value"];
+
+      $setProductPaymentIdStmt = $connection->prepare("UPDATE `products` SET `payment_id` = ? WHERE id = ? AND `payment_id` IS NULL");
+      $setProductPaymentIdStmt->bind_param("ii", $paymentId, $productId);
+      if ($setProductPaymentIdStmt->errno) {
+        $connection->rollback();
+        logErrors($setProductPaymentIdStmt->error, "string");
+        $errors[] = $setProductPaymentIdStmt->error;
+        // exit;
+      }
+      if ($setProductPaymentIdStmt->affected_rows == 0) {
+        $errors[] = "paymentId: " . $paymentId . " productId: $productId, current product payment_id " . $product["payment_id"] . " and typre_id " . $typeId . "";
+        $errors[] = "Error: One of the products (ID: $productId) isn't found! It may be already sold, please contact the support.";
+      }
+      $setProductPaymentIdStmt->close();
+    }
+
+    $getProductsStmt->close();
+
+    if (count($errors)) {
+      logErrors($errors, "string");
+      // showSessionAlert($errors, "danger", true, $returnPath);
+      // exit;
+    }
+    $connection->commit();
+
+    return [$products, $errors];
+  } catch (Throwable $e) {
+    logErrors($e);
+    $errors[] = $e->getMessage();
+    return [$products, $errors];
+  }
+}
+
+function confirmCharge(int $chargetId, string $returnPath = ""): array
+{
+  global $connection;
+
+  $errors = [];
+
+  try {
+    $connection->begin_transaction();
+
+    $getChargeStmt = $connection->prepare("SELECT * FROM `charges` WHERE id = ? AND `status` != 'PAID' LIMIT 1");
+    $getChargeStmt->bind_param("i", $chargeId);
+    $getChargeStmt->execute();
+    if ($getChargeStmt->errno) {
+      // showSessionAlert($getChargeStmt->error, "danger");
+      logErrors($getChargeStmt->error, "string");
+      throw new Exception($getChargeStmt->error);
+    }
+
+    $chargeResult = $getChargeStmt->get_result();
+    $charge = $chargeResult->fetch_assoc();
+    $getChargeStmt->close();
+
+    if (!$charge) {
+      logErrors("No charge found! Please contact the support.", "string");
+      throw new Exception("No charge found! Please contact the support.");
+    }
+    $newStatus = "PAID";
+    $updateChargeStatusStmt = $connection->prepare("UPDATE `charges` SET `status` = ? WHERE id = ?");
+    $updateChargeStatusStmt->bind_param("si", $newStatus, $charge["id"]);
+    if ($updateChargeStatusStmt->errno) {
+      $connection->rollback();
+      logErrors($updateChargeStatusStmt->error, "string");
+      throw new Exception($updateChargeStatusStmt->error);
+      // showSessionAlert($updateChargeStatusStmt->error, "danger", true, $returnPath);
+      // exit;
+    }
+    $updateChargeStatusStmt->close();
+
+    if (count($errors)) {
+      logErrors($errors, "string");
+      // showSessionAlert($errors, "danger", true, $returnPath);
+      // exit;
+    }
+    $connection->commit();
+
+    return $errors;
+  } catch (Throwable $e) {
+    logErrors($e);
+    $errors[] = $e->getMessage();
+    return $errors;
   }
 }
 

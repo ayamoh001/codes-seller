@@ -60,16 +60,19 @@ try {
     // "currency" => "USDT",
     "fiatAmount" => $amount,
     "fiatCurrency" => "USD",
-    "goods" => [
-      "goodsType" => "02",
-      "goodsCategory" => "6000",
-      "referenceGoodsId" => $insertedChargeId . time(),
-      "goodsName" => "Charge Account Wallet",
-      "goodsDetail" => "Charge Account Wallet with $amount",
-      "goodsQuantity" => 1,
+    "description" => "Charge Account Wallet with $amount USD",
+    "goodsDetails" => [
+      [
+        "goodsType" => "02",
+        "goodsCategory" => "6000",
+        "referenceGoodsId" => $insertedChargeId . time(),
+        "goodsName" => "Charge Account Wallet",
+        "goodsDetail" => "Charge Account Wallet with $amount USD",
+        "goodsQuantity" => 1,
+      ]
     ],
-    "webhookUrl" => "$webhookBaseURL/backend/binance_payment_webhook.php",
-    "returnUrl" => "$baseURL/backend/confirm_wallet_charge.php?merchantTradeNo=$merchantTradeNo",
+    // "webhookUrl" => "$webhookBaseURL/backend/binance_payment_webhook.php",
+    // "returnUrl" => "$baseURL/backend/confirm_wallet_charge.php?merchantTradeNo=$merchantTradeNo",
     "cancelUrl" => "$baseURL/faild_payment.php",
   ];
 
@@ -88,7 +91,7 @@ try {
   ];
 
   curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-  curl_setopt($ch, CURLOPT_URL, $binanceURL . "/binancepay/openapi/v2/order");
+  curl_setopt($ch, CURLOPT_URL, $binanceURL . "/binancepay/openapi/v3/order");
   curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
   curl_setopt($ch, CURLOPT_POST, 1);
   curl_setopt($ch, CURLOPT_POSTFIELDS, $json_request);
@@ -133,7 +136,7 @@ try {
   $connection->commit();
 
   // Redirect to the app or the web page if no app is installed
-  header("location: $baseURL/redirect_to_app_or_page.php?deepLink=$payemntCheckoutURLDeepLink&webLink=$paymentCheckoutURLWebPage");
+  header("location: $baseURL/payment_processing.php?deepLink=$payemntCheckoutURLDeepLink&webLink=$paymentCheckoutURLWebPage&chargeId=$insertedChargeId");
   exit;
 } catch (Throwable $e) {
   showSessionAlert("Error in the server!", "danger", true, $returnPath);

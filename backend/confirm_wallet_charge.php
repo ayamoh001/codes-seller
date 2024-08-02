@@ -62,8 +62,6 @@ try {
   $responseData = json_decode($result, true);
 
   if ($responseData["status"] == "SUCCESS" && $responseData["data"]["status"] == "PAID") {
-    // echo "Payment was successful. Transaction ID: " . $transactionId;
-
     $prepayID = $responseData["prepayID"];
     $getPaymentStmt = $connection->prepare("SELECT * FROM `charges` WHERE (prepay_id = ?) AND (`status` = 'PENDING') AND (user_id = ?) LIMIT 1");
     $getPaymentStmt->bind_param("ss", $prepayID, $userId);

@@ -6,7 +6,7 @@ try {
   $groupId = (int) $_POST["groupId"];
   $typeId = (int) $_POST["typeId"];
   $quantity = (int) $_POST["quantity"] ?? 1;
-  $useWallet = (bool) isset($_POST["useWallet"]) ? ($_POST["useWallet"] == "TRUE") : false;
+  $useWallet = (string) (isset($_POST["useWallet"]) && ($_POST["useWallet"] == "TRUE")) ? "TRUE" : "FALSE";
 
   $returnPath = "checkout.php?groupId=$groupId&typeId=$typeId&quantity=$quantity";
 
@@ -52,7 +52,6 @@ try {
     exit;
   }
 
-  $products = [];
   $getProductsStmt = $connection->prepare("SELECT * FROM `products` WHERE (type_id = ?) AND (payment_id IS NULL) LIMIT ?");
   $getProductsStmt->bind_param("ii", $typeId, $quantity);
   $getProductsStmt->execute();
@@ -78,6 +77,7 @@ try {
 
   $createPaymentStmt = $connection->prepare("INSERT INTO `payments`(user_id, group_id, type_id, `status`, price, metadata1, metadata2) VALUES (?,?,?,?,?,?,?)");
   $createPaymentStmt->bind_param("iiisdss", $userId, $groupId, $typeId, $status, $totalPrice, $metadata1, $metadata2);
+  $createPaymentStmt->execute();
   if ($createPaymentStmt->errno) {
     $connection->rollback();
     showSessionAlert("Error in the Server! please contact the support.", "danger", true, $returnPath);
@@ -86,7 +86,7 @@ try {
   $insertedPaymentId = $createPaymentStmt->insert_id;
   $createPaymentStmt->close();
 
-  if ($useWallet == "TRUE") {
+  if ($useWallet === "TRUE") {
     // use wallet balance
     $getWalletStmt = $connection->prepare("SELECT * FROM `wallets` WHERE user_id = ? LIMIT 1");
     $getWalletStmt->bind_param("i", $userId);
@@ -129,21 +129,24 @@ try {
       "env" => [
         "terminalType" => "WEB"
       ],
-      "merchantTradeNo" => $merchantTradeNo,
+      "merchantTradeNo" => "$merchantTradeNo",
       // "orderAmount" => $totalPrice,
       // "currency" => "USDT",
       "fiatAmount" => $totalPrice,
       "fiatCurrency" => "USD",
-      "goods" => [
-        "goodsType" => "02",
-        "goodsCategory" => "6000",
-        "referenceGoodsId" => $insertedPaymentId . time(),
-        "goodsName" => preg_replace('/[^a-zA-Z0-9 ]/', '', $group["title"]),
-        "goodsDetail" => preg_replace('/[^a-zA-Z0-9 ]/', '', $group["description"]),
-        "goodsQuantity" => $quantity,
+      "description" => preg_replace('/[^a-zA-Z0-9 ]/', '', $group["description"]),
+      "goodsDetails" => [
+        [
+          "goodsType" => "02",
+          "goodsCategory" => "6000",
+          "referenceGoodsId" => "$insertedPaymentId" . time(),
+          "goodsName" => preg_replace('/[^a-zA-Z0-9 ]/', '', $group["title"]),
+          "goodsDetail" => preg_replace('/[^a-zA-Z0-9 ]/', '', $group["description"]),
+          "goodsQuantity" => $quantity,
+        ]
       ],
-      "webhookUrl" => "$webhookBaseURL/backend/binance_payment_webhook.php",
-      "returnUrl" => "$baseURL/backend/confirm_payment.php?merchantTradeNo=$merchantTradeNo",
+      // "webhookUrl" => "$webhookBaseURL/backend/binance_payment_webhook.php",
+      // "returnUrl" => "$baseURL/backend/confirm_payment.php?merchantTradeNo=$merchantTradeNo",
       "cancelUrl" => "$baseURL/faild_payment.php",
     ];
 
@@ -151,7 +154,27 @@ try {
     // var_dump($request);
     // exit;
 
-    $json_request = json_encode($request);
+    $json_request = json_encode($request, JSON_PRETTY_PRINT);
+    // {
+    //   "env": { "terminalType": "WEB" },
+    //   "merchantTradeNo": "3062429021074",
+    //   "fiatAmount": 48,
+    //   "fiatCurrency": "USD",
+    //   "description": "A description for Another Test Elements for the Groups with extra texts",
+    //   "goodsDetails": {
+    //     "goodsType": "02",
+    //     "goodsCategory": "6000",
+    //     "referenceGoodsId": "61722539630",
+    //     "goodsName": "Another Test Elements for the Groups",
+    //     "goodsDetail": "A description for Another Test Elements for the Groups with extra texts",
+    //     "goodsQuantity": 2
+    //   },
+    //   "webhookUrl": "https://cryptogamingcards.com/backend/binance_payment_webhook.php",
+    //   "returnUrl": "http://localhost/crypto-cards/backend/confirm_payment.php?merchantTradeNo=3062429021074",
+    //   "cancelUrl": "http://localhost/crypto-cards/faild_payment.php"
+    // }
+
+
     // echo "<pre>";
     // var_dump($json_request);
     // exit;
@@ -170,7 +193,7 @@ try {
     ];
 
     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-    curl_setopt($ch, CURLOPT_URL, $binanceURL . "/binancepay/openapi/v2/order");
+    curl_setopt($ch, CURLOPT_URL, "$binanceURL/binancepay/openapi/v3/order");
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_POST, 1);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $json_request);
@@ -183,8 +206,9 @@ try {
     }
     curl_close($ch);
 
-    echo "<pre>";
+    // echo "<pre>";
     // var_dump($result);
+    // exit;
 
     // {
     //   "status": "SUCCESS",
@@ -203,7 +227,7 @@ try {
     // }
 
     $responseData = json_decode($result, true);
-    var_dump($responseData);
+    // var_dump($responseData);
 
     if ($responseData["status"] != "SUCCESS") {
       $connection->rollback();
@@ -219,8 +243,9 @@ try {
 
   // update the payment
   $newStatus = "PENDING";
+  $useWalletBoolean = ($useWallet === "TRUE") ? true : false;
   $updatePaymentStmt = $connection->prepare("UPDATE `payments` SET prepay_id = ?, merchantTradeNo = ?, `status` = ?, use_wallet = ? WHERE id = ?");
-  $updatePaymentStmt->bind_param("sssbi", $prepayID, $merchantTradeNo, $newStatus, $useWallet, $insertedPaymentId);
+  $updatePaymentStmt->bind_param("sssbi", $prepayID, $merchantTradeNo, $newStatus, $useWalletBoolean, $insertedPaymentId);
   if ($updatePaymentStmt->errno) {
     $connection->rollback();
     logErrors($updatePaymentStmt->error);
@@ -229,17 +254,17 @@ try {
   }
   $updatePaymentStmt->close();
 
-  // $payemntCheckoutURLCodeLink = $responseData["data"]["qrCodeLink"];
-  // $payemntCheckoutURLQRContent = $responseData["data"]["qrContent"];
-  $payemntCheckoutURLDeepLink = $responseData["data"]["deeplink"];
-  $paymentCheckoutURLWebPage = $responseData["data"]["checkoutUrl"];
 
   $connection->commit();
 
-  if ($useWallet == "TRUE") {
-    header("location: $baseURL/confirm_payment.php?paymentId=$insertedPaymentId");
+  if ($useWallet === "TRUE") {
+    header("location: $baseURL/backend/confirm_payment.php?paymentId=$insertedPaymentId");
   } else {
-    header("location: $baseURL/redirect_to_app_or_page.php?deepLink=$payemntCheckoutURLDeepLink&webLink=$paymentCheckoutURLWebPage");
+    // $payemntCheckoutURLCodeLink = $responseData["data"]["qrCodeLink"];
+    // $payemntCheckoutURLQRContent = $responseData["data"]["qrContent"];
+    $payemntCheckoutURLDeepLink = $responseData["data"]["deeplink"];
+    $paymentCheckoutURLWebPage = $responseData["data"]["checkoutUrl"];
+    header("location: $baseURL/payment_processing.php?deepLink=$payemntCheckoutURLDeepLink&webLink=$paymentCheckoutURLWebPage&paymentId=$insertedPaymentId");
   }
   // Redirect to the app or the web page if no app is installed
   exit;

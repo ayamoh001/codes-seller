@@ -10,7 +10,7 @@ try {
 
   $userId = "";
   $returnPath = "checkout.php";
-  $useWallet = $_GET['use_wallet'];
+  $useWallet = (string) (isset($_GET["useWallet"]) && ($_GET["useWallet"] == "TRUE")) ? "TRUE" : "FALSE";
 
   // check if logged in or a guest
   if (isset($_SESSION["user_id"]) && $_SESSION["user_id"] != "") {
@@ -21,7 +21,7 @@ try {
     $userId = $guestIdPrefix . session_id();
   }
 
-  if ($useWallet == "TRUE") {
+  if ($useWallet === "TRUE") {
     $paymentId = $_GET['paymentId'];
   } else {
     $merchantTradeNo = $_GET['merchantTradeNo'];
@@ -82,7 +82,7 @@ try {
     }
   }
 
-  if ($useWallet == "TRUE") {
+  if ($useWallet === "TRUE") {
     $getPaymentStmt = $connection->prepare("SELECT * FROM `payments` WHERE (id = ?) AND (`status` = 'PENDING') AND (user_id = ?) LIMIT 1");
     $getPaymentStmt->bind_param("ss", $paymentId, $userId);
   } else {
@@ -126,7 +126,6 @@ try {
   }
   $updatePaymentStatusStmt->close();
 
-  // TODO: get products and linke them to the payment
   $products = [];
   $typeId = $payment["type_id"];
   $getProductsStmt = $connection->prepare("SELECT * FROM `products` WHERE type_id = ? AND payment_id IS NULL LIMIT ?");
@@ -163,14 +162,13 @@ try {
 
   $getProductsStmt->close();
 
+  // var_dump($errors);
+  // exit;
 
-  var_dump($errors);
-  exit;
-
-  echo "Payment was successful. Transaction ID: " . $transactionId;
+  // echo "Payment was successful.";
   $connection->commit();
 
-  // header("location: /success.php?paymentId=" . $payment["id"] . "&errors=" . json_encode($errors));
+  header("location: /success.php?paymentId=" . $payment["id"] . "&errors=" . json_encode($errors));
 } catch (Throwable $e) {
   var_dump($e);
   // showSessionAlert("Error in the server!", "danger", true, $returnPath);

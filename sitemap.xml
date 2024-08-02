@@ -4,7 +4,7 @@
           <loc>https://cryptogamingcards.com</loc>
           <priority>1.0</priority>
           <changefreq>weekly</changefreq>
-          <lastMod>2024-02-22</lastMod>
+          <lastmod>2024-02-22</lastmod>
           <image:image>
             <image:loc>https://cryptogamingcards.com/assets/images/crypto-cards-og-thumbnile.png</image:loc>
             <image:title>Crypto Cards</image:title>
@@ -14,7 +14,7 @@
         <loc>https://cryptogamingcards.com/signup</loc>
         <priority>0.9</priority>
         <changefreq>weekly</changefreq>
-        <lastMod>2024-02-22</lastMod>
+        <lastmod>2024-02-22</lastmod>
         <image:image>
           <image:loc>https://cryptogamingcards.com/assets/images/crypto-cards-og-thumbnile.png</image:loc>
           <image:title>Crypto Cards</image:title>
@@ -24,7 +24,7 @@
         <loc>https://cryptogamingcards.com/login</loc>
         <priority>0.8</priority>
         <changefreq>weekly</changefreq>
-        <lastMod>2024-02-22</lastMod>
+        <lastmod>2024-02-22</lastmod>
         <image:image>
           <image:loc>https://cryptogamingcards.com/assets/images/crypto-cards-og-thumbnile.png</image:loc>
           <image:title>Crypto Cards</image:title>
@@ -34,7 +34,7 @@
         <loc>https://cryptogamingcards.com/policies</loc>
         <priority>0.7</priority>
         <changefreq>weekly</changefreq>
-        <lastMod>2024-02-22</lastMod>
+        <lastmod>2024-02-22</lastmod>
         <image:image>
           <image:loc>https://cryptogamingcards.com/assets/images/crypto-cards-og-thumbnile.png</image:loc>
           <image:title>Crypto Cards</image:title>

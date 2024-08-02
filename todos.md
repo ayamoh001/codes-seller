@@ -1,2 +1,3 @@
-- Add webhook checking logic
-- Add copy to clipboard and copy all buttons for codes
+- fix the setProductPaymentIdStmt condition not working in functions.php
+- fix why prepayID and merchantTradeNo are not stored in create_payment.php
+- fix the using wallet payments are not completing
