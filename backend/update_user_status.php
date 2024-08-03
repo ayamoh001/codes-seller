@@ -30,6 +30,7 @@ try {
   $updateUserStatusStmt->execute();
   if ($updateUserStatusStmt->errno) {
     $connection->rollback();
+    logErrors($updateUserStatusStmt->error, "string");
     showSessionAlert($updateUserStatusStmt->error, "danger", true, $returnPath);
     exit;
   }

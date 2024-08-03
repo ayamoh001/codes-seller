@@ -30,6 +30,7 @@ try {
   $deleteProductStmt->execute();
   if ($deleteProductStmt->errno) {
     $connection->rollback();
+    logErrors($deleteProductStmt->error, "string");
     showSessionAlert($deleteProductStmt->error, "danger", true, $returnPath);
     exit;
   }

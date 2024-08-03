@@ -56,6 +56,7 @@ try {
     $checkUsernameUniquenessStmt->bind_param("s", $newUsername);
     $checkUsernameUniquenessStmt->execute();
     if ($checkUsernameUniquenessStmt->errno) {
+      logErrors($checkUsernameUniquenessStmt->error, "string");
       showSessionAlert("Error while checking username uniqueness!", "danger", true, $returnPath);
       exit;
     }
@@ -90,6 +91,7 @@ try {
   $updateUserProfilePictureStmt->execute();
   if ($updateUserProfilePictureStmt->errno) {
     $connection->rollback();
+    logErrors($updateUserProfilePictureStmt->error, "string");
     showSessionAlert("Error in the updating process!", "danger", true, $returnPath);
     exit;
   }

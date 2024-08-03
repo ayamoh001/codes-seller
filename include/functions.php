@@ -356,7 +356,7 @@ function linkProductsWithPayment(int $paymentId, int $typeId, int $quantity, str
   $products = [];
 
   try {
-    $connection->begin_transaction();
+    // $connection->begin_transaction();
 
     $getPaymentStmt = $connection->prepare("SELECT * FROM `payments` WHERE id = ? AND `status` != 'PAID' LIMIT 1");
     $getPaymentStmt->bind_param("i", $paymentId);
@@ -431,7 +431,7 @@ function linkProductsWithPayment(int $paymentId, int $typeId, int $quantity, str
       // showSessionAlert($errors, "danger", true, $returnPath);
       // exit;
     }
-    $connection->commit();
+    // $connection->commit();
 
     return [$products, $errors];
   } catch (Throwable $e) {
@@ -498,7 +498,12 @@ function getPaymentWithProducts(int $paymentId, string $returnPath = ""): array
 {
   global $connection;
   try {
-    $getPaymentStmt = $connection->prepare("SELECT py.*, pd.id AS product_id, pd.date AS product_date, pd.* FROM `payments` AS py INNER JOIN `products` AS pd WHERE py.id = ? AND `py.status` != 'PAID' AND pd.payment_id = py.id LIMIT 1");
+    $getPaymentStmt = $connection->prepare("SELECT py.*, pd.id AS product_id, pd.date AS product_date, pd.*, gr.id AS group_id, ty.id AS type_id, ty.name AS type_name, ty.price AS type_price
+                                            FROM `payments` AS py
+                                            INNER JOIN `groups` AS gr 
+                                            INNER JOIN `types` AS ty
+                                            INNER JOIN `products` AS pd
+                                            WHERE py.id = ? AND `py.status` IN ('PAID', 'CONFIRM-PENDING') AND pd.payment_id = py.id AND gr.id = ty.group_id AND pd.type_id = ty.id LIMIT 1");
     $getPaymentStmt->bind_param("i", $paymentId);
     $getPaymentStmt->execute();
     if ($getPaymentStmt->errno) {
@@ -512,14 +517,16 @@ function getPaymentWithProducts(int $paymentId, string $returnPath = ""): array
     $payment = [];
 
     while ($row = $paymentResult->fetch_assoc()) {
-      // var_dump($row);
+      var_dump($row);
       if (!isset($payment["id"])) {
         $payment = [
           'id' => $row["id"],
           'user_id' => $row["user_id"],
           'group_id' => $row["group_id"],
-          'prepay_id' => $row["prepay_id"],
           'type_id' => $row["type_id"],
+          'prepay_id' => $row["prepay_id"],
+          'merchantTradeNo' => $row["merchantTradeNo"],
+          'trasnaction_id' => $row["trasnaction_id"],
           'price' => $row["price"],
           'quantity' => $row["quantity"],
           'use_wallet' => $row["use_wallet"],
@@ -531,6 +538,7 @@ function getPaymentWithProducts(int $paymentId, string $returnPath = ""): array
       $payment["products"][] = [
         'id' => $row["product_id"],
         'code_value' => $row["code_value"],
+        'price' => $row["type_price"],
       ];
     }
     return $payment;

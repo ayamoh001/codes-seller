@@ -28,6 +28,7 @@ try {
   $getGroupStmt->bind_param("i", $groupId);
   $getGroupStmt->execute();
   if ($getGroupStmt->errno) {
+    logErrors($getGroupStmt->error, "string");
     showSessionAlert($getGroupStmt->error, "danger", true, $returnPath);
     exit;
   }
@@ -79,6 +80,7 @@ try {
   $createNewGroupStmt->execute();
   if ($createNewGroupStmt->errno) {
     $connection->rollback();
+    logErrors($createNewGroupStmt->error, "string");
     showSessionAlert($createNewGroupStmt->error, "danger", true, $returnPath);
     exit;
   }

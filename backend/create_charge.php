@@ -36,6 +36,7 @@ try {
   $createChargeStmt->bind_param("idsss", $walletId, $amount, $status, $metadata1, $metadata2);
   if ($createChargeStmt->errno) {
     $connection->rollback();
+    logErrors($createChargeStmt->error, "string");
     showSessionAlert($createChargeStmt->error, "danger", true, $returnPath);
     exit;
   }
@@ -123,6 +124,7 @@ try {
   $updateChargeStmt->bind_param("sssi", $prepayID, $merchantTradeNo, $newStatus, $insertedChargeId);
   if ($updateChargeStmt->errno) {
     $connection->rollback();
+    logErrors($updateChargeStmt->error, "string");
     showSessionAlert("Error in storing Binance prepay ID.", "danger", true, $returnPath);
     exit;
   }

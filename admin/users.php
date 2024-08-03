@@ -18,6 +18,7 @@ $returnPath = "admin/users.php";
 $getUsersStmt = $connection->prepare("SELECT * FROM `users`");
 $getUsersStmt->execute();
 if ($getUsersStmt->errno) {
+  logErrors($getUsersStmt->error, "string");
   showSessionAlert($getUsersStmt->error, "danger", true, $returnPath);
   exit;
 }
@@ -64,19 +65,50 @@ require_once "../include/admin/header.php";
               <td><?php echo $user["status"]; ?></td>
               <td><?php echo $user["date"]; ?></td>
               <td>
-                <?php if ($user["status"] != "BLOCKED") : ?>
-                  <form action="<?php echo $baseURL . "/backend/update_user_status.php"; ?>" method="POST">
-                    <input type="hidden" name="user_id" value="<?php echo $user["id"]; ?>">
-                    <input type="hidden" name="new_status" value="BLOCKED">
-                    <button class="btn btn-sm btn-danger">Block</button>
-                  </form>
-                <?php else : ?>
-                  <form action="<?php echo $baseURL . "/backend/update_user_status.php"; ?>" method="POST">
-                    <input type="hidden" name="user_id" value="<?php echo $user["id"]; ?>">
-                    <input type="hidden" name="new_status" value="ACTIVE">
-                    <button class="btn btn-sm btn-success">Activate</button>
-                  </form>
-                <?php endif; ?>
+                <div class="d-flex justify-content-start align-content-center gap-2">
+                  <div id="change-password-<?php echo $user["id"]; ?>">
+                    <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#change-password-modal-<?php echo $user["id"]; ?>">
+                      Change Password
+                    </button>
+                    <!-- Cange Modal -->
+                    <div class="modal fade" id="change-password-modal-<?php echo $user["id"]; ?>" tabindex="-1" aria-labelledby="change-password-modal-label-<?php echo $user["id"]; ?>" aria-hidden="true">
+                      <div class="modal-dialog">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="change-password-modal-label-<?php echo $user["id"]; ?>">Modal title</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                          </div>
+                          <div class="modal-body">
+                            <form action="<?php echo $baseURL . "/backend/change_user_password.php"; ?>" method="POST">
+                              <input type="hidden" name="user_id" value="<?php echo $user["id"]; ?>">
+                              <input type="text" name="newPassword" value="" class="form-control" placeholder="New Password...">
+                              <button class="btn btn-sm btn-success">Save</button>
+                            </form>
+                          </div>
+                          <!-- <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-Success">Save</button>
+                          </div> -->
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div id="user-status-<?php echo $user["id"]; ?>">
+                    <?php if ($user["status"] != "BLOCKED") : ?>
+                      <form action="<?php echo $baseURL . "/backend/update_user_status.php"; ?>" method="POST">
+                        <input type="hidden" name="user_id" value="<?php echo $user["id"]; ?>">
+                        <input type="hidden" name="new_status" value="BLOCKED">
+                        <button class="btn btn-sm btn-danger">Block</button>
+                      </form>
+                    <?php else : ?>
+                      <form action="<?php echo $baseURL . "/backend/update_user_status.php"; ?>" method="POST">
+                        <input type="hidden" name="user_id" value="<?php echo $user["id"]; ?>">
+                        <input type="hidden" name="new_status" value="ACTIVE">
+                        <button class="btn btn-sm btn-success">Activate</button>
+                      </form>
+                    <?php endif; ?>
+                  </div>
+                </div>
               </td>
             </tr>
           <?php

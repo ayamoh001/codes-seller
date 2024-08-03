@@ -30,6 +30,7 @@ try {
   $getChargeStmt->bind_param("is", $chargeId, $userId);
   $getChargeStmt->execute();
   if ($getChargeStmt->errno) {
+    logErrors($getChargeStmt->error, "string");
     echo "data: " . json_encode(["error" => $getChargeStmt->errno]) . "\n\n";
     flush();
     // exit;

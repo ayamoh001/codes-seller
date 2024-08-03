@@ -67,6 +67,7 @@ try {
     $getPaymentStmt->bind_param("ss", $prepayID, $userId);
     $getPaymentStmt->execute();
     if ($getPaymentStmt->errno) {
+      logErrors($getPaymentStmt->error, "string");
       showSessionAlert("Error in the Server! please contact the support.", "danger", true, $returnPath);
       exit;
     }
@@ -87,6 +88,7 @@ try {
     $updatePaymentStatusStmt->bind_param("si", $newStatus, $product["id"]);
     if ($updatePaymentStatusStmt->errno) {
       $connection->rollback();
+      logErrors($updatePaymentStatusStmt->error, "string");
       echo $updatePaymentStatusStmt->error;
       // showSessionAlert("Error in saving the payment success status!", "danger", true, $returnPath);
       exit;

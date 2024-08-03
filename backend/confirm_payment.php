@@ -93,6 +93,7 @@ try {
 
   $getPaymentStmt->execute();
   if ($getPaymentStmt->errno) {
+    logErrors($getPaymentStmt->error, "string");
     echo "<pre>";
     var_dump($getPaymentStmt->errno);
     // exit;
@@ -118,6 +119,7 @@ try {
   $updatePaymentStatusStmt->bind_param("si", $newStatus, $payment["id"]);
   if ($updatePaymentStatusStmt->errno) {
     $connection->rollback();
+    logErrors($updatePaymentStatusStmt->error, "string");
     echo "<pre>";
     var_dump($updatePaymentStatusStmt->errno);
     // exit;
@@ -132,6 +134,7 @@ try {
   $getProductsStmt->bind_param("ii", $typeId, $quantity);
   $getProductsStmt->execute();
   if ($getProductsStmt->errno) {
+    logErrors($getProductsStmt->error, "string");
     echo $getProductsStmt->errno;
     // showSessionAlert("Error in the Server! please contact the support.", "danger", true, $returnPath);
     // exit;
@@ -151,6 +154,7 @@ try {
     $setPaymentIdStmt->bind_param("si", $payment["id"], $productId);
     if ($setPaymentIdStmt->errno) {
       $connection->rollback();
+      logErrors($setPaymentIdStmt->error, "string");
       // showSessionAlert($setPaymentIdStmt->error, "danger", true, $returnPath);
       // exit;
     }

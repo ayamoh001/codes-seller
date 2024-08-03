@@ -28,6 +28,7 @@ try {
   $getTypeStmt->bind_param("i", $typeId);
   $getTypeStmt->execute();
   if ($getTypeStmt->errno) {
+    logErrors($getTypeStmt->error, "string");
     showSessionAlert($getTypeStmt->error, "danger", true, $returnPath);
     exit;
   }
@@ -50,6 +51,7 @@ try {
   $createNewTypeStmt->execute();
   if ($createNewTypeStmt->errno) {
     $connection->rollback();
+    logErrors($createNewTypeStmt->error, "string");
     showSessionAlert($createNewTypeStmt->error, "danger", true, $returnPath);
     exit;
   }

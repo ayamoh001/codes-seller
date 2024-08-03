@@ -3,7 +3,7 @@ try {
   require_once "../include/config.php";
   require_once "../include/functions.php";
 
-  $returnPath = "admin/requests.php";
+  $returnPath = "admin/users.php";
 
   if (
     !isset($_SERVER['PHP_AUTH_USER']) ||
@@ -20,26 +20,26 @@ try {
     showSessionAlert("Not allowed HTTP method!", "danger", true, $returnPath);
     exit;
   }
-  $request_id = (int) $_POST["request_id"];
-  $new_status = "CONFIRMED";
+  $user_id = (int) $_POST["user_id"];
+  $newPassword = $_POST["newPassword"];
 
+  $newHashPassword = password_hash($newPassword, PASSWORD_BCRYPT, ["cost" => 4]);
   $connection->begin_transaction();
 
-  $updateRequestStatusStmt = $connection->prepare("UPDATE `requests` SET `status` = ? WHERE id = ?");
-  $updateRequestStatusStmt->bind_param("si", $new_status, $request_id);
-  $updateRequestStatusStmt->execute();
-  if ($updateRequestStatusStmt->errno) {
+  $updateUserStatusStmt = $connection->prepare("UPDATE `users` SET `password` = ? WHERE id = ?");
+  $updateUserStatusStmt->bind_param("si", $newPassword, $user_id);
+  $updateUserStatusStmt->execute();
+  if ($updateUserStatusStmt->errno) {
     $connection->rollback();
-    showSessionAlert($updateRequestStatusStmt->error, "danger", true, $returnPath);
+    logErrors($updateUserStatusStmt->error, "string");
+    showSessionAlert($updateUserStatusStmt->error, "danger", true, $returnPath);
     exit;
   }
-  $updateRequestStatusStmt->close();
+  $updateUserStatusStmt->close();
 
   $connection->commit();
-  // TODO: send email to the user
-
-  showSessionAlert("Manual request confirmed successfully!", "success");
-  header("Location: $baseURL/admin/requests.php");
+  showSessionAlert("User Password Changed successfully!", "success");
+  header("Location: $baseURL/admin/users.php");
   exit;
 } catch (Throwable $e) {
   showSessionAlert("Error in the server!", "danger", true, $returnPath);

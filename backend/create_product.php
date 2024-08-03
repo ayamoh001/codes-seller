@@ -28,6 +28,7 @@ try {
   $getTypeStmt->bind_param("i", $typeId);
   $getTypeStmt->execute();
   if ($getTypeStmt->errno) {
+    logErrors($getTypeStmt->error, "string");
     showSessionAlert("Error in the getting process!", "danger", true, $returnPath);
     exit;
   }
@@ -63,6 +64,7 @@ try {
           $createNewProductStmt->execute();
           if ($createNewProductStmt->errno) {
             $connection->rollback();
+            logErrors($createNewProductStmt->error, "string");
             showSessionAlert("Error in the creating process!", "danger", true, $returnPath);
             exit;
           }
@@ -79,6 +81,7 @@ try {
     $createNewProductStmt->execute();
     if ($createNewProductStmt->errno) {
       $connection->rollback();
+      logErrors($createNewProductStmt->error, "string");
       showSessionAlert("Error in the creating process!", "danger", true, $returnPath);
       exit;
     }

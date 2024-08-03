@@ -78,6 +78,7 @@ try {
       $stmt->execute();
       if ($stmt->errno) {
         $connection->rollback();
+        logErrors($stmt->error, "string");
         showSessionAlert("Failed to create new user! Please try again later.", "danger", true, $returnPath);
         exit;
       }
@@ -91,6 +92,7 @@ try {
       $stmt->execute();
       if ($stmt->errno) {
         $connection->rollback();
+        logErrors($stmt->error, "string");
         showSessionAlert("Failed to create new user wallet! Please try again later.", "danger", true, $returnPath);
         exit;
       }
@@ -102,6 +104,7 @@ try {
       $updateSessionIdToUserIdStmt->execute();
       if ($updateSessionIdToUserIdStmt->errno) {
         $connection->rollback();
+        logErrors($updateSessionIdToUserIdStmt->error, "string");
         showSessionAlert("Failed to update session id to user id! Please try again later.", "danger", true, $returnPath);
         exit;
       }

@@ -7,6 +7,8 @@ try {
   $typeId = (int) $_POST["typeId"];
   $quantity = (int) $_POST["quantity"] ?? 1;
   $useWallet = (string) (isset($_POST["useWallet"]) && ($_POST["useWallet"] == "TRUE")) ? "TRUE" : "FALSE";
+  $isManual = (bool) isset($_POST["is_manual"]) && ($_POST["is_manual"] == "TRUE");
+  $transactionId = (string) (isset($_POST["trasnaction_id"]) && ($_POST["trasnaction_id"] != "")) ? $_POST["trasnaction_id"] : "";
 
   $returnPath = "checkout.php?groupId=$groupId&typeId=$typeId&quantity=$quantity";
 
@@ -22,6 +24,7 @@ try {
   $getGroupStmt->bind_param("i", $groupId);
   $getGroupStmt->execute();
   if ($getGroupStmt->errno) {
+    logErrors($getGroupStmt->error, "string");
     showSessionAlert("Error in the Server! please contact the support.", "danger", true, $returnPath);
     exit;
   }
@@ -39,6 +42,7 @@ try {
   $getTypeStmt->bind_param("ii", $groupId, $typeId);
   $getTypeStmt->execute();
   if ($getTypeStmt->errno) {
+    logErrors($getTypeStmt->error, "string");
     showSessionAlert("Error in the Server! please contact the support.", "danger", true, $returnPath);
     exit;
   }
@@ -56,6 +60,7 @@ try {
   $getProductsStmt->bind_param("ii", $typeId, $quantity);
   $getProductsStmt->execute();
   if ($getProductsStmt->errno) {
+    logErrors($getProductsStmt->error, "string");
     showSessionAlert("Error in the Server! please contact the support.", "danger", true, $returnPath);
     exit;
   }
@@ -80,6 +85,7 @@ try {
   $createPaymentStmt->execute();
   if ($createPaymentStmt->errno) {
     $connection->rollback();
+    logErrors($createPaymentStmt->error, "string");
     showSessionAlert("Error in the Server! please contact the support.", "danger", true, $returnPath);
     exit;
   }
@@ -93,6 +99,7 @@ try {
     $getWalletStmt->execute();
     if ($getWalletStmt->errno) {
       $connection->rollback();
+      logErrors($getWalletStmt->error, "string");
       showSessionAlert("Error in the Server! please contact the support.", "danger", true, $returnPath);
       exit;
     }
@@ -114,10 +121,13 @@ try {
     $subtractBalanceStmt->bind_param("di", $totalPrice, $walletId);
     if ($subtractBalanceStmt->errno) {
       $connection->rollback();
+      logErrors($subtractBalanceStmt->error, "string");
       showSessionAlert("Error in the Server! please contact the support.", "danger", true, $returnPath);
       exit;
     }
     $subtractBalanceStmt->close();
+  } else if ($isManual) {
+    // Nothing for now
   } else {
     $ch = curl_init();
 
@@ -243,9 +253,12 @@ try {
 
   // update the payment
   $newStatus = "PENDING";
+  if ($isManual) {
+    $newStatus = "CONFIRM-PENDING";
+  }
   $useWalletBoolean = ($useWallet === "TRUE") ? true : false;
-  $updatePaymentStmt = $connection->prepare("UPDATE `payments` SET prepay_id = ?, merchantTradeNo = ?, `status` = ?, use_wallet = ? WHERE id = ?");
-  $updatePaymentStmt->bind_param("sssbi", $prepayID, $merchantTradeNo, $newStatus, $useWalletBoolean, $insertedPaymentId);
+  $updatePaymentStmt = $connection->prepare("UPDATE `payments` SET prepay_id = ?, merchantTradeNo = ?, `status` = ?, use_wallet = ?, is_manual = ?, transaction_id = ? WHERE id = ?");
+  $updatePaymentStmt->bind_param("sssbssbi", $prepayID, $merchantTradeNo, $newStatus, $useWalletBoolean, $isManual, $transactionId, $insertedPaymentId);
   if ($updatePaymentStmt->errno) {
     $connection->rollback();
     logErrors($updatePaymentStmt->error);
@@ -259,6 +272,8 @@ try {
 
   if ($useWallet === "TRUE") {
     header("location: $baseURL/backend/confirm_payment.php?paymentId=$insertedPaymentId");
+  } else if ($isManual) {
+    header("location: $baseURL/backend/payment_processing.php?paymentId=$insertedPaymentId&transactionId=$transactionId");
   } else {
     // $payemntCheckoutURLCodeLink = $responseData["data"]["qrCodeLink"];
     // $payemntCheckoutURLQRContent = $responseData["data"]["qrContent"];

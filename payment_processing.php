@@ -13,6 +13,7 @@ if (isset($_SESSION["user_id"]) && $_SESSION["user_id"] != "") {
 }
 
 $paymentId = $_GET['paymentId'] ?? "";
+$transactionId = $_GET['transactionId'] ?? "";
 $deepLink = $_GET['deepLink'] ?? "";
 $webLink = $_GET['webLink'] ?? "";
 
@@ -92,15 +93,7 @@ require_once "./include/header.php";
       }
     }, 1500);
 
-    try {
-      console.log("open deep link");
-      window.location.href = deepLink;
-    } catch (e) {
-      console.log("error in opening deep link");
-      console.log({
-        e
-      });
-    }
+    window.location.href = deepLink;
 
     window.onblur = function() {
       clearTimeout(timeout);
@@ -246,9 +239,10 @@ require_once "./include/header.php";
   }
 
   window.onload = function() {
+    var paymentId = '<?php echo $paymentId; ?>';
+    var transactionId = '<?php echo $transactionId; ?>';
     var deepLink = '<?php echo $deepLink; ?>';
     var webLink = '<?php echo $webLink; ?>';
-    var paymentId = '<?php echo $paymentId; ?>';
     redirectToApp(deepLink, webLink);
     checkPaymentStatus(paymentId)
     startTimer();

@@ -14,12 +14,13 @@ if (
   exit;
 }
 
-$returnPath = "admin/payments.php";
+$returnPath = "admin/manual_payments.php";
+
 $getPaymentsStmt = $connection->prepare("SELECT py.*, pr.id AS product_id, pr.date AS product_date, pr.* FROM 
                                         `payments` As py
                                         INNER JOIN 
                                         `products` AS pr
-                                        WHERE pr.payment_id = py.id");
+                                        WHERE pr.payment_id = py.id AND py.is_manual = 1");
 $getPaymentsStmt->execute();
 if ($getPaymentsStmt->errno) {
   logErrors($getPaymentsStmt->error, "string");
@@ -35,7 +36,7 @@ while ($row = $paymentsResult->fetch_assoc()) {
   $payments[] = getPaymentWithProducts($row["id"]);
 }
 
-$title = "Admin Dashboard - Payments";
+$title = "Admin Dashboard - Manual Requests";
 
 require_once "../include/admin/header.php";
 ?>
@@ -47,7 +48,7 @@ require_once "../include/admin/header.php";
     printFlashMessages();
     ?>
     <section>
-      <h1 class="mb-5 pb-5 h1 fw-bold text-white">All Platform Payments By Users/Geusts</h1>
+      <h1 class="mb-5 pb-5 h1 fw-bold text-white">All Platform Manual Requests</h1>
 
       <table class="table table-dark">
         <thead>
@@ -56,8 +57,7 @@ require_once "../include/admin/header.php";
             <th scope="col">User ID</th>
             <th scope="col">Group ID</th>
             <th scope="col">Type ID</th>
-            <th scope="col">Prepay ID</th>
-            <th scope="col">Merchant Trade No</th>
+            <th scope="col">Trasnaction ID</th>
             <th scope="col">Quantity</th>
             <th scope="col">Amount Price</th>
             <th scope="col">Status</th>
@@ -75,7 +75,6 @@ require_once "../include/admin/header.php";
               <td><?php echo $payment["group_id"]; ?></td>
               <td><?php echo $payment["type_id"]; ?></td>
               <td><?php echo $payment["prepay_id"]; ?></td>
-              <td><?php echo $payment["merchantTradeNo"]; ?></td>
               <td><?php echo count($payment["products"]); ?></td>
               <td><?php echo $payment["price"]; ?></td>
               <td><?php echo $payment["status"]; ?></td>

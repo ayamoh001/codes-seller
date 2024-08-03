@@ -57,6 +57,7 @@ try {
   $createNewGroupStmt->execute();
   if ($createNewGroupStmt->errno) {
     $connection->rollback();
+    logErrors($createNewGroupStmt->error, "string");
     showSessionAlert($createNewGroupStmt->error, "danger", true, $returnPath);
     exit;
   }

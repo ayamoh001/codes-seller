@@ -78,6 +78,36 @@ require_once "./include/header.php";
                 </div>
 
                 <div class="row gap-2 gap-md-0">
+                  <div class="col col-12">
+                    <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#manual-payment-request">
+                      Change Password
+                    </button>
+                    <!-- Cange Modal -->
+                    <div class="modal fade" id="manual-payment-request" tabindex="-1" aria-labelledby="manual-payment-request-label" aria-hidden="true">
+                      <div class="modal-dialog">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="manual-payment-request-label">Modal title</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                          </div>
+                          <div class="modal-body">
+                            <form action="<?php echo $baseURL; ?>/backend/create_payment.php" method="POST" class="m-0">
+                              <input type="hidden" name="groupId" value="<?php echo $groupId; ?>">
+                              <input type="hidden" name="typeId" value="<?php echo $typeId; ?>">
+                              <input type="hidden" name="quantity" value="<?php echo $quantity; ?>">
+                              <input type="hidden" name="is_manual" value="TRUE">
+                              <input type="text" name="transaction_id" value="TRUE" class="form-control" placeholder="Transaction ID..." required>
+                              <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="w-100 btn btn-primary btn-lg">Send Request</button>
+                              </div>
+                            </form>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
                   <div class="col col-12 col-md-6">
                     <form action="<?php echo $baseURL; ?>/backend/create_payment.php" method="POST" class="m-0">
                       <!-- <input type="hidden" name="useWallet" value="FALSE"> -->

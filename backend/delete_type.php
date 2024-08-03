@@ -30,6 +30,7 @@ try {
   $deleteTypeStmt->execute();
   if ($deleteTypeStmt->errno) {
     $connection->rollback();
+    logErrors($deleteTypeStmt->error, "string");
     showSessionAlert("Error in the deleting process!", "danger", true, $returnPath);
     exit;
   }
@@ -40,6 +41,7 @@ try {
   $deleteRelatedProductsStmt->execute();
   if ($deleteRelatedProductsStmt->errno) {
     $connection->rollback();
+    logErrors($deleteRelatedProductsStmt->error, "string");
     showSessionAlert("Error in the deleting process!", "danger", true, $returnPath);
     exit;
   }
