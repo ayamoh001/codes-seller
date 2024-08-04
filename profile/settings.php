@@ -46,7 +46,7 @@ require_once "../include/profile/header.php";
       <label for="new_password_confirm" class="form-label">New Password confirmation</label>
       <input type="password" class="form-control" id="new_password_confirm" name="new_password_confirm" placeholder="new password confirmation...">
     </div>
-    <button type="submit" class="btn btn-lg btn-warning mx-auto w-100">Update</button>
+    <button type="submit" class="btn btn-lg btn-warning fw-bold mx-auto w-100">Update</button>
   </form>
 </section>
 

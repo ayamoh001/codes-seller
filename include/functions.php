@@ -273,11 +273,10 @@ function getUserPayments(int $user_id, string $returnPath = ""): array
   global $connection;
 
   try {
-    $getPaymentsStmt = $connection->prepare("SELECT py.*, pr.id AS product_id, pr.date AS product_date, pr.* FROM 
-                                        `payments` As py
-                                        INNER JOIN 
-                                        `products` AS pr
-                                        WHERE pr.payment_id = py.id AND py.user_id = ?");
+    $getPaymentsStmt = $connection->prepare("SELECT py.*, pr.id AS product_id, pr.date AS product_date 
+                                              FROM `payments` As py
+                                              LEFT JOIN `products` AS pr ON pr.payment_id = py.id
+                                              WHERE py.user_id = ? AND py.status = 'PAID'");
 
     $getPaymentsStmt->bind_param("i", $user_id);
     $getPaymentsStmt->execute();
@@ -292,23 +291,9 @@ function getUserPayments(int $user_id, string $returnPath = ""): array
     $payments = [];
 
     while ($row = $paymentsResult->fetch_assoc()) {
-      $row;
       if (!isset($payments[$row["id"]])) {
-        $payments[$row["id"]] = [
-          'id' => $row["id"],
-          'price' => $row["price"],
-          'status' => $row["status"],
-          'date' => $row["date"],
-          'products' => []
-        ];
+        $payments[$row["id"]] = $row;
       }
-
-      $payments[$row["id"]]['products'][] = [
-        'id' => $row["product_id"],
-        'code_value' => $row["code_value"],
-        'type' => $row["type"],
-        'price' => $row["price"],
-      ];
     }
     return $payments;
   } catch (Throwable $e) {
@@ -322,8 +307,10 @@ function getUserProducts(int $user_id, string $returnPath = ""): array
 {
   global $connection;
   try {
-    $getProductsStmt = $connection->prepare("SELECT pr.* FROM `products` as pr
-                                          INNER JOIN `payments` AS py
+    $getProductsStmt = $connection->prepare("SELECT pr.*, ty.id AS type_id, ty.name AS type_name, ty.price AS type_price, gr.id AS group_id, gr.title AS group_title FROM `products` as pr
+                                          LEFT JOIN `types` AS ty ON pr.type_id = ty.id
+                                          LEFT JOIN `groups` AS gr ON ty.group_id = gr.id
+                                          LEFT JOIN `payments` AS py ON pr.payment_id = py.id
                                           WHERE py.user_id = ? AND payment_id IS NOT NULL");
     $getProductsStmt->bind_param("i", $user_id);
     $getProductsStmt->execute();
@@ -348,7 +335,7 @@ function getUserProducts(int $user_id, string $returnPath = ""): array
   }
 }
 
-function linkProductsWithPayment(int $paymentId, int $typeId, int $quantity, string $returnPath = ""): array
+function linkProductsWithPaymentOrReturnExistings(int $paymentId, string $userId, int $typeId, int $quantity, string $returnPath = ""): array
 {
   global $connection;
 
@@ -358,8 +345,8 @@ function linkProductsWithPayment(int $paymentId, int $typeId, int $quantity, str
   try {
     // $connection->begin_transaction();
 
-    $getPaymentStmt = $connection->prepare("SELECT * FROM `payments` WHERE id = ? AND `status` != 'PAID' LIMIT 1");
-    $getPaymentStmt->bind_param("i", $paymentId);
+    $getPaymentStmt = $connection->prepare("SELECT * FROM `payments` WHERE id = ? AND `user_id` = ? LIMIT 1");
+    $getPaymentStmt->bind_param("is", $paymentId, $userId);
     $getPaymentStmt->execute();
     if ($getPaymentStmt->errno) {
       // showSessionAlert($getPaymentStmt->error, "danger");
@@ -375,56 +362,64 @@ function linkProductsWithPayment(int $paymentId, int $typeId, int $quantity, str
       logErrors("No payment found! Please contact the support.", "string");
       throw new Exception("No payment found! Please contact the support.");
     }
-    $newStatus = "PAID";
-    $updatePaymentStatusStmt = $connection->prepare("UPDATE `payments` SET `status` = ? WHERE id = ?");
-    $updatePaymentStatusStmt->bind_param("si", $newStatus, $payment["id"]);
-    if ($updatePaymentStatusStmt->errno) {
-      $connection->rollback();
-      logErrors($updatePaymentStatusStmt->error, "string");
-      return [[], [$updatePaymentStatusStmt->error]];
-      // showSessionAlert($updatePaymentStatusStmt->error, "danger", true, $returnPath);
-      // exit;
-    }
-    $updatePaymentStatusStmt->close();
 
+    // First check if the products are already linked then return them, otherwise link new ones
     $typeId = $payment["type_id"];
-    $getProductsStmt = $connection->prepare("SELECT * FROM `products` WHERE type_id = ? AND payment_id IS NULL LIMIT ?");
-    $getProductsStmt->bind_param("ii", $typeId, $quantity);
-    $getProductsStmt->execute();
-    if ($getProductsStmt->errno) {
-      logErrors($getProductsStmt->errno, "string");
-      return [[], [$getProductsStmt->error]];
+    $getExistedProductsStmt = $connection->prepare("SELECT * FROM `products` WHERE type_id = ? AND payment_id = ? LIMIT ?");
+    $getExistedProductsStmt->bind_param("iii", $typeId, $paymentId, $quantity);
+    $getExistedProductsStmt->execute();
+    if ($getExistedProductsStmt->errno) {
+      logErrors($getExistedProductsStmt->errno, "string");
+      return [[], [$getExistedProductsStmt->error]];
       // showSessionAlert("Error in the Server! please contact the support.", "danger", true, $returnPath);
       // exit;
     }
-    $productsResult = $getProductsStmt->get_result();
-
-    if ($productsResult->num_rows < $quantity) {
-      logErrors("No enough products quantity! it may be sold during your purchase. Please chose less quantity or contact us.", "string");
-      $errors[] = "No enough products quantity! it may be sold during your purchase. Please chose less quantity or contact us.";
-      // showSessionAlert("No enough quantity! Please chose less quantity or contact us.", "danger", true, $returnPath);
-    };
-
-    while ($product = $productsResult->fetch_assoc()) {
-      $productId = $product["id"];
-      $products[] = $product["code_value"];
-
-      $setProductPaymentIdStmt = $connection->prepare("UPDATE `products` SET `payment_id` = ? WHERE id = ? AND `payment_id` IS NULL");
-      $setProductPaymentIdStmt->bind_param("ii", $paymentId, $productId);
-      if ($setProductPaymentIdStmt->errno) {
-        $connection->rollback();
-        logErrors($setProductPaymentIdStmt->error, "string");
-        $errors[] = $setProductPaymentIdStmt->error;
+    $existedProductsResult = $getExistedProductsStmt->get_result();
+    if ($existedProductsResult->num_rows != 0) {
+      while ($product = $existedProductsResult->fetch_assoc()) {
+        $productId = $product["id"];
+        $products[] = $product["code_value"];
+      }
+    } else {
+      $getProductsStmt = $connection->prepare("SELECT * FROM `products` WHERE type_id = ? AND payment_id IS NULL LIMIT ?");
+      $getProductsStmt->bind_param("ii", $typeId, $quantity);
+      $getProductsStmt->execute();
+      if ($getProductsStmt->errno) {
+        logErrors($getProductsStmt->errno, "string");
+        return [[], [$getProductsStmt->error]];
+        // showSessionAlert("Error in the Server! please contact the support.", "danger", true, $returnPath);
         // exit;
       }
-      if ($setProductPaymentIdStmt->affected_rows == 0) {
-        $errors[] = "paymentId: " . $paymentId . " productId: $productId, current product payment_id " . $product["payment_id"] . " and typre_id " . $typeId . "";
-        $errors[] = "Error: One of the products (ID: $productId) isn't found! It may be already sold, please contact the support.";
-      }
-      $setProductPaymentIdStmt->close();
-    }
+      $productsResult = $getProductsStmt->get_result();
 
-    $getProductsStmt->close();
+      if ($productsResult->num_rows < $quantity) {
+        logErrors("No enough products quantity! it may be sold during your purchase. Please chose less quantity or contact us.", "string");
+        $errors[] = "No enough products quantity! it may be sold during your purchase. Please chose less quantity or contact us.";
+        // showSessionAlert("No enough quantity! Please chose less quantity or contact us.", "danger", true, $returnPath);
+      };
+
+      while ($product = $productsResult->fetch_assoc()) {
+        $productId = $product["id"];
+        $products[] = $product["code_value"];
+
+        $setProductPaymentIdStmt = $connection->prepare("UPDATE `products` SET `payment_id` = ? WHERE id = ? AND `payment_id` IS NULL");
+        $setProductPaymentIdStmt->bind_param("ii", $paymentId, $productId);
+        $setProductPaymentIdStmt->execute();
+        if ($setProductPaymentIdStmt->errno) {
+          $connection->rollback();
+          logErrors($setProductPaymentIdStmt->error, "string");
+          $errors[] = $setProductPaymentIdStmt->error;
+          // exit;
+        }
+        if ($setProductPaymentIdStmt->affected_rows == 0) {
+          $errors[] = "paymentId: " . $paymentId . " productId: $productId, current product payment_id " . $product["payment_id"] . " and typre_id " . $typeId . "";
+          $errors[] = "Error: One of the products (ID: $productId) isn't found! It may be already sold, please contact the support.";
+        }
+        $setProductPaymentIdStmt->close();
+      }
+
+      $getProductsStmt->close();
+    };
 
     if (count($errors)) {
       logErrors($errors, "string");
@@ -441,7 +436,7 @@ function linkProductsWithPayment(int $paymentId, int $typeId, int $quantity, str
   }
 }
 
-function confirmCharge(int $chargetId, string $returnPath = ""): array
+function confirmCharge(int $chargeId, int $userId, string $returnPath = ""): array
 {
   global $connection;
 
@@ -450,8 +445,10 @@ function confirmCharge(int $chargetId, string $returnPath = ""): array
   try {
     $connection->begin_transaction();
 
-    $getChargeStmt = $connection->prepare("SELECT * FROM `charges` WHERE id = ? AND `status` != 'PAID' LIMIT 1");
-    $getChargeStmt->bind_param("i", $chargeId);
+    $errors = [];
+
+    $getChargeStmt = $connection->prepare("SELECT * FROM `charges` WHERE id = ? AND `user_id` = ? LIMIT 1");
+    $getChargeStmt->bind_param("ii", $chargeId, $userId);
     $getChargeStmt->execute();
     if ($getChargeStmt->errno) {
       // showSessionAlert($getChargeStmt->error, "danger");
@@ -467,24 +464,48 @@ function confirmCharge(int $chargetId, string $returnPath = ""): array
       logErrors("No charge found! Please contact the support.", "string");
       throw new Exception("No charge found! Please contact the support.");
     }
-    $newStatus = "PAID";
-    $updateChargeStatusStmt = $connection->prepare("UPDATE `charges` SET `status` = ? WHERE id = ?");
-    $updateChargeStatusStmt->bind_param("si", $newStatus, $charge["id"]);
-    if ($updateChargeStatusStmt->errno) {
-      $connection->rollback();
-      logErrors($updateChargeStatusStmt->error, "string");
-      throw new Exception($updateChargeStatusStmt->error);
-      // showSessionAlert($updateChargeStatusStmt->error, "danger", true, $returnPath);
-      // exit;
-    }
-    $updateChargeStatusStmt->close();
 
-    if (count($errors)) {
-      logErrors($errors, "string");
-      // showSessionAlert($errors, "danger", true, $returnPath);
-      // exit;
+    if ($charge["status"] == "PAID") {
+      showSessionAlert("Already paid!", "danger", true, $returnPath);
+    } else {
+      $newStatus = "PAID";
+      $updateChargeStatusStmt = $connection->prepare("UPDATE `charges` SET `status` = ? WHERE id = ?");
+      $updateChargeStatusStmt->bind_param("si", $newStatus, $chargeId);
+      $updateChargeStatusStmt->execute();
+      if ($updateChargeStatusStmt->errno) {
+        $connection->rollback();
+        logErrors($updateChargeStatusStmt->error, "string");
+        showSessionAlert($updateChargeStatusStmt->error, "danger", true, $returnPath);
+        throw new Exception($updateChargeStatusStmt->error);
+        // exit;
+      }
+      $updateChargeStatusStmt->close();
+
+      // charge the wallet
+      $walletId = (int) $charge["wallet_id"];
+      $amount = (float) $charge["amount"];
+
+      $chargeWalletStmt = $connection->prepare("UPDATE `wallets` SET `balance` = `balance` + ? WHERE `id` = ?");
+      $chargeWalletStmt->bind_param("di", $amount, $walletId);
+      $chargeWalletStmt->execute();
+      if ($chargeWalletStmt->errno) {
+        $connection->rollback();
+        logErrors($chargeWalletStmt->error, "string");
+        showSessionAlert($chargeWalletStmt->error, "danger", true, $returnPath);
+        throw new Exception($chargeWalletStmt->error);
+        // exit;
+      }
+      $chargeWalletStmt->close();
+      if (count($errors)) {
+        logErrors($errors, "string");
+        showSessionAlert($errors, "danger", true, $returnPath);
+        // exit;
+      } else {
+        showSessionAlert("Wallet charged successfully!", "success", true, $returnPath);
+      }
+
+      $connection->commit();
     }
-    $connection->commit();
 
     return $errors;
   } catch (Throwable $e) {
@@ -498,12 +519,12 @@ function getPaymentWithProducts(int $paymentId, string $returnPath = ""): array
 {
   global $connection;
   try {
-    $getPaymentStmt = $connection->prepare("SELECT py.*, pd.id AS product_id, pd.date AS product_date, pd.*, gr.id AS group_id, ty.id AS type_id, ty.name AS type_name, ty.price AS type_price
-                                            FROM `payments` AS py
-                                            INNER JOIN `groups` AS gr 
-                                            INNER JOIN `types` AS ty
-                                            INNER JOIN `products` AS pd
-                                            WHERE py.id = ? AND `py.status` IN ('PAID', 'CONFIRM-PENDING') AND pd.payment_id = py.id AND gr.id = ty.group_id AND pd.type_id = ty.id LIMIT 1");
+    $getPaymentStmt = $connection->prepare("SELECT py.*, pd.id AS product_id, pd.date AS product_date, pd.*, gr.id AS group_id, ty.id AS type_id, ty.name AS type_name, ty.price AS type_price FROM `payments` AS py
+                                            LEFT JOIN `products` AS pd ON pd.payment_id = py.id
+                                            LEFT JOIN `types` AS ty ON pd.type_id = ty.id
+                                            LEFT JOIN `groups` AS gr ON gr.id = ty.group_id
+                                            WHERE py.id = ? AND py.status = 'PAID' 
+                                            LIMIT 1");
     $getPaymentStmt->bind_param("i", $paymentId);
     $getPaymentStmt->execute();
     if ($getPaymentStmt->errno) {
@@ -526,10 +547,11 @@ function getPaymentWithProducts(int $paymentId, string $returnPath = ""): array
           'type_id' => $row["type_id"],
           'prepay_id' => $row["prepay_id"],
           'merchantTradeNo' => $row["merchantTradeNo"],
-          'trasnaction_id' => $row["trasnaction_id"],
+          'transaction_id' => $row["transaction_id"],
           'price' => $row["price"],
           'quantity' => $row["quantity"],
           'use_wallet' => $row["use_wallet"],
+          'is_manual' => $row["is_manual"],
           'status' => $row["status"],
           'products' => []
         ];
@@ -552,7 +574,7 @@ function getWalletCharges(int $wallet_id, string $returnPath = ""): array
 {
   global $connection;
   try {
-    $getChargesStmt = $connection->prepare("SELECT * FROM `charges` WHERE wallet_id = ? AND `status` != 'BLOCKED' LIMIT 1");
+    $getChargesStmt = $connection->prepare("SELECT * FROM `charges` WHERE wallet_id = ? AND `status` = 'PAID'");
     $getChargesStmt->bind_param("i", $wallet_id);
     $getChargesStmt->execute();
     if ($getChargesStmt->errno) {

@@ -7,8 +7,11 @@ try {
   $typeId = (int) $_POST["typeId"];
   $quantity = (int) $_POST["quantity"] ?? 1;
   $useWallet = (string) (isset($_POST["useWallet"]) && ($_POST["useWallet"] == "TRUE")) ? "TRUE" : "FALSE";
-  $isManual = (bool) isset($_POST["is_manual"]) && ($_POST["is_manual"] == "TRUE");
-  $transactionId = (string) (isset($_POST["trasnaction_id"]) && ($_POST["trasnaction_id"] != "")) ? $_POST["trasnaction_id"] : "";
+  $isManual = (isset($_POST["is_manual"]) && ($_POST["is_manual"] == "TRUE")) ? 1 : 0;
+  $transactionId = (string) (isset($_POST["transaction_id"]) && ($_POST["transaction_id"] != "")) ? $_POST["transaction_id"] : "";
+
+  // var_dump($isManual);
+  // exit;
 
   $returnPath = "checkout.php?groupId=$groupId&typeId=$typeId&quantity=$quantity";
 
@@ -80,8 +83,8 @@ try {
   $merchantTradeNo = "";
   $totalPrice = (float) ((float)$type["price"] * $quantity);
 
-  $createPaymentStmt = $connection->prepare("INSERT INTO `payments`(user_id, group_id, type_id, `status`, price, metadata1, metadata2) VALUES (?,?,?,?,?,?,?)");
-  $createPaymentStmt->bind_param("iiisdss", $userId, $groupId, $typeId, $status, $totalPrice, $metadata1, $metadata2);
+  $createPaymentStmt = $connection->prepare("INSERT INTO `payments`(user_id, group_id, type_id, quantity, `status`, price, metadata1, metadata2) VALUES (?,?,?,?,?,?,?,?)");
+  $createPaymentStmt->bind_param("iiiisdss", $userId, $groupId, $typeId, $quantity, $status, $totalPrice, $metadata1, $metadata2);
   $createPaymentStmt->execute();
   if ($createPaymentStmt->errno) {
     $connection->rollback();
@@ -119,6 +122,7 @@ try {
     // subtract the balance
     $subtractBalanceStmt = $connection->prepare("UPDATE `wallets` SET balance = balance - ? WHERE id = ?");
     $subtractBalanceStmt->bind_param("di", $totalPrice, $walletId);
+    $subtractBalanceStmt->execute();
     if ($subtractBalanceStmt->errno) {
       $connection->rollback();
       logErrors($subtractBalanceStmt->error, "string");
@@ -251,29 +255,44 @@ try {
     $prepayID = $responseData["data"]["prepayId"];
   }
 
-  // update the payment
+  // update the payment with new details
   $newStatus = "PENDING";
   if ($isManual) {
     $newStatus = "CONFIRM-PENDING";
   }
-  $useWalletBoolean = ($useWallet === "TRUE") ? true : false;
+  $useWalletBoolean = ($useWallet === "TRUE") ? 1 : 0;
+
   $updatePaymentStmt = $connection->prepare("UPDATE `payments` SET prepay_id = ?, merchantTradeNo = ?, `status` = ?, use_wallet = ?, is_manual = ?, transaction_id = ? WHERE id = ?");
-  $updatePaymentStmt->bind_param("sssbssbi", $prepayID, $merchantTradeNo, $newStatus, $useWalletBoolean, $isManual, $transactionId, $insertedPaymentId);
+  $updatePaymentStmt->bind_param("sssiisi", $prepayID, $merchantTradeNo, $newStatus, $useWalletBoolean, $isManual, $transactionId, $insertedPaymentId);
+  $updatePaymentStmt->execute();
   if ($updatePaymentStmt->errno) {
     $connection->rollback();
     logErrors($updatePaymentStmt->error);
-    showSessionAlert("Error in storing binance prepay ID.", "danger", true, $returnPath);
+    showSessionAlert("Error in updating payment status.", "danger", true, $returnPath);
     exit;
   }
   $updatePaymentStmt->close();
 
 
-  $connection->commit();
+  // var_dump($newStatus);
+  // exit;
 
   if ($useWallet === "TRUE") {
-    header("location: $baseURL/backend/confirm_payment.php?paymentId=$insertedPaymentId");
+    $newStatus = "PAID";
+    $updatePaymentStmt = $connection->prepare("UPDATE `payments` SET `status` = ? WHERE id = ?");
+    $updatePaymentStmt->bind_param("si", $newStatus, $insertedPaymentId);
+    $updatePaymentStmt->execute();
+    if ($updatePaymentStmt->errno) {
+      $connection->rollback();
+      logErrors($updatePaymentStmt->error);
+      showSessionAlert("Error in updatting wallet payment status.", "danger", true, $returnPath);
+      exit;
+    }
+    $updatePaymentStmt->close();
+
+    header("location: $baseURL/payment_processing.php?paymentId=$insertedPaymentId&useWallet=TRUE");
   } else if ($isManual) {
-    header("location: $baseURL/backend/payment_processing.php?paymentId=$insertedPaymentId&transactionId=$transactionId");
+    header("location: $baseURL/payment_processing.php?paymentId=$insertedPaymentId&transactionId=$transactionId");
   } else {
     // $payemntCheckoutURLCodeLink = $responseData["data"]["qrCodeLink"];
     // $payemntCheckoutURLQRContent = $responseData["data"]["qrContent"];
@@ -281,7 +300,9 @@ try {
     $paymentCheckoutURLWebPage = $responseData["data"]["checkoutUrl"];
     header("location: $baseURL/payment_processing.php?deepLink=$payemntCheckoutURLDeepLink&webLink=$paymentCheckoutURLWebPage&paymentId=$insertedPaymentId");
   }
-  // Redirect to the app or the web page if no app is installed
+
+  $connection->commit();
+
   exit;
 } catch (Throwable $e) {
   showSessionAlert("Error in the server!", "danger", true, $returnPath);

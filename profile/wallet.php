@@ -40,10 +40,11 @@ require_once "../include/profile/header.php";
     </form>
 
     <div class="col-12">
-      <table class="table table-dark" style="max-height: 70vh; overflow-y: auto;">
+      <table class="table table-striped table-dark" style="max-height: 70vh; overflow-y: auto;">
         <thead>
           <tr>
             <th scope="col">ID</th>
+            <th scope="col">Merchant Trade No</th>
             <th scope="col">Prepay ID</th>
             <th scope="col">Amount</th>
             <th scope="col">Status</th>
@@ -56,6 +57,7 @@ require_once "../include/profile/header.php";
           ?>
             <tr>
               <th scope="row"><?php echo $charge["id"]; ?></th>
+              <td><?php echo $charge["merchantTradeNo"]; ?></td>
               <td><?php echo $charge["prepay_id"]; ?></td>
               <td><?php echo $charge["amount"]; ?></td>
               <td><?php echo $charge["status"]; ?></td>

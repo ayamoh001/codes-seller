@@ -25,13 +25,16 @@ require_once "../include/profile/header.php";
 
 <section>
   <h1 class="mb-5 h1 fw-bold text-white text-capitalize">All of your payments</h1>
-  <table class="table table-dark">
+  <table class="table table-striped table-dark">
     <thead>
       <tr>
         <th scope="col">Payment ID</th>
+        <th scope="col">Merchant Trade No</th>
         <th scope="col">Prepay ID</th>
         <th scope="col">Quantity</th>
         <th scope="col">Amount Price</th>
+        <th scope="col">Using Wallet</th>
+        <th scope="col">Status</th>
         <th scope="col">Date</th>
       </tr>
     </thead>
@@ -41,9 +44,11 @@ require_once "../include/profile/header.php";
       ?>
         <tr>
           <th scope="row"><?php echo $payment["id"]; ?></th>
+          <td><?php echo $payment["merchantTradeNo"]; ?></td>
           <td><?php echo $payment["prepay_id"]; ?></td>
-          <td><?php echo count($payment["products"]); ?></td>
+          <td><?php echo $payment["quantity"]; ?></td>
           <td><?php echo $payment["price"]; ?></td>
+          <td><?php echo ($payment["use_wallet"] ? "YES" : "NO"); ?></td>
           <td><?php echo $payment["status"]; ?></td>
           <td><?php echo $payment["date"]; ?></td>
         </tr>

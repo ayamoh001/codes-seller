@@ -1,4 +1,4 @@
-console.log("test");
+console.log("js loaded");
 
 // Dropzone js
 document.querySelectorAll(".drop-zone__input").forEach((inputElement) => {

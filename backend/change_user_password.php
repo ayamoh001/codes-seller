@@ -27,7 +27,7 @@ try {
   $connection->begin_transaction();
 
   $updateUserStatusStmt = $connection->prepare("UPDATE `users` SET `password` = ? WHERE id = ?");
-  $updateUserStatusStmt->bind_param("si", $newPassword, $user_id);
+  $updateUserStatusStmt->bind_param("si", $newHashPassword, $user_id);
   $updateUserStatusStmt->execute();
   if ($updateUserStatusStmt->errno) {
     $connection->rollback();

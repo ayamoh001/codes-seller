@@ -41,6 +41,12 @@
               <a class="nav-link" href="<?php echo $baseURL; ?>/admin/payments.php">payments</a>
             </li>
             <li class="nav-item">
+              <a class="nav-link" href="<?php echo $baseURL; ?>/admin/manual_payments.php">manual payments</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="<?php echo $baseURL; ?>/admin/charges.php">charges</a>
+            </li>
+            <li class="nav-item">
               <a class="nav-link" href="<?php echo $baseURL; ?>/admin/users.php">users</a>
             </li>
             <li class="nav-item ms-md-3">

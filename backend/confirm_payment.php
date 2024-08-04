@@ -9,7 +9,7 @@ try {
   logErrors(file_get_contents('php://input'));
 
   $userId = "";
-  $returnPath = "checkout.php";
+  $returnPath = "";
   $useWallet = (string) (isset($_GET["useWallet"]) && ($_GET["useWallet"] == "TRUE")) ? "TRUE" : "FALSE";
 
   // check if logged in or a guest
@@ -117,6 +117,7 @@ try {
   $newStatus = "PAID";
   $updatePaymentStatusStmt = $connection->prepare("UPDATE `payments` SET `status` = ? WHERE id = ?");
   $updatePaymentStatusStmt->bind_param("si", $newStatus, $payment["id"]);
+  $updatePaymentStatusStmt->execute();
   if ($updatePaymentStatusStmt->errno) {
     $connection->rollback();
     logErrors($updatePaymentStatusStmt->error, "string");
@@ -172,7 +173,7 @@ try {
   // echo "Payment was successful.";
   $connection->commit();
 
-  header("location: /success.php?paymentId=" . $payment["id"] . "&errors=" . json_encode($errors));
+  header("location: $baseURL/success.php?paymentId=" . $payment["id"] . "&errors=" . json_encode($errors));
 } catch (Throwable $e) {
   var_dump($e);
   // showSessionAlert("Error in the server!", "danger", true, $returnPath);

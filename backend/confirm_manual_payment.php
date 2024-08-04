@@ -3,7 +3,7 @@ try {
   require_once "../include/config.php";
   require_once "../include/functions.php";
 
-  $returnPath = "admin/requests.php";
+  $returnPath = "admin/manual_payments.php";
 
   if (
     !isset($_SERVER['PHP_AUTH_USER']) ||
@@ -20,11 +20,13 @@ try {
     showSessionAlert("Not allowed HTTP method!", "danger", true, $returnPath);
     exit;
   }
-  $manualPaymentId = (int) $_POST["manual_payment_id"];
+
+  $manualPaymentId = (int) $_POST["payment_id"];
+  $userId = (string) $_POST["user_id"];
   $newStatus = "PAID";
 
-  $getManualPaymentStmt = $connection->prepare("SELECT * FROM `payments` WHERE id = ? LIMIT 1");
-  $getManualPaymentStmt->bind_param("i", $manualPaymentId);
+  $getManualPaymentStmt = $connection->prepare("SELECT * FROM `payments` WHERE id = ? and user_id = ? LIMIT 1");
+  $getManualPaymentStmt->bind_param("is", $manualPaymentId, $userId);
   $getManualPaymentStmt->execute();
   if ($getManualPaymentStmt->errno) {
     $connection->rollback();
@@ -46,8 +48,8 @@ try {
   $typeId = $manualPayment["type_id"];
   $quantity = $manualPayment["quantity"];
 
-  $updateManualPaymentStatusStmt = $connection->prepare("UPDATE `payments` SET `status` = ? WHERE id = ? AND `status` != 'PAID'");
-  $updateManualPaymentStatusStmt->bind_param("si", $newStatus, $manualPaymentId);
+  $updateManualPaymentStatusStmt = $connection->prepare("UPDATE `payments` SET `status` = ? WHERE id = ? AND `status` != 'PAID' AND user_id = ?");
+  $updateManualPaymentStatusStmt->bind_param("sis", $newStatus, $manualPaymentId, $userId);
   $updateManualPaymentStatusStmt->execute();
   if ($updateManualPaymentStatusStmt->errno) {
     $connection->rollback();
@@ -59,7 +61,7 @@ try {
 
   $connection->commit();
 
-  $result = linkProductsWithPayment($paymentId, $typeId, $quantity, $returnPath);
+  $result = linkProductsWithPaymentOrReturnExistings($manualPaymentId, $userId, $typeId, $quantity, $returnPath);
   $products = $result[0];
   $errors = $result[1];
 

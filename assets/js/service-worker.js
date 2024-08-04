@@ -1,4 +1,4 @@
-const CACHE_NAME = 'crypto-cards-cache-v1';
+const CACHE_NAME = 'crypto-cards-cache-v2';
 
 const urlsToCache = [
   '/',

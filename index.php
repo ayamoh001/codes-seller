@@ -182,7 +182,7 @@ require_once "./include/header.php";
         quantityOfTypeInput.style.display = "none"
       })
 
-      // show target qunatity input
+      // show target quantity input
       const quantityOfType = document.querySelector(`#products-of-type-quantity-${i}-${CSS.escape(selectedType)}`)
       quantityOfType.style.display = "block"
 

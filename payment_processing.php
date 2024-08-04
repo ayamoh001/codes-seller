@@ -13,10 +13,11 @@ if (isset($_SESSION["user_id"]) && $_SESSION["user_id"] != "") {
 }
 
 $paymentId = $_GET['paymentId'] ?? "";
+$chargeId = $_GET['chargeId'] ?? "";
+$useWallet = $_GET['useWallet'] ?? "";
 $transactionId = $_GET['transactionId'] ?? "";
 $deepLink = $_GET['deepLink'] ?? "";
 $webLink = $_GET['webLink'] ?? "";
-
 
 $canonicalPath = "/payment_processing.php";
 $title = "Crypto Cards - Payment Processing";
@@ -32,8 +33,8 @@ require_once "./include/header.php";
       <div class="spinner-border text-warning mb-3" role="status">
         <span class="visually-hidden">Processing...</span>
       </div>
-      <h1 class="h4 mb-3">Redirecting to the checkout</h1>
-      <p class="lead">Please wait while we redirect you to the app or the web page.</p>
+      <h1 class="h4 mb-3">Processing your payment...</h1>
+      <p class="lead">Please wait while we redirect you to binance or confirming from our side.</p>
       <p class="fs-6">If the app does not open automatically, you will be redirected to Binance website shortly.</p>
       <div id="timer" class="display-4 fw-bold"></div>
     </div>
@@ -100,99 +101,140 @@ require_once "./include/header.php";
     };
   }
 
-  function checkPaymentStatus(paymentId) {
-    if (typeof(EventSource) !== "undefined") {
-      console.log("start checking payment status");
-      const source = new EventSource('<?php echo $baseURL ?>/backend/check_payment_status.php?paymentId=' + paymentId);
-      // Stop receiving SSE after 15 minutes
-      setTimeout(() => {
-        console.log('Closing SSE connection.');
-        source.close();
-      }, 1000 * 60 * 15);
-
-      source.onmessage = function(event) {
-        const data = JSON.parse(event.data);
-        console.log({
-          data
-        })
-
-        if (data.error) {
-          console.error({
-            error: data.error
-          });
-        }
-
-        if (data.message) {
-          console.log({
-            message: data.message
-          });
-        }
-
-        if (data.success) {
-          source.close();
-
-          const waitingSection = document.querySelector("#waiting-section")
-          const resultSection = document.querySelector("#result-section")
-          const errorsSection = document.querySelector("#errors-section")
-          const codesTable = document.querySelector("#codes-table")
-          const codesTableBody = codesTable.querySelector("tbody")
-          const copyAllButton = document.querySelector("#copy-all-button")
-          const timer = document.querySelector("#timer")
-
-          waitingSection.style.display = "none";
-          timer.style.display = "block";
-
-          if (data?.products?.length) {
-            codesTableBody.innerHTML = "";
-            data.products.forEach((product, i) => {
-              const row = document.createElement("tr");
-              const codeIndex = document.createElement("td");
-              codeIndex.innerHTML = i + 1;
-              row.appendChild(codeIndex);
-              const codeValue = document.createElement("td");
-              codeValue.innerHTML = product;
-              row.appendChild(codeValue);
-              const copyButtonTd = document.createElement("td");
-              const copyButton = document.createElement("button");
-              copyButton.className = "btn btn-sm btn-outline-primary";
-              copyButton.onclick = function() {
-                copyToClipboard(product);
-              };
-              copyButton.innerHTML = "<i class='bi bi-clipboard'></i>";
-              copyButtonTd.appendChild(copyButton);
-              row.appendChild(copyButtonTd);
-
-              codesTableBody.appendChild(row);
-            });
-            resultSection.style.display = "block";
-            copyAllButton.addEventListener("click", function() {
-              copyAllCodes(data.products);
-            });
-          }
-
-          if (data?.errors?.length) {
-            errorsSection.style.display = "block";
-            errorsTable = document.querySelector("#errors-table")
-            const errorsTableBody = errorsTable.querySelector("tbody")
-
-            errorsTableBody.innerHTML = "";
-            data.errors.forEach((product, i) => {
-              const row = document.createElement("tr");
-              const codeIndex = document.createElement("td");
-              codeIndex.innerHTML = i + 1;
-              row.appendChild(codeIndex);
-              const codeValue = document.createElement("td");
-              codeValue.innerHTML = product;
-              row.appendChild(codeValue);
-
-              errorsTableBody.appendChild(row);
-            });
-          }
-        }
-      };
-    } else {
-      alert("Sorry! Your browser does not support server-sent events. which prevents from the checking the payment status");
+  function checkPaymentStatus(paymentId, useWallet, transactionId) {
+    if (typeof(EventSource) == "undefined") {
+      return alert("Sorry! Your browser does not support server-sent events. which prevents from checking the payment status");
     }
+
+    console.log("start checking payment status");
+    const source = new EventSource(`<?php echo $baseURL ?>/backend/check_payment_status.php?paymentId=${paymentId}&useWallet=${useWallet}&transactionId=${transactionId}`);
+    // Stop receiving SSE after 15 minutes
+    setTimeout(() => {
+      console.log('Closing SSE connection.');
+      source.close();
+    }, 1000 * 60 * 15); // TODO: set to 15 minutes
+
+    source.onmessage = function(event) {
+      const data = JSON.parse(event.data);
+      console.log({
+        data
+      })
+
+      if (data.error) {
+        console.error({
+          error: data.error
+        });
+      }
+
+      if (data.message) {
+        console.log({
+          message: data.message
+        });
+      }
+
+      if (data.success) {
+        source.close();
+
+        const waitingSection = document.querySelector("#waiting-section")
+        const resultSection = document.querySelector("#result-section")
+        const errorsSection = document.querySelector("#errors-section")
+        const codesTable = document.querySelector("#codes-table")
+        const codesTableBody = codesTable.querySelector("tbody")
+        const copyAllButton = document.querySelector("#copy-all-button")
+        const timer = document.querySelector("#timer")
+
+        waitingSection.style.display = "none";
+        timer.style.display = "block";
+
+        if (data?.products?.length) {
+          codesTableBody.innerHTML = "";
+          data.products.forEach((product, i) => {
+            const row = document.createElement("tr");
+            const codeIndex = document.createElement("td");
+            codeIndex.innerHTML = i + 1;
+            row.appendChild(codeIndex);
+            const codeValue = document.createElement("td");
+            codeValue.innerHTML = product;
+            row.appendChild(codeValue);
+            const copyButtonTd = document.createElement("td");
+            const copyButton = document.createElement("button");
+            copyButton.className = "btn btn-sm btn-outline-primary";
+            copyButton.onclick = function() {
+              copyToClipboard(product);
+            };
+            copyButton.innerHTML = "<i class='bi bi-clipboard'></i>";
+            copyButtonTd.appendChild(copyButton);
+            row.appendChild(copyButtonTd);
+
+            codesTableBody.appendChild(row);
+          });
+          resultSection.style.display = "block";
+          copyAllButton.addEventListener("click", function() {
+            copyAllCodes(data.products);
+          });
+        }
+
+        if (data?.errors?.length) {
+          errorsSection.style.display = "block";
+          errorsTable = document.querySelector("#errors-table")
+          const errorsTableBody = errorsTable.querySelector("tbody")
+
+          errorsTableBody.innerHTML = "";
+          data.errors.forEach((product, i) => {
+            const row = document.createElement("tr");
+            const codeIndex = document.createElement("td");
+            codeIndex.innerHTML = i + 1;
+            row.appendChild(codeIndex);
+            const codeValue = document.createElement("td");
+            codeValue.innerHTML = product;
+            row.appendChild(codeValue);
+
+            errorsTableBody.appendChild(row);
+          });
+        }
+      }
+    };
+
+  }
+
+  function checkChargeStatus(chargeId) {
+    if (typeof(EventSource) == "undefined") {
+      return alert("Sorry! Your browser does not support server-sent events. which prevents from checking the payment status");
+    }
+
+    console.log("start checking charge status");
+    const source = new EventSource(`<?php echo $baseURL ?>/backend/check_charge_status.php?chargeId=${chargeId}`);
+    // Stop receiving SSE after 15 minutes
+    setTimeout(() => {
+      console.log('Closing SSE connection.');
+      source.close();
+    }, 1000 * 60 * 15); // TODO: set to 15 minutes
+
+    source.onmessage = function(event) {
+      const data = JSON.parse(event.data);
+      console.log({
+        data
+      })
+
+      if (data.error) {
+        console.error({
+          error: data.error
+        });
+      }
+
+      if (data.message) {
+        console.log({
+          message: data.message
+        });
+      }
+
+      if (data.success) {
+        source.close();
+
+        window.location.href = `<?php echo $baseURL ?>/profile/wallet.php`;
+      }
+    };
+
   }
 
   function copyToClipboard(text) {
@@ -208,7 +250,8 @@ require_once "./include/header.php";
   }
 
   function startTimer() {
-    const duration = 15 * 60; // 15 minutes in seconds
+    // 15 minutes in seconds
+    const duration = 60 * 15; // TODO: set to 15 minutes
     const endTime = Date.now() + duration * 1000; // Current time + duration in milliseconds
 
     function updateTimer() {
@@ -226,7 +269,7 @@ require_once "./include/header.php";
       document.getElementById('timer').textContent = `${formattedMinutes}:${formattedSeconds}`;
 
       if (remainingTime > 0) {
-        // Update the timer every second
+        // Update the timer until the timer is finished
         requestAnimationFrame(updateTimer);
       } else {
         // Timer finished
@@ -240,11 +283,17 @@ require_once "./include/header.php";
 
   window.onload = function() {
     var paymentId = '<?php echo $paymentId; ?>';
+    var chargeId = '<?php echo $chargeId; ?>';
+    var useWallet = '<?php echo $useWallet; ?>';
     var transactionId = '<?php echo $transactionId; ?>';
     var deepLink = '<?php echo $deepLink; ?>';
     var webLink = '<?php echo $webLink; ?>';
     redirectToApp(deepLink, webLink);
-    checkPaymentStatus(paymentId)
+    if (paymentId) {
+      checkPaymentStatus(paymentId, useWallet, transactionId)
+    } else if (chargeId) {
+      checkChargeStatus(chargeId)
+    }
     startTimer();
   };
 </script>

@@ -15,11 +15,14 @@ if (
 }
 
 $returnPath = "admin/payments.php";
-$getPaymentsStmt = $connection->prepare("SELECT py.*, pr.id AS product_id, pr.date AS product_date, pr.* FROM 
-                                        `payments` As py
-                                        INNER JOIN 
-                                        `products` AS pr
-                                        WHERE pr.payment_id = py.id");
+
+$getPaymentsStmt = $connection->prepare("SELECT py.*, gr.id AS group_id, gr.title AS group_title, ty.id AS type_id, ty.name AS type_name, ty.price AS type_price 
+                                          FROM `payments` AS py
+                                          LEFT JOIN `types` AS ty ON py.type_id = ty.id
+                                          LEFT JOIN `groups` AS gr ON gr.id = ty.group_id
+                                          WHERE py.status = 'PAID'
+                                           ");
+// $getPaymentsStmt = $connection->prepare("SELECT * FROM `payments` WHERE is_manual = 1");
 $getPaymentsStmt->execute();
 if ($getPaymentsStmt->errno) {
   logErrors($getPaymentsStmt->error, "string");
@@ -28,12 +31,14 @@ if ($getPaymentsStmt->errno) {
 }
 $paymentsResult = $getPaymentsStmt->get_result();
 $getPaymentsStmt->close();
-
 $payments = [];
 
+// echo "<pre>";
 while ($row = $paymentsResult->fetch_assoc()) {
-  $payments[] = getPaymentWithProducts($row["id"]);
+  // var_dump($row);
+  $payments[] = $row;
 }
+// echo "</pre>";
 
 $title = "Admin Dashboard - Payments";
 
@@ -49,7 +54,7 @@ require_once "../include/admin/header.php";
     <section>
       <h1 class="mb-5 pb-5 h1 fw-bold text-white">All Platform Payments By Users/Geusts</h1>
 
-      <table class="table table-dark">
+      <table class="table table-striped table-dark">
         <thead>
           <tr>
             <th scope="col">Payment ID</th>
@@ -60,29 +65,30 @@ require_once "../include/admin/header.php";
             <th scope="col">Merchant Trade No</th>
             <th scope="col">Quantity</th>
             <th scope="col">Amount Price</th>
+            <th scope="col">Using Wallet</th>
             <th scope="col">Status</th>
             <th scope="col">Date</th>
           </tr>
         </thead>
         <tbody>
           <?php
-          while ($payment = $paymentsResult->fetch_assoc()) :
+          foreach ($payments as $payment) :
           ?>
             <tr>
-              <th scope="row"><?php echo $payment["id"]; ?></th>
-              <td><?php echo $payment["product_id"]; ?></td>
-              <td><?php echo $payment["user_id"]; ?></td>
-              <td><?php echo $payment["group_id"]; ?></td>
-              <td><?php echo $payment["type_id"]; ?></td>
+              <th scope="row">#<?php echo $payment["id"]; ?></th>
+              <td>#<?php echo $payment["user_id"]; ?></td>
+              <td>#<?php echo $payment["group_id"]; ?></td>
+              <td>#<?php echo $payment["type_id"]; ?></td>
               <td><?php echo $payment["prepay_id"]; ?></td>
               <td><?php echo $payment["merchantTradeNo"]; ?></td>
-              <td><?php echo count($payment["products"]); ?></td>
+              <td><?php echo $payment["quantity"]; ?></td>
               <td><?php echo $payment["price"]; ?></td>
+              <td><?php echo ($payment["use_wallet"] ? "YES" : "NO"); ?></td>
               <td><?php echo $payment["status"]; ?></td>
               <td><?php echo $payment["date"]; ?></td>
             </tr>
           <?php
-          endwhile;
+          endforeach;
           ?>
         </tbody>
       </table>

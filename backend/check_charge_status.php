@@ -14,20 +14,25 @@ try {
   require_once "../include/config.php";
   require_once "../include/functions.php";
 
-  $chargeId = $_GET['chargeId'];
-  $returnPath = "/Charge_processing.php?chargeId=" . $chargeId;
+  $chargeId = (int) $_GET['chargeId'];
+  echo "data: " . json_encode(["chargeId" => $chargeId]) . "\n\n";
+  flush();
 
-  // check if logged in or a guest
+  $returnPath = "payment_processing.php?chargeId=$chargeId";
+
+  // check if logged in
   if (isset($_SESSION["user_id"]) && $_SESSION["user_id"] != "") {
     $user_id = (int) $_SESSION["user_id"];
     $user = getUser($user_id, $returnPath);
     $userId = $user["id"];
   } else {
-    $userId = $guestIdPrefix . session_id();
+    echo "data: " . json_encode(["error" => "You are not logged in!"]) . "\n\n";
+    flush();
+    exit;
   }
 
   $getChargeStmt = $connection->prepare("SELECT * FROM `charges` WHERE (id = ?) AND (`status` != 'PAID') AND (user_id = ?) LIMIT 1");
-  $getChargeStmt->bind_param("is", $chargeId, $userId);
+  $getChargeStmt->bind_param("ii", $chargeId, $userId);
   $getChargeStmt->execute();
   if ($getChargeStmt->errno) {
     logErrors($getChargeStmt->error, "string");
@@ -81,7 +86,7 @@ try {
   $endDate->add(new DateInterval('PT2M'));
 
   while (new DateTime() <= $endDate) {
-    sleep(1);
+    sleep(5);
 
     $result = curl_exec($ch);
     if (curl_errno($ch)) {
@@ -112,11 +117,17 @@ try {
     // }
     // status: "SUCCESS"
 
-    if ($responseData["status"] == "SUCCESS" && $responseData["data"]["status"] == "PAID") {
-      $result = confirmCharge($chargeId, $returnPath);
-      echo "data: " . json_encode(["message" => "Charge successful! Redirecting to the success page.", "success" => true, "errors" => $errors]) . "\n\n";
-      flush();
-      break;
+    if ($responseData["status"] == "SUCCESS" && $responseData["data"]["status"] == "PAID") { // TODO: change to PAID on production
+      $errors = confirmCharge($chargeId, $userId, $returnPath);
+      if (count($errors)) {
+        echo "data: " . json_encode(["message" => "Error in the process!", "success" => false, "errors" => $errors]) . "\n\n";
+        flush();
+        break;
+      } else {
+        echo "data: " . json_encode(["message" => "Charge successful! Redirecting to the success page.", "success" => true]) . "\n\n";
+        flush();
+        break;
+      }
     } else {
       echo "data: " . json_encode(["error" => "Charge statuses: " . $responseData["status"] . " / " . $responseData["data"]["status"]]) . "\n\n";
       flush();

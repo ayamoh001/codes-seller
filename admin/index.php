@@ -34,7 +34,7 @@ require_once "../include/admin/header.php";
 
 
     <section>
-      <h1 class="mb-5 h1 fw-bold text-white">All Platform Registed Users</h1>
+      <h1 class="mb-5 h1 fw-bold text-white">All Platform Groups & Products</h1>
 
       <button type="button" class="btn btn-primary btn-lg fw-bold ratio-16x9 mb-5 px-4 d-flex gap-2" data-bs-toggle="modal" data-bs-target="#create-group-modal-create-new-group">
         <span>Create New Group</span>
@@ -42,7 +42,7 @@ require_once "../include/admin/header.php";
       </button>
 
       <div class="modal fade" id="create-group-modal-create-new-group" aria-labelledby="create-exampleModalLabelnew-group" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog" role="document">
+        <div class="modal-dialog modal-dialog-centered" role="document">
           <div class="modal-content">
             <div class="modal-header">
               <h5 class="modal-title" id="create-exampleModalLabelnew-group">Create New Group for Products</h5>
@@ -99,7 +99,7 @@ require_once "../include/admin/header.php";
             <p class="card-text line-clamp-2"><?php echo $group["description"]; ?></p>
             <?php if (count($group["types"]) > 0) : ?>
               <div class="bg-body-secondary overflow-auto my-4" style="max-height: 160px;">
-                <table class="table table-secondary w-100 m-0">
+                <table class="table table-striped table-secondary w-100 m-0">
                   <thead>
                     <tr>
                       <th scope="col" class="fw-normal">ID</th>
@@ -129,7 +129,7 @@ require_once "../include/admin/header.php";
                             </button>
                             <!-- List products of this type Modal -->
                             <div class="modal fade" id="list-products-modal-<?php echo $type["id"] ?>" aria-labelledby="list-products-label-<?php echo $type["id"] ?>" tabindex="-1" role="dialog" aria-hidden="true">
-                              <div class="modal-dialog" role="document">
+                              <div class="modal-dialog modal-dialog-centered" role="document">
                                 <div class="modal-content">
                                   <div class="modal-header">
                                     <h5 class="modal-title" id="list-products-label-<?php echo $type["id"] ?>">All products of this type</h5>
@@ -161,7 +161,7 @@ require_once "../include/admin/header.php";
                             </button>
                             <!-- Add products to type Modal -->
                             <div class="modal fade" id="add-product-modal-<?php echo $type["id"] ?>" aria-labelledby="add-product-label-<?php echo $type["id"] ?>" tabindex="-1" role="dialog" aria-hidden="true">
-                              <div class="modal-dialog" role="document">
+                              <div class="modal-dialog modal-dialog-centered" role="document">
                                 <div class="modal-content">
                                   <div class="modal-header">
                                     <h5 class="modal-title" id="add-product-label-<?php echo $type["id"] ?>">Add products to this type</h5>
@@ -201,7 +201,7 @@ require_once "../include/admin/header.php";
                             </button>
                             <!-- Edit type Modal -->
                             <div class="modal fade" id="edit-type-modal-<?php echo $type["id"] ?>" aria-labelledby="edit-type-label-<?php echo $type["id"] ?>" tabindex="-1" role="dialog" aria-hidden="true">
-                              <div class="modal-dialog" role="document">
+                              <div class="modal-dialog modal-dialog-centered" role="document">
                                 <div class="modal-content">
                                   <div class="modal-header">
                                     <h5 class="modal-title" id="edit-type-label-<?php echo $type["id"] ?>">Edit this type of products</h5>
@@ -240,7 +240,7 @@ require_once "../include/admin/header.php";
                             </button>
                             <!-- delete type Modal -->
                             <div class="modal fade" id="delete-type-modal-<?php echo $type["id"] ?>" aria-labelledby="delete-type-label-<?php echo $type["id"] ?>" tabindex="-1" role="dialog" aria-hidden="true">
-                              <div class="modal-dialog" role="document">
+                              <div class="modal-dialog modal-dialog-centered" role="document">
                                 <div class="modal-content">
                                   <div class="modal-header">
                                     <h5 class="modal-title" id="delete-type-label-<?php echo $type["id"] ?>">Are you sure you want to delete this type?</h5>
@@ -282,7 +282,7 @@ require_once "../include/admin/header.php";
               </button>
               <!-- Add type Modal -->
               <div class="modal fade" id="add-type-modal-<?php echo $group["id"] ?>" aria-labelledby="add-type-label-<?php echo $group["id"] ?>" tabindex="-1" role="dialog" aria-hidden="true">
-                <div class="modal-dialog" role="document">
+                <div class="modal-dialog modal-dialog-centered" role="document">
                   <div class="modal-content">
                     <div class="modal-header">
                       <h5 class="modal-title" id="add-type-label-<?php echo $group["id"] ?>">Add new cards type for this group</h5>
@@ -320,7 +320,7 @@ require_once "../include/admin/header.php";
               </button>
               <!-- Edit Group Modal -->
               <div class="modal fade" id="edit-group-modal-<?php echo $group["id"] ?>" aria-labelledby="edit-group-label-<?php echo $group["id"] ?>" tabindex="-1" role="dialog" aria-hidden="true">
-                <div class="modal-dialog" role="document">
+                <div class="modal-dialog modal-dialog-centered" role="document">
                   <div class="modal-content">
                     <div class="modal-header">
                       <h5 class="modal-title" id="edit-group-label-<?php echo $group["id"] ?>">Edit this group of types</h5>

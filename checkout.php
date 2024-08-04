@@ -78,28 +78,29 @@ require_once "./include/header.php";
                 </div>
 
                 <div class="row gap-2 gap-md-0">
-                  <div class="col col-12">
-                    <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#manual-payment-request">
-                      Change Password
+                  <div class="col col-12 mb-2">
+                    <button type="button" class="btn btn-lg btn-warning fw-bold w-100" data-bs-toggle="modal" data-bs-target="#manual-payment-request">
+                      Manual Payment Request
                     </button>
                     <!-- Cange Modal -->
                     <div class="modal fade" id="manual-payment-request" tabindex="-1" aria-labelledby="manual-payment-request-label" aria-hidden="true">
-                      <div class="modal-dialog">
+                      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
                         <div class="modal-content">
                           <div class="modal-header">
-                            <h1 class="modal-title fs-5" id="manual-payment-request-label">Modal title</h1>
+                            <h1 class="modal-title fs-5" id="manual-payment-request-label">Send Manual Payment Request</h1>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                           </div>
                           <div class="modal-body">
+                            <p>You can make a manual transaction via Binance to our wallet with the total amount in USDT, we will confirm it ASAP to be abale to get the codes. Do not forget to provide the transaction ID.</p>
+                            <p>This is our wallet address: <span class="text-success">XXXXXXXXXXXXX</span></p>
                             <form action="<?php echo $baseURL; ?>/backend/create_payment.php" method="POST" class="m-0">
                               <input type="hidden" name="groupId" value="<?php echo $groupId; ?>">
                               <input type="hidden" name="typeId" value="<?php echo $typeId; ?>">
                               <input type="hidden" name="quantity" value="<?php echo $quantity; ?>">
                               <input type="hidden" name="is_manual" value="TRUE">
-                              <input type="text" name="transaction_id" value="TRUE" class="form-control" placeholder="Transaction ID..." required>
-                              <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                <button type="submit" class="w-100 btn btn-primary btn-lg">Send Request</button>
+                              <input type="text" name="transaction_id" value="" class="form-control" placeholder="Transaction ID..." required>
+                              <div class="modal-footer p-0 pt-2">
+                                <button type="submit" class="w-100 btn btn-primary">Send Request</button>
                               </div>
                             </form>
                           </div>

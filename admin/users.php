@@ -71,8 +71,8 @@ require_once "../include/admin/header.php";
                       Change Password
                     </button>
                     <!-- Cange Modal -->
-                    <div class="modal fade" id="change-password-modal-<?php echo $user["id"]; ?>" tabindex="-1" aria-labelledby="change-password-modal-label-<?php echo $user["id"]; ?>" aria-hidden="true">
-                      <div class="modal-dialog">
+                    <div class="modal fade text-dark" id="change-password-modal-<?php echo $user["id"]; ?>" tabindex="-1" aria-labelledby="change-password-modal-label-<?php echo $user["id"]; ?>" aria-hidden="true">
+                      <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content">
                           <div class="modal-header">
                             <h1 class="modal-title fs-5" id="change-password-modal-label-<?php echo $user["id"]; ?>">Modal title</h1>
@@ -82,13 +82,12 @@ require_once "../include/admin/header.php";
                             <form action="<?php echo $baseURL . "/backend/change_user_password.php"; ?>" method="POST">
                               <input type="hidden" name="user_id" value="<?php echo $user["id"]; ?>">
                               <input type="text" name="newPassword" value="" class="form-control" placeholder="New Password...">
-                              <button class="btn btn-sm btn-success">Save</button>
+                              <div class="modal-footer p-0 pt-2">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-success">Save</button>
+                              </div>
                             </form>
                           </div>
-                          <!-- <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button type="button" class="btn btn-Success">Save</button>
-                          </div> -->
                         </div>
                       </div>
                     </div>

@@ -32,8 +32,9 @@ try {
   $metadata1 = "";
   $metadata2 = "";
 
-  $createChargeStmt = $connection->prepare("INSERT INTO `charges`(wallet_id, amount, `status`, metadata1, metadata2) VALUES (?,?,?,?,?)");
-  $createChargeStmt->bind_param("idsss", $walletId, $amount, $status, $metadata1, $metadata2);
+  $createChargeStmt = $connection->prepare("INSERT INTO `charges`(user_id, wallet_id, amount, `status`, metadata1, metadata2) VALUES (?,?,?,?,?,?)");
+  $createChargeStmt->bind_param("iidsss", $userId, $walletId, $amount, $status, $metadata1, $metadata2);
+  $createChargeStmt->execute();
   if ($createChargeStmt->errno) {
     $connection->rollback();
     logErrors($createChargeStmt->error, "string");
@@ -120,8 +121,9 @@ try {
   // update the charge
   $prepayID = $responseData["data"]["prepayId"];
   $newStatus = "PENDING";
-  $updateChargeStmt = $connection->prepare("UPDATE `charges` SET prepay_id = ?, merchantTradeNo = ?, `status` = ? WHERE id = ?");
-  $updateChargeStmt->bind_param("sssi", $prepayID, $merchantTradeNo, $newStatus, $insertedChargeId);
+  $updateChargeStmt = $connection->prepare("UPDATE `charges` SET prepay_id = ?, merchantTradeNo = ?, `status` = ? WHERE id = ? AND `user_id` = ?");
+  $updateChargeStmt->bind_param("sssii", $prepayID, $merchantTradeNo, $newStatus, $insertedChargeId, $userId);
+  $updateChargeStmt->execute();
   if ($updateChargeStmt->errno) {
     $connection->rollback();
     logErrors($updateChargeStmt->error, "string");

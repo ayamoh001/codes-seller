@@ -25,14 +25,16 @@ require_once "../include/profile/header.php";
 ?>
 
 <section>
-  <h1 class="mb-5 h1 fw-bold text-white text-capitalize">All of your products</h1>
-  <table class="table table-dark">
+  <h1 class="mb-5 h1 fw-bold text-white text-capitalize">All of your codes</h1>
+  <table class="table table-striped table-dark">
     <thead>
       <tr>
-        <th scope="col">Product ID</th>
+        <th scope="col">ID</th>
+        <th scope="col">Group</th>
         <th scope="col">Card Code</th>
         <th scope="col">Type</th>
         <th scope="col">Price</th>
+        <th scope="col">Date</th>
       </tr>
     </thead>
     <tbody>
@@ -40,10 +42,12 @@ require_once "../include/profile/header.php";
       foreach ($products as $product) :
       ?>
         <tr>
-          <th scope="row"><?php echo $product["id"]; ?></th>
-          <td><?php echo $product["code_value"]; ?></td>
-          <td><?php echo $product["type"]; ?></td>
-          <td><?php echo $product["price"]; ?></td>
+          <th scope="row">#<?php echo $product["id"]; ?></th>
+          <td class=""><?php echo $product["group_title"]; ?></td>
+          <td class="fw-bold text-warning"><?php echo $product["code_value"]; ?></td>
+          <td class="fw-bold"><?php echo $product["type_name"]; ?></td>
+          <td class="fw-bold text-info"><?php echo $product["type_price"]; ?>$</td>
+          <td><?php echo $product["date"]; ?></td>
         </tr>
       <?php
       endforeach;
