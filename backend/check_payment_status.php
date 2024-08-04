@@ -2,12 +2,12 @@
 header('Content-Type: text/event-stream');
 header('Cache-Control: no-cache');
 header('Connection: keep-alive');
-header('X-Accel-Buffering: no');
+// header('X-Accel-Buffering: no');
 
 try {
   // Disable output buffering
-  while (ob_get_level()) ob_end_flush();
-  ob_implicit_flush(true);
+  //  while (ob_get_level()) ob_end_flush();
+  //  ob_implicit_flush(true);
 
   set_time_limit(900); // TODO: set to 15 minutes
 
@@ -39,7 +39,6 @@ try {
     exit;
   }
 
-
   $paymentResult = $getPaymentStmt->get_result();
   $payment = $paymentResult->fetch_assoc();
   $getPaymentStmt->close();
@@ -60,46 +59,22 @@ try {
   // flush();
   // exit;
 
-  $binance_pay_api_key = $API_KEY;
-  $binance_pay_api_secret = $API_SECRET;
-
-  $request = [
-    "merchantTradeNo" => $merchantTradeNo,
-  ];
-  echo "data: " . json_encode(["request" => $request]) . "\n\n";
-
-  $ch = curl_init();
-
-  $nonce = generateNonce();
-  $timestamp = round(microtime(true) * 1000);
-
-  $json_request = json_encode($request);
-  $payload = $timestamp . "\n" . $nonce . "\n" . $json_request . "\n";
-  $signature = strtoupper(hash_hmac('SHA512', $payload, $binance_pay_api_secret));
-  $headers = [
-    "Content-Type: application/json",
-    "BinancePay-Timestamp: $timestamp",
-    "BinancePay-Nonce: $nonce",
-    "BinancePay-Certificate-SN: $binance_pay_api_key",
-    "BinancePay-Signature: $signature",
-  ];
-
-  curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-  curl_setopt($ch, CURLOPT_URL, "$binanceURL/binancepay/openapi/v2/order/query");
-  curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-  curl_setopt($ch, CURLOPT_POST, 1);
-  curl_setopt($ch, CURLOPT_POSTFIELDS, $json_request);
-
   $endDate = new DateTime();
-  $endDate->add(new DateInterval('PT2M'));
+  $endDate->add(new DateInterval('PT15M')); // TODO: set to 15 minutes
 
-  $connection->begin_transaction();
-
+  // $connection->begin_transaction();
+  $counter = 0;
   while (new DateTime() <= $endDate) {
-    sleep(5);
+    sleep(10);
+
+    $counter++;
+    if ($counter % 6 == 0) {
+      echo "data: " . json_encode(["heartbeat" => "still running"]) . "\n\n";
+      flush();
+    }
 
     if ($useWallet === "TRUE") {
-      $getPaymentStmt = $connection->prepare("SELECT * FROM `payments` WHERE (id = ?) AND (user_id = ?) LIMIT 1");
+      $getPaymentStmt = $connection->prepare("SELECT `status` FROM `payments` WHERE (id = ?) AND (user_id = ?) LIMIT 1");
       $getPaymentStmt->bind_param("is", $paymentId, $userId);
       $getPaymentStmt->execute();
       if ($getPaymentStmt->errno) {
@@ -161,6 +136,36 @@ try {
         continue;
       }
     } else {
+      $binance_pay_api_key = $API_KEY;
+      $binance_pay_api_secret = $API_SECRET;
+
+      $request = [
+        "merchantTradeNo" => $merchantTradeNo,
+      ];
+      echo "data: " . json_encode(["request" => $request]) . "\n\n";
+
+      $ch = curl_init();
+
+      $nonce = generateNonce();
+      $timestamp = round(microtime(true) * 1000);
+
+      $json_request = json_encode($request);
+      $payload = $timestamp . "\n" . $nonce . "\n" . $json_request . "\n";
+      $signature = strtoupper(hash_hmac('SHA512', $payload, $binance_pay_api_secret));
+      $headers = [
+        "Content-Type: application/json",
+        "BinancePay-Timestamp: $timestamp",
+        "BinancePay-Nonce: $nonce",
+        "BinancePay-Certificate-SN: $binance_pay_api_key",
+        "BinancePay-Signature: $signature",
+      ];
+
+      curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+      curl_setopt($ch, CURLOPT_URL, "$binanceURL/binancepay/openapi/v2/order/query");
+      curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+      curl_setopt($ch, CURLOPT_POST, 1);
+      curl_setopt($ch, CURLOPT_POSTFIELDS, $json_request);
+
       $result = curl_exec($ch);
       if (curl_errno($ch)) {
         echo "data: " . json_encode(["error" => "Error in binance connection!"]) . "\n\n";
@@ -170,8 +175,8 @@ try {
 
       $responseData = json_decode($result, true);
 
-      echo "data: " . json_encode(["message" => $responseData]) . "\n\n";
-      flush();
+      // echo "data: " . json_encode(["message" => $responseData]) . "\n\n";
+      // flush();
 
       // code:"000000"
       // data: {
@@ -198,8 +203,9 @@ try {
         if ($updatePaymentStmt->errno) {
           $connection->rollback();
           logErrors($updatePaymentStmt->error);
-          showSessionAlert("Error in confirming payment.", "danger", true, $returnPath);
-          exit;
+          echo "data: " . json_encode(["error" => $updatePaymentStmt->errno]) . "\n\n";
+          flush();
+          continue;
         }
         $updatePaymentStmt->close();
 
@@ -219,7 +225,7 @@ try {
 
   curl_close($ch);
 
-  $connection->commit();
+  // $connection->commit();
 
   echo "data: " . json_encode(["error" => "Timeout! Please try to buy again."]) . "\n\n";
   flush();

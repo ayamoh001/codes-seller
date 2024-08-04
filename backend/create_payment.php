@@ -84,7 +84,7 @@ try {
   $totalPrice = (float) ((float)$type["price"] * $quantity);
 
   $createPaymentStmt = $connection->prepare("INSERT INTO `payments`(user_id, group_id, type_id, quantity, `status`, price, metadata1, metadata2) VALUES (?,?,?,?,?,?,?,?)");
-  $createPaymentStmt->bind_param("iiiisdss", $userId, $groupId, $typeId, $quantity, $status, $totalPrice, $metadata1, $metadata2);
+  $createPaymentStmt->bind_param("siiisdss", $userId, $groupId, $typeId, $quantity, $status, $totalPrice, $metadata1, $metadata2);
   $createPaymentStmt->execute();
   if ($createPaymentStmt->errno) {
     $connection->rollback();

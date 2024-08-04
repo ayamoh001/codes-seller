@@ -10,7 +10,7 @@ $webhookBaseURL = "https://cryptogamingcards.com"; // for dev
 $binanceURL = "https://bpay.binanceapi.com"; // for dev
 // $binanceURL = "https://bpay.binanceapi.com"; // for production
 
-$connection = mysqli_connect("localhost", "root", "", "codes_seller"); // for dev
+$connection = mysqli_connect("localhost", "root", "", "codes_seller", 3306); // for dev
 // $connection = mysqli_connect("127.0.0.1", "crypto-cards-user", "oFsEczmeNJu3asjSJgAb", "crypto-cards", 3306); // for production
 
 // Production Only Credentials

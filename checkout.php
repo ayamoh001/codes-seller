@@ -78,8 +78,8 @@ require_once "./include/header.php";
                 </div>
 
                 <div class="row gap-2 gap-md-0">
-                  <div class="col col-12 mb-2">
-                    <button type="button" class="btn btn-lg btn-warning fw-bold w-100" data-bs-toggle="modal" data-bs-target="#manual-payment-request">
+                  <div class="col col-12 mb-md-2">
+                    <button type="button" class="btn btn-lg btn-warning w-100" data-bs-toggle="modal" data-bs-target="#manual-payment-request">
                       Manual Payment Request
                     </button>
                     <!-- Cange Modal -->
@@ -107,7 +107,6 @@ require_once "./include/header.php";
                         </div>
                       </div>
                     </div>
-
                   </div>
                   <div class="col col-12 col-md-6">
                     <form action="<?php echo $baseURL; ?>/backend/create_payment.php" method="POST" class="m-0">

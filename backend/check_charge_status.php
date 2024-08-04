@@ -6,8 +6,8 @@ header('X-Accel-Buffering: no');
 
 try {
   // Disable output buffering
-  while (ob_get_level()) ob_end_flush();
-  ob_implicit_flush(true);
+  //  while (ob_get_level()) ob_end_flush();
+  //  ob_implicit_flush(true);
 
   set_time_limit(120);
 
@@ -83,10 +83,17 @@ try {
   curl_setopt($ch, CURLOPT_POSTFIELDS, $json_request);
 
   $endDate = new DateTime();
-  $endDate->add(new DateInterval('PT2M'));
+  $endDate->add(new DateInterval('PT15M')); // TODO: set to 15 minutes
 
+  $counter = 0;
   while (new DateTime() <= $endDate) {
-    sleep(5);
+    sleep(10);
+
+    $counter++;
+    if ($counter % 6 == 0) {
+      echo "data: " . json_encode(["heartbeat" => "still running"]) . "\n\n";
+      flush();
+    }
 
     $result = curl_exec($ch);
     if (curl_errno($ch)) {
