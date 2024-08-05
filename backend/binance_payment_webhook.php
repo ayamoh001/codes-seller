@@ -1,4 +1,6 @@
 <?php
+// NOTE: This file is not used in the project currently, it's just for testing the webhook
+
 try {
   require_once "./include/config.php";
   require_once "./include/functions.php";

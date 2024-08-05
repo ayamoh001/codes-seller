@@ -53,14 +53,15 @@ require_once "./include/header.php";
                 <div class="d-flex gap-2 mb-3">
                   <img src="<?php echo $baseURL . $group["image"]; ?>" class="w-50 rounded" style="aspect-ratio: 16/9 !important;" alt="<?php echo $group["title"]; ?>">
                   <div class="w-50 d-flex flex-column xalign-items-center justify-content-center">
-                    <h5 class="card-title fs-6 w-75 line-clamp-2"><?php echo $group["title"]; ?></h5>
+                    <h2 class="card-title fs-6 w-75 line-clamp-2"><?php echo $group["title"]; ?></h2>
                     <p class="card-text line-clamp-2 text-muted"><?php echo $group["description"]; ?></p>
                   </div>
                 </div>
                 <?php
                 if ($hasStock) :
                 ?>
-                  <select id="products-types-select-<?php echo $group["id"]; ?>" class="form-select mb-2" autocomplete="off">
+                  <label for="products-types-select-<?php echo $group["id"]; ?>" class="visually-hidden">Select Type of procuts for group: <?php echo $group["title"]; ?></label>
+                  <select id="products-types-select-<?php echo $group["id"]; ?>" class="form-select mb-2" autocomplete="off" aria-label="products types select label <?php echo $group["id"]; ?>">
                     <?php
                     $isFirst = true;
                     foreach ($group["types"] as $type => $products) :
@@ -76,6 +77,7 @@ require_once "./include/header.php";
                     $isFirst = true;
                     foreach ($group["types"] as $type => $typeData) :
                     ?>
+                      <label for="products-of-type-quantity-<?php echo $group["id"] . "-" . $type; ?>" class="visually-hidden">Select Products Quanitity for Group <?php echo $group["title"] . " and type: " . $type; ?></label>
                       <input type="number" min="1" max="<?php echo count($typeData["products"]); ?>" class="form-control mb-3" id="products-of-type-quantity-<?php echo $group["id"] . "-" . $type; ?>" placeholder="qunaitity..." style="display: <?php echo $isFirst ? "block" : "none";
                                                                                                                                                                                                                                                     $isFirst && $isFirst = false ?>;">
                     <?php endforeach; ?>
@@ -134,10 +136,11 @@ require_once "./include/header.php";
   })
 
   for (let i in groups) {
-    if (groups[i].types.length == 0) continue;
+
+    let selectedType = Object.keys(groups[i].types)[0]
+    if (groups[i].types.length == 0 || groups[i].types[selectedType].products.length == 0) continue;
 
     let total = 0
-    let selectedType = Object.keys(groups[i].types)[0]
     let selectedQuantity = 1
     let typeSelectInput = new TomSelect(`#products-types-select-${i}`, settings)
     const quantitiesContainer = document.querySelector(`#quantities-container-${i}`)

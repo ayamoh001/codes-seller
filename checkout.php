@@ -82,7 +82,7 @@ require_once "./include/header.php";
                     <button type="button" class="btn btn-lg btn-warning w-100" data-bs-toggle="modal" data-bs-target="#manual-payment-request">
                       Manual Payment Request
                     </button>
-                    <!-- Cange Modal -->
+                    <!-- Manual Payment Request Modal -->
                     <div class="modal fade" id="manual-payment-request" tabindex="-1" aria-labelledby="manual-payment-request-label" aria-hidden="true">
                       <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
                         <div class="modal-content">
@@ -91,8 +91,32 @@ require_once "./include/header.php";
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                           </div>
                           <div class="modal-body">
-                            <p>You can make a manual transaction via Binance to our wallet with the total amount in USDT, we will confirm it ASAP to be abale to get the codes. Do not forget to provide the transaction ID.</p>
-                            <p>This is our wallet address: <span class="text-success">XXXXXXXXXXXXX</span></p>
+                            <p>You can make a manual transaction via Binance to our wallet with the total amount in USDT, we will confirm it ASAP to be able to get the codes. Do not forget to provide the transaction ID.</p>
+                            <p>Our Binance Code:
+                              <span class="text-success">801778486</span>
+                              <button class="btn btn-sm btn-outline-primary" onclick="window.navigator.clipboard.writeText('801778486')">
+                                <i class="bi bi-clipboard"></i>
+                              </button>
+                            </p>
+                            <p>Our BEP-20 Wallet Address:
+                              <span class="text-success">0x99cfa4a8359ef21417992b2938fd82780fff3bd1</span>
+                              <button class="btn btn-sm btn-outline-primary" onclick="window.navigator.clipboard.writeText('0x99cfa4a8359ef21417992b2938fd82780fff3bd1')">
+                                <i class="bi bi-clipboard"></i>
+                              </button>
+                            </p>
+                            <p>Our TRC-20 Wallet Address:
+                              <span class="text-success">TYSEcW7fqBCb1mo3rvLZug6FQ5F7AExWv6</span>
+                              <button class="btn btn-sm btn-outline-primary" onclick="window.navigator.clipboard.writeText('TYSEcW7fqBCb1mo3rvLZug6FQ5F7AExWv6')">
+                                <i class="bi bi-clipboard"></i>
+                              </button>
+                            </p>
+                            <p>Amount to transfare in USD:
+                              <span class="text-success"><?php echo $totalPrice; ?> USD</span>
+                              <button class="btn btn-sm btn-outline-primary" onclick="window.navigator.clipboard.writeText('<?php echo $totalPrice; ?>')">
+                                <i class="bi bi-clipboard"></i>
+                              </button>
+                            </p>
+
                             <form action="<?php echo $baseURL; ?>/backend/create_payment.php" method="POST" class="m-0">
                               <input type="hidden" name="groupId" value="<?php echo $groupId; ?>">
                               <input type="hidden" name="typeId" value="<?php echo $typeId; ?>">

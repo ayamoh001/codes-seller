@@ -6,7 +6,6 @@ header('X-Accel-Buffering: no');
 
 try {
   // Disable output buffering
-  //  while (ob_get_level()) ob_end_flush();
   //  ob_implicit_flush(true);
 
   set_time_limit(120);
@@ -15,8 +14,7 @@ try {
   require_once "../include/functions.php";
 
   $chargeId = (int) $_GET['chargeId'];
-  echo "data: " . json_encode(["chargeId" => $chargeId]) . "\n\n";
-  flush();
+  echo json_encode(["chargeId" => $chargeId]);
 
   $returnPath = "payment_processing.php?chargeId=$chargeId";
 
@@ -26,8 +24,7 @@ try {
     $user = getUser($user_id, $returnPath);
     $userId = $user["id"];
   } else {
-    echo "data: " . json_encode(["error" => "You are not logged in!"]) . "\n\n";
-    flush();
+    echo json_encode(["error" => "You are not logged in!"]);
     exit;
   }
 
@@ -36,16 +33,14 @@ try {
   $getChargeStmt->execute();
   if ($getChargeStmt->errno) {
     logErrors($getChargeStmt->error, "string");
-    echo "data: " . json_encode(["error" => $getChargeStmt->errno]) . "\n\n";
-    flush();
+    echo json_encode(["error" => $getChargeStmt->errno]);
     // exit;
   }
   $chargeResult = $getChargeStmt->get_result();
   $charge = $chargeResult->fetch_assoc();
   $getChargeStmt->close();
   if (!$charge) {
-    echo "data: " . json_encode(["error" => "Charge not found!"]) . "\n\n";
-    flush();
+    echo json_encode(["error" => "Charge not found!"]);
     exit;
   }
 
@@ -58,7 +53,7 @@ try {
   $request = [
     "merchantTradeNo" => $merchantTradeNo,
   ];
-  // echo "data: " . json_encode(["request" => $request]) . "\n\n";
+  // echo json_encode(["request" => $request]);
 
   $ch = curl_init();
 
@@ -82,72 +77,48 @@ try {
   curl_setopt($ch, CURLOPT_POST, 1);
   curl_setopt($ch, CURLOPT_POSTFIELDS, $json_request);
 
-  $endDate = new DateTime();
-  $endDate->add(new DateInterval('PT15M')); // TODO: set to 15 minutes
-
-  $counter = 0;
-  while (new DateTime() <= $endDate) {
-    sleep(10);
-
-    $counter++;
-    if ($counter % 6 == 0) {
-      echo "data: " . json_encode(["heartbeat" => "still running"]) . "\n\n";
-      flush();
-    }
-
-    $result = curl_exec($ch);
-    if (curl_errno($ch)) {
-      echo "data: " . json_encode(["error" => "Error in binance connection!"]) . "\n\n";
-      flush();
-      continue;
-    }
-
-    $responseData = json_decode($result, true);
-
-    echo "data: " . json_encode(["message" => $responseData]) . "\n\n";
-    flush();
-
-    // code:"000000"
-    // data: {
-    // commission: "0.1779"
-    // createTime: 1721476833526
-    // currency:"USDT"
-    // merchantId:801762960
-    // merchantTradeNo:"1968528456285"
-    // openUserId:"2e6bc287add110c017e2d68e94baecf2"
-    // orderAmount: "17.79000000"
-    // paymentInfo:{payerId: '308307882', payMethod: 'funding', ChargeInstructions: Array(1), channel: 'DEFAULT'}
-    // prepayId: "308464622446870528"
-    // status: "PAID"
-    // transactTime:1721476848406
-    // transactionId: "308464654340489216"
-    // }
-    // status: "SUCCESS"
-
-    if ($responseData["status"] == "SUCCESS" && $responseData["data"]["status"] == "PAID") { // TODO: change to PAID on production
-      $errors = confirmCharge($chargeId, $userId, $returnPath);
-      if (count($errors)) {
-        echo "data: " . json_encode(["message" => "Error in the process!", "success" => false, "errors" => $errors]) . "\n\n";
-        flush();
-        break;
-      } else {
-        echo "data: " . json_encode(["message" => "Charge successful! Redirecting to the success page.", "success" => true]) . "\n\n";
-        flush();
-        break;
-      }
-    } else {
-      echo "data: " . json_encode(["error" => "Charge statuses: " . $responseData["status"] . " / " . $responseData["data"]["status"]]) . "\n\n";
-      flush();
-    }
+  $result = curl_exec($ch);
+  if (curl_errno($ch)) {
+    echo json_encode(["error" => "Error in binance connection!"]);
+    exit;
   }
-
   curl_close($ch);
 
-  echo "data: " . json_encode(["error" => "Timeout! Please try to buy again."]) . "\n\n";
-  flush();
+  $responseData = json_decode($result, true);
+
+  // echo json_encode(["message" => $responseData]);
+
+  // code:"000000"
+  // data: {
+  // commission: "0.1779"
+  // createTime: 1721476833526
+  // currency:"USDT"
+  // merchantId:801762960
+  // merchantTradeNo:"1968528456285"
+  // openUserId:"2e6bc287add110c017e2d68e94baecf2"
+  // orderAmount: "17.79000000"
+  // paymentInfo:{payerId: '308307882', payMethod: 'funding', ChargeInstructions: Array(1), channel: 'DEFAULT'}
+  // prepayId: "308464622446870528"
+  // status: "PAID"
+  // transactTime:1721476848406
+  // transactionId: "308464654340489216"
+  // }
+  // status: "SUCCESS"
+
+  if ($responseData["status"] == "SUCCESS" && $responseData["data"]["status"] == "PAID") { // TODO: change to PAID on production
+    $errors = confirmCharge($chargeId, $userId, $returnPath);
+    if (count($errors)) {
+      echo json_encode(["message" => "Error in the process!", "success" => false, "errors" => $errors]);
+      exit;
+    } else {
+      echo json_encode(["message" => "Charge successful! Redirecting to the success page.", "success" => true]);
+      exit;
+    }
+  } else {
+    echo json_encode(["error" => "Charge statuses: " . $responseData["status"] . " / " . $responseData["data"]["status"]]);
+  }
 } catch (Throwable $e) {
   logErrors($e);
-  echo "data: " . json_encode(["error" => "An error occurred. Please try again later."]) . "\n\n";
-  flush();
+  echo json_encode(["error" => "An error occurred. Please try again later."]);
   exit;
 }

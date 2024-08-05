@@ -101,141 +101,127 @@ require_once "./include/header.php";
     };
   }
 
-  function checkPaymentStatus(paymentId, useWallet, transactionId) {
-    if (typeof(EventSource) == "undefined") {
-      return alert("Sorry! Your browser does not support server-sent events. which prevents from checking the payment status");
+  async function checkPaymentStatus(stopCheckPaymentStatus, paymentId, useWallet, transactionId) {
+    if (stopCheckPaymentStatus) {
+      console.log("stop checking payment status");
+      return;
+    }
+    console.log("start checking payment status");
+
+    const resultData = await fetch(`<?php echo $baseURL ?>/backend/check_payment_status.php?paymentId=${paymentId}&useWallet=${useWallet}&transactionId=${transactionId}`);
+    const data = await resultData.json();
+
+    console.log({
+      data
+    })
+
+    if (data.error) {
+      console.error({
+        error: data.error
+      });
     }
 
-    console.log("start checking payment status");
-    const source = new EventSource(`<?php echo $baseURL ?>/backend/check_payment_status.php?paymentId=${paymentId}&useWallet=${useWallet}&transactionId=${transactionId}`);
-    // Stop receiving SSE after 15 minutes
-    setTimeout(() => {
-      console.log('Closing SSE connection.');
-      source.close();
-    }, 1000 * 60 * 15); // TODO: set to 15 minutes
-
-    source.onmessage = function(event) {
-      const data = JSON.parse(event.data);
+    if (data.message) {
       console.log({
-        data
-      })
+        message: data.message
+      });
+    }
 
-      if (data.error) {
-        console.error({
-          error: data.error
+    if (data.success) {
+      stopCheckPaymentStatus = true;
+
+      const waitingSection = document.querySelector("#waiting-section")
+      const resultSection = document.querySelector("#result-section")
+      const errorsSection = document.querySelector("#errors-section")
+      const codesTable = document.querySelector("#codes-table")
+      const codesTableBody = codesTable.querySelector("tbody")
+      const copyAllButton = document.querySelector("#copy-all-button")
+      const timer = document.querySelector("#timer")
+
+      waitingSection.style.display = "none";
+      timer.style.display = "block";
+
+      if (data?.products?.length) {
+        codesTableBody.innerHTML = "";
+        data.products.forEach((product, i) => {
+          const row = document.createElement("tr");
+          const codeIndex = document.createElement("td");
+          codeIndex.innerHTML = i + 1;
+          row.appendChild(codeIndex);
+          const codeValue = document.createElement("td");
+          codeValue.innerHTML = product;
+          row.appendChild(codeValue);
+          const copyButtonTd = document.createElement("td");
+          const copyButton = document.createElement("button");
+          copyButton.className = "btn btn-sm btn-outline-primary";
+          copyButton.onclick = function() {
+            copyToClipboard(product);
+          };
+          copyButton.innerHTML = "<i class='bi bi-clipboard'></i>";
+          copyButtonTd.appendChild(copyButton);
+          row.appendChild(copyButtonTd);
+
+          codesTableBody.appendChild(row);
+        });
+        resultSection.style.display = "block";
+        copyAllButton.addEventListener("click", function() {
+          copyAllCodes(data.products);
         });
       }
 
-      if (data.message) {
-        console.log({
-          message: data.message
+      if (data?.errors?.length) {
+        errorsSection.style.display = "block";
+        errorsTable = document.querySelector("#errors-table")
+        const errorsTableBody = errorsTable.querySelector("tbody")
+
+        errorsTableBody.innerHTML = "";
+        data.errors.forEach((product, i) => {
+          const row = document.createElement("tr");
+          const codeIndex = document.createElement("td");
+          codeIndex.innerHTML = i + 1;
+          row.appendChild(codeIndex);
+          const codeValue = document.createElement("td");
+          codeValue.innerHTML = product;
+          row.appendChild(codeValue);
+
+          errorsTableBody.appendChild(row);
         });
       }
-
-      if (data.success) {
-        source.close();
-
-        const waitingSection = document.querySelector("#waiting-section")
-        const resultSection = document.querySelector("#result-section")
-        const errorsSection = document.querySelector("#errors-section")
-        const codesTable = document.querySelector("#codes-table")
-        const codesTableBody = codesTable.querySelector("tbody")
-        const copyAllButton = document.querySelector("#copy-all-button")
-        const timer = document.querySelector("#timer")
-
-        waitingSection.style.display = "none";
-        timer.style.display = "block";
-
-        if (data?.products?.length) {
-          codesTableBody.innerHTML = "";
-          data.products.forEach((product, i) => {
-            const row = document.createElement("tr");
-            const codeIndex = document.createElement("td");
-            codeIndex.innerHTML = i + 1;
-            row.appendChild(codeIndex);
-            const codeValue = document.createElement("td");
-            codeValue.innerHTML = product;
-            row.appendChild(codeValue);
-            const copyButtonTd = document.createElement("td");
-            const copyButton = document.createElement("button");
-            copyButton.className = "btn btn-sm btn-outline-primary";
-            copyButton.onclick = function() {
-              copyToClipboard(product);
-            };
-            copyButton.innerHTML = "<i class='bi bi-clipboard'></i>";
-            copyButtonTd.appendChild(copyButton);
-            row.appendChild(copyButtonTd);
-
-            codesTableBody.appendChild(row);
-          });
-          resultSection.style.display = "block";
-          copyAllButton.addEventListener("click", function() {
-            copyAllCodes(data.products);
-          });
-        }
-
-        if (data?.errors?.length) {
-          errorsSection.style.display = "block";
-          errorsTable = document.querySelector("#errors-table")
-          const errorsTableBody = errorsTable.querySelector("tbody")
-
-          errorsTableBody.innerHTML = "";
-          data.errors.forEach((product, i) => {
-            const row = document.createElement("tr");
-            const codeIndex = document.createElement("td");
-            codeIndex.innerHTML = i + 1;
-            row.appendChild(codeIndex);
-            const codeValue = document.createElement("td");
-            codeValue.innerHTML = product;
-            row.appendChild(codeValue);
-
-            errorsTableBody.appendChild(row);
-          });
-        }
-      }
-    };
-
+    }
   }
 
-  function checkChargeStatus(chargeId) {
-    if (typeof(EventSource) == "undefined") {
-      return alert("Sorry! Your browser does not support server-sent events. which prevents from checking the payment status");
+  async function checkChargeStatus(stopCheckChargeStatus, chargeId) {
+    if (stopCheckPaymentStatus) {
+      console.log("stop checking charge status");
+      return;
     }
 
     console.log("start checking charge status");
-    const source = new EventSource(`<?php echo $baseURL ?>/backend/check_charge_status.php?chargeId=${chargeId}`);
-    // Stop receiving SSE after 15 minutes
-    setTimeout(() => {
-      console.log('Closing SSE connection.');
-      source.close();
-    }, 1000 * 60 * 15); // TODO: set to 15 minutes
+    const resultData = await fetch(`<?php echo $baseURL ?>/backend/check_charge_status.php?chargeId=${chargeId}`);
+    const data = await resultData.json();
 
-    source.onmessage = function(event) {
-      const data = JSON.parse(event.data);
+    console.log({
+      data
+    })
+
+    if (data.error) {
+      console.error({
+        error: data.error
+      });
+    }
+
+    if (data.message) {
       console.log({
-        data
-      })
+        message: data.message
+      });
+    }
 
-      if (data.error) {
-        console.error({
-          error: data.error
-        });
-      }
+    if (data.success) {
+      stopCheckChargeStatus = true;
+      window.location.href = `<?php echo $baseURL ?>/profile/wallet.php`;
+    }
+  };
 
-      if (data.message) {
-        console.log({
-          message: data.message
-        });
-      }
-
-      if (data.success) {
-        source.close();
-
-        window.location.href = `<?php echo $baseURL ?>/profile/wallet.php`;
-      }
-    };
-
-  }
 
   function copyToClipboard(text) {
     navigator.clipboard.writeText(text);
@@ -288,11 +274,25 @@ require_once "./include/header.php";
     var transactionId = '<?php echo $transactionId; ?>';
     var deepLink = '<?php echo $deepLink; ?>';
     var webLink = '<?php echo $webLink; ?>';
+
+    var stopCheckPaymentStatus = false;
+    var stopCheckChargeStatus = false;
+
     redirectToApp(deepLink, webLink);
     if (paymentId) {
-      checkPaymentStatus(paymentId, useWallet, transactionId)
+      setInterval(function() {
+        checkPaymentStatus(stopCheckPaymentStatus, paymentId, useWallet, transactionId)
+      }, 1000 * 2);
     } else if (chargeId) {
-      checkChargeStatus(chargeId)
+      setInterval(function() {
+        checkChargeStatus(stopCheckChargeStatus, chargeId)
+      }, 1000 * 2);
+    }
+    if (transactionId) {
+      // open whatsapp page after 5 seconds
+      setTimeout(function() {
+        window.open(`https://wa.me/60176940955?text=${decodeURIComponent("Hello, I want to confirm for rquest number: " + paymentId + " the transaction ID: " + transactionId)}`, '_blank')
+      }, 1000 * 5);
     }
     startTimer();
   };

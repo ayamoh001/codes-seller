@@ -271,7 +271,7 @@ require_once "../include/admin/header.php";
             <?php else : ?>
               <div class="alert alert-warning p-3" role="alert">
                 <h4 class="alert-heading m-0">Out of stock!</h4>
-                <p class="alert-text m-0">Add more types and products to this groups.</p>
+                <p class="alert-text m-0">Add more types and products to this group.</p>
               </div>
             <?php endif; ?>
             <div class="d-flex gap-2">

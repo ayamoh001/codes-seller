@@ -159,8 +159,6 @@ try {
           "goodsQuantity" => $quantity,
         ]
       ],
-      // "webhookUrl" => "$webhookBaseURL/backend/binance_payment_webhook.php",
-      // "returnUrl" => "$baseURL/backend/confirm_payment.php?merchantTradeNo=$merchantTradeNo",
       "cancelUrl" => "$baseURL/faild_payment.php",
     ];
 
@@ -183,8 +181,6 @@ try {
     //     "goodsDetail": "A description for Another Test Elements for the Groups with extra texts",
     //     "goodsQuantity": 2
     //   },
-    //   "webhookUrl": "https://cryptogamingcards.com/backend/binance_payment_webhook.php",
-    //   "returnUrl": "http://localhost/crypto-cards/backend/confirm_payment.php?merchantTradeNo=3062429021074",
     //   "cancelUrl": "http://localhost/crypto-cards/faild_payment.php"
     // }
 

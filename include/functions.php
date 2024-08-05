@@ -1,5 +1,4 @@
 <?php
-// require_once "./include/config.php";
 
 function logErrors($e, $type = "error")
 {
@@ -51,12 +50,12 @@ function getGroups(string $returnPath = ""): array
 {
   global $connection;
   try {
-    $getGroupsWithProuductsStmt = $connection->prepare("SELECT g.*, t.id AS type_id, t.name AS type_name, t.price AS type_price, p.id AS product_id, t.sort_index AS type_sort_index
-                                                      FROM `groups` g
-                                                      LEFT JOIN `types` t ON g.id = t.group_id
-                                                      LEFT JOIN `products` p ON t.id = p.type_id
-                                                      WHERE p.payment_id IS NULL AND g.visibility = 1
-                                                      ORDER BY g.sort_index, g.id, t.sort_index, t.id, p.date");
+    $getGroupsWithProuductsStmt = $connection->prepare("SELECT gr.*, ty.id AS type_id, ty.name AS type_name, ty.price AS type_price, pd.id AS product_id, ty.sort_index AS type_sort_index
+                                                      FROM `groups` gr
+                                                      LEFT JOIN `types` ty ON gr.id = ty.group_id
+                                                      LEFT JOIN `products` pd ON ty.id = pd.type_id AND pd.payment_id IS NULL
+                                                      WHERE gr.visibility = 1
+                                                      ORDER BY gr.sort_index, gr.id, ty.sort_index, ty.id, pd.date");
 
     $getGroupsWithProuductsStmt->execute();
     if ($getGroupsWithProuductsStmt->errno) {
@@ -114,12 +113,12 @@ function getGroupsForAdmin(string $returnPath = ""): array
 {
   global $connection;
   try {
-    $getGroupsWithProuductsStmt = $connection->prepare("SELECT g.*, t.id AS type_id, t.name AS type_name, t.price AS type_price, p.id AS product_id, t.sort_index AS type_sort_index, p.code_value
-                                                      FROM `groups` g
-                                                      LEFT JOIN `types` t ON g.id = t.group_id
-                                                      LEFT JOIN `products` p ON t.id = p.type_id
-                                                      WHERE p.payment_id IS NULL AND g.visibility = 1
-                                                      ORDER BY g.sort_index, g.id, t.sort_index, t.id, p.date");
+    $getGroupsWithProuductsStmt = $connection->prepare("SELECT gr.*, ty.id AS type_id, ty.name AS type_name, ty.price AS type_price, pd.id AS product_id, ty.sort_index AS type_sort_index, pd.code_value
+                                                      FROM `groups` gr
+                                                      LEFT JOIN `types` ty ON gr.id = ty.group_id
+                                                      LEFT JOIN `products` pd ON ty.id = pd.type_id AND pd.payment_id IS NULL
+                                                      WHERE gr.visibility = 1
+                                                      ORDER BY gr.sort_index, gr.id, ty.sort_index, ty.id, pd.date");
 
     $getGroupsWithProuductsStmt->execute();
     if ($getGroupsWithProuductsStmt->errno) {
