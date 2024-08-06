@@ -159,6 +159,7 @@ try {
           "goodsQuantity" => $quantity,
         ]
       ],
+      "returnUrl" => "$baseURL/payment_processing.php?paymentId=$insertedPaymentId",
       "cancelUrl" => "$baseURL/faild_payment.php",
     ];
 

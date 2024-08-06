@@ -20,7 +20,7 @@ $getPaymentsStmt = $connection->prepare("SELECT py.*, gr.id AS group_id, gr.titl
                                            FROM `payments` AS py
                                            LEFT JOIN `types` AS ty ON py.type_id = ty.id
                                            LEFT JOIN `groups` AS gr ON gr.id = ty.group_id
-                                           WHERE py.is_manual = 1");
+                                           WHERE py.is_manual = 1 ORDER BY date DESC");
 // $getPaymentsStmt = $connection->prepare("SELECT * FROM `payments` WHERE is_manual = 1");
 $getPaymentsStmt->execute();
 if ($getPaymentsStmt->errno) {

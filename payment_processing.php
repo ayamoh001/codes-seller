@@ -289,10 +289,10 @@ require_once "./include/header.php";
       }, 1000 * 2);
     }
     if (transactionId) {
-      // open whatsapp page after 5 seconds
+      // open whatsapp page after 2 seconds
       setTimeout(function() {
         window.open(`https://wa.me/60176940955?text=${decodeURIComponent("Hello, I want to confirm for rquest number: " + paymentId + " the transaction ID: " + transactionId)}`, '_blank')
-      }, 1000 * 5);
+      }, 1000 * 2);
     }
     startTimer();
   };

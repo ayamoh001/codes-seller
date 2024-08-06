@@ -100,7 +100,7 @@ try {
       // Update the guest id to the user id for payments
       $geustId = $geustIdPrefix . session_id();
       $updateSessionIdToUserIdStmt = $connection->prepare("UPDATE `payments` SET user_id = ? WHERE user_id = ?");
-      $updateSessionIdToUserIdStmt->bind_param("is", $user_id, $geustId);
+      $updateSessionIdToUserIdStmt->bind_param("si", $geustId, $user_id);
       $updateSessionIdToUserIdStmt->execute();
       if ($updateSessionIdToUserIdStmt->errno) {
         $connection->rollback();
