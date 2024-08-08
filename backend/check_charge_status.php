@@ -1,8 +1,5 @@
 <?php
-header('Content-Type: text/event-stream');
-header('Cache-Control: no-cache');
-header('Connection: keep-alive');
-header('X-Accel-Buffering: no');
+header('Content-Type: application/json');
 
 try {
   // Disable output buffering
@@ -14,7 +11,7 @@ try {
   require_once "../include/functions.php";
 
   $chargeId = (int) $_GET['chargeId'];
-  echo json_encode(["chargeId" => $chargeId]);
+  // echo json_encode(["chargeId" => $chargeId]);
 
   $returnPath = "payment_processing.php?chargeId=$chargeId";
 
@@ -24,7 +21,7 @@ try {
     $user = getUser($user_id, $returnPath);
     $userId = $user["id"];
   } else {
-    echo json_encode(["error" => "You are not logged in!"]);
+    echo json_encode(["alert" => "You are not logged in!"]);
     exit;
   }
 
@@ -33,8 +30,8 @@ try {
   $getChargeStmt->execute();
   if ($getChargeStmt->errno) {
     logErrors($getChargeStmt->error, "string");
-    echo json_encode(["error" => $getChargeStmt->errno]);
-    // exit;
+    echo json_encode(["alert" => $getChargeStmt->errno]);
+    exit;
   }
   $chargeResult = $getChargeStmt->get_result();
   $charge = $chargeResult->fetch_assoc();
@@ -88,27 +85,11 @@ try {
 
   // echo json_encode(["message" => $responseData]);
 
-  // code:"000000"
-  // data: {
-  // commission: "0.1779"
-  // createTime: 1721476833526
-  // currency:"USDT"
-  // merchantId:801762960
-  // merchantTradeNo:"1968528456285"
-  // openUserId:"2e6bc287add110c017e2d68e94baecf2"
-  // orderAmount: "17.79000000"
-  // paymentInfo:{payerId: '308307882', payMethod: 'funding', ChargeInstructions: Array(1), channel: 'DEFAULT'}
-  // prepayId: "308464622446870528"
-  // status: "PAID"
-  // transactTime:1721476848406
-  // transactionId: "308464654340489216"
-  // }
-  // status: "SUCCESS"
-
   if ($responseData["status"] == "SUCCESS" && $responseData["data"]["status"] == "PAID") { // TODO: change to PAID on production
     $errors = confirmCharge($chargeId, $userId, $returnPath);
     if (count($errors)) {
-      echo json_encode(["message" => "Error in the process!", "success" => false, "errors" => $errors]);
+      logErrors($errors, "string");
+      echo json_encode(["error" => "Error in the process!", "success" => false, "errors" => $errors]);
       exit;
     } else {
       echo json_encode(["message" => "Charge successful! Redirecting to the success page.", "success" => true]);

@@ -18,7 +18,8 @@ try {
     $user = getUser($user_id, $returnPath);
     $userId = $user["id"];
   } else {
-    $userId = $guestIdPrefix . session_id();
+    echo json_encode(["alert" => "You are not logged in!"]);
+    exit;
   }
 
   $getPaymentStmt = $connection->prepare("SELECT * FROM `payments` WHERE (id = ?) AND (user_id = ?) LIMIT 1");
@@ -111,7 +112,7 @@ try {
     $request = [
       "merchantTradeNo" => $merchantTradeNo,
     ];
-    echo json_encode(["request" => $request]);
+    // echo json_encode(["request" => $request]);
 
     $ch = curl_init();
 
@@ -146,43 +147,34 @@ try {
 
     // echo json_encode(["message" => $responseData]);
 
-    // code:"000000"
-    // data: {
-    // commission: "0.1779"
-    // createTime: 1721476833526
-    // currency:"USDT"
-    // merchantId:801762960
-    // merchantTradeNo:"1968528456285"
-    // openUserId:"2e6bc287add110c017e2d68e94baecf2"
-    // orderAmount: "17.79000000"
-    // paymentInfo:{payerId: '308307882', payMethod: 'funding', paymentInstructions: Array(1), channel: 'DEFAULT'}
-    // prepayId: "308464622446870528"
-    // status: "PAID"
-    // transactTime:1721476848406
-    // transactionId: "308464654340489216"
-    // }
-    // status: "SUCCESS"
+    if ($responseData["status"] == "SUCCESS") {
+      if ($responseData["data"]["status"] == "PAID") {
+        $newStatus = "PAID";
+        $updatePaymentStmt = $connection->prepare("UPDATE `payments` SET `status` = ? WHERE id = ?");
+        $updatePaymentStmt->bind_param("si", $newStatus, $insertedPaymentId);
+        $updatePaymentStmt->execute();
+        if ($updatePaymentStmt->errno) {
+          $connection->rollback();
+          logErrors($updatePaymentStmt->error);
+          echo json_encode(["error" => $updatePaymentStmt->errno]);
+          exit;
+        }
+        $updatePaymentStmt->close();
 
-    if ($responseData["status"] == "SUCCESS" && $responseData["data"]["status"] == "PAID") { // TODO: change to PAID on production
-      $newStatus = "PAID";
-      $updatePaymentStmt = $connection->prepare("UPDATE `payments` SET `status` = ? WHERE id = ?");
-      $updatePaymentStmt->bind_param("si", $newStatus, $insertedPaymentId);
-      $updatePaymentStmt->execute();
-      if ($updatePaymentStmt->errno) {
-        $connection->rollback();
-        logErrors($updatePaymentStmt->error);
-        echo json_encode(["error" => $updatePaymentStmt->errno]);
+        $result = linkProductsWithPaymentOrReturnExistings($paymentId, $userId, $typeId, $quantity, $returnPath);
+        $products = $result[0];
+        $errors = $result[1];
+        echo json_encode(["success" => true, "message" => "Payment successful! Redirecting to the success page.", "products" => $products, "errors" => $errors]);
+        exit;
+      } else if ($responseData["data"]["status"] == ("INITIAL" || "PENDING")) {
+        echo json_encode(["pending" => "The payment is created an waiting to be paid, current status: " . $responseData["data"]["status"]]);
+        exit;
+      } else {
+        echo json_encode(["alert" => "payment is not pending nor paid, current status: " . $responseData["data"]["status"]]);
         exit;
       }
-      $updatePaymentStmt->close();
-
-      $result = linkProductsWithPaymentOrReturnExistings($paymentId, $userId, $typeId, $quantity, $returnPath);
-      $products = $result[0];
-      $errors = $result[1];
-      echo json_encode(["message" => "Payment successful! Redirecting to the success page.", "success" => true, "products" => $products, "errors" => $errors]);
-      exit;
     } else {
-      echo json_encode(["error" => "Payment statuses: " . $responseData["status"] . " / " . $responseData["data"]["status"]]);
+      echo json_encode(["error" => "Payment Query Faild! response status: " . $responseData["status"]]);
       exit;
     }
   }

@@ -99,7 +99,7 @@
   <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
 </head>
 
-<body class="inter-without-weight min-vh-100">
+<body class="inter-without-weight min-vh-100 bg-dark">
   <header class="d-block bg-white-gradient py-3">
     <div class="container">
       <nav class="navbar navbar-expand-lg navbar-dark">
@@ -111,13 +111,25 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav ms-auto align-items-center">
-            <li class="nav-item">
-              <a class="nav-link" href="<?php echo $baseURL; ?>">Home</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="<?php echo $baseURL; ?>/policies.php">Policies</a>
-            </li>
             <?php if (isset($user_id) && $user_id != "") : ?>
+              <li class="nav-item">
+                <a class="nav-link text-capitalize" href="<?php echo $baseURL; ?>/">home</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link text-capitalize" href="<?php echo $baseURL; ?>/profile/index.php">profile</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link text-capitalize" href="<?php echo $baseURL; ?>/profile/products.php">products</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link text-capitalize" href="<?php echo $baseURL; ?>/profile/payments.php">payments</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link text-capitalize" href="<?php echo $baseURL; ?>/profile/wallet.php">wallet</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link text-capitalize" href="<?php echo $baseURL; ?>/profile/settings.php">settings</a>
+              </li>
               <div class="d-flex gap-3 gap-lg-0 align-items-center">
                 <div class="d-flex flex-row-reverse flex-lg-row gap-3 gap-lg-0 justify-content-end">
                   <li class="nav-item">
@@ -142,6 +154,12 @@
                 </li>
               </div>
             <?php else : ?>
+              <li class="nav-item">
+                <a class="nav-link" href="<?php echo $baseURL; ?>">Home</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="<?php echo $baseURL; ?>/policies.php">Policies</a>
+              </li>
               <li class="nav-item">
                 <a class="btn btn-sm btn-primary ms-md-2 px-4 d-flex align-items-center justify-content-center gap-2" href="<?php echo $baseURL; ?>/login.php">
                   <span>Login</span>

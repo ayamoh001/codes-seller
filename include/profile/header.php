@@ -47,7 +47,7 @@
 
 </head>
 
-<body class="inter-without-weight">
+<body class="inter-without-weight bg-dark">
   <header class="d-block bg-dark bg-gradient py-3">
     <div class="container">
       <nav class="navbar navbar-expand-lg navbar-dark">
@@ -59,6 +59,9 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav ms-auto align-items-center">
+            <li class="nav-item">
+              <a class="nav-link text-capitalize" href="<?php echo $baseURL; ?>/">home</a>
+            </li>
             <li class="nav-item">
               <a class="nav-link text-capitalize" href="<?php echo $baseURL; ?>/profile/index.php">profile</a>
             </li>

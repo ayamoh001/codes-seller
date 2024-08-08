@@ -70,7 +70,7 @@ require_once "../include/admin/header.php";
                     <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#change-password-modal-<?php echo $user["id"]; ?>">
                       Change Password
                     </button>
-                    <!-- Cange Modal -->
+                    <!-- Change Modal -->
                     <div class="modal fade text-dark" id="change-password-modal-<?php echo $user["id"]; ?>" tabindex="-1" aria-labelledby="change-password-modal-label-<?php echo $user["id"]; ?>" aria-hidden="true">
                       <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content">

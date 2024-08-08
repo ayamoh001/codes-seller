@@ -8,6 +8,9 @@
         <a aria-label="Telegram Account" class="p-0 m-0 nav-link" href="https://t.me/SamsupplierX">
           <i class="bi bi-telegram"></i>
         </a>
+        <a aria-label="Email" class="p-0 m-0 nav-link" href="mailto:crypto.cards.dealer24.7@gmail.com">
+          <i class="bi bi-envelope"></i>
+        </a>
       </nav>
       <div class="d-flex gap-2 gap-md-3 flex-column flex-md-row align-items-center justify-content-between">
         <a href="<?php echo $baseURL; ?>/policies.php" class="underline text-white ">Our Terms & Policies</a>
@@ -19,7 +22,7 @@
 
   <span id="whatsapp-button" class="position-fixed fixed-bottom d-flex flex-column align-items-center m-auto mb-3 me-3" style="width: fit-content">
     <a href="https://wa.me/60176940955" target="_blank" rel="noopener noreferrer" class="d-flex align-items-center justify-content-center overflow-hidden rounded-circle p-2 shadow-sm" style="background-color: #43c354;">
-      <img src="<?php echo $baseURL; ?>/assets/images/icons/whatsapp-logo.webp" width="42" alt="contact us on whatsapp">
+      <img src="<?php echo $baseURL; ?>/assets/images/icons/whatsapp-logo.webp" width="42" alt="Contact us on whatsapp">
     </a>
   </span>
 

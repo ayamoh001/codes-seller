@@ -1,1 +1,2 @@
-- set manual confirmation action timeout
+- remove the empty types from the options
+- remove the manual payment confirmation

@@ -20,7 +20,8 @@ try {
     $user = getUser($user_id, $returnPath);
     $userId = $user["id"];
   } else {
-    $userId = $guestIdPrefix . session_id();
+    showSessionAlert("You are not logged in!", "danger", true, "login.php");
+    exit;
   }
 
   $getGroupStmt = $connection->prepare("SELECT * FROM `groups` WHERE id = ? LIMIT 1");
@@ -159,7 +160,7 @@ try {
           "goodsQuantity" => $quantity,
         ]
       ],
-      "returnUrl" => "$baseURL/payment_processing.php?paymentId=$insertedPaymentId",
+      // "returnUrl" => "$baseURL/payment_processing.php?paymentId=$insertedPaymentId",
       "cancelUrl" => "$baseURL/faild_payment.php",
     ];
 
@@ -168,23 +169,6 @@ try {
     // exit;
 
     $json_request = json_encode($request, JSON_PRETTY_PRINT);
-    // {
-    //   "env": { "terminalType": "WEB" },
-    //   "merchantTradeNo": "3062429021074",
-    //   "fiatAmount": 48,
-    //   "fiatCurrency": "USD",
-    //   "description": "A description for Another Test Elements for the Groups with extra texts",
-    //   "goodsDetails": {
-    //     "goodsType": "02",
-    //     "goodsCategory": "6000",
-    //     "referenceGoodsId": "61722539630",
-    //     "goodsName": "Another Test Elements for the Groups",
-    //     "goodsDetail": "A description for Another Test Elements for the Groups with extra texts",
-    //     "goodsQuantity": 2
-    //   },
-    //   "cancelUrl": "http://localhost/crypto-cards/faild_payment.php"
-    // }
-
 
     // echo "<pre>";
     // var_dump($json_request);

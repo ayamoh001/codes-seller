@@ -27,9 +27,9 @@ require_once "./include/header.php";
   <div class="container py-5 my-auto text-start d-flex flex-column gap-4">
     <h1>Our Policies and Terms of Use</h1>
 
-    <h2>Welcome to Cryptocards!</h2>
+    <h2>Welcome to Crypto Cards!</h2>
 
-    <p>Thank you for choosing Cryptocards for your codes needs. By accessing or using our website, you agree to be bound by the following terms and conditions. Please read them carefully.</p>
+    <p>Thank you for choosing Crypto Cards for your codes needs. By accessing or using our website, you agree to be bound by the following terms and conditions. Please read them carefully.</p>
 
     <h3>1. Acceptance of Terms</h3>
 
@@ -43,7 +43,7 @@ require_once "./include/header.php";
 
     <p>Account Creation: You may be required to create an account to access certain features of the website. You agree to provide accurate and complete information when creating an account.<br>
       <b>Account Security:</b> You are responsible for maintaining the confidentiality of your account information and for all activities that occur under your account. Notify us immediately of any unauthorized use of your account.<br>
-      <b>Prohibited Conduct:</b> You agree not to use the website for any unlawful purpose or in any way that could harm Cryptocards or its users. This includes, but is not limited to, uploading or transmitting viruses, spamming, or infringing on the intellectual property rights of others.
+      <b>Prohibited Conduct:</b> You agree not to use the website for any unlawful purpose or in any way that could harm Crypto Cards or its users. This includes, but is not limited to, uploading or transmitting viruses, spamming, or infringing on the intellectual property rights of others.
     </p>
 
     <h3>4. Purchasing Products (Codes)</h3>
@@ -58,7 +58,7 @@ require_once "./include/header.php";
     <h3>5. Intellectual Property</h3>
 
     <p>
-      <b>Ownership:</b> All content on the website, including text, graphics, logos, and images, is the property of Cryptocards or its content suppliers and is protected by intellectual property laws.<br>
+      <b>Ownership:</b> All content on the website, including text, graphics, logos, and images, is the property of Crypto Cards or its content suppliers and is protected by intellectual property laws.<br>
       <b>Use of Content:</b> You may use the content on our website for personal, non-commercial purposes only. You may not copy, reproduce, distribute, or create derivative works from the content without our express written permission.
     </p>
 
@@ -73,7 +73,7 @@ require_once "./include/header.php";
 
     <p>
       <b>No Warranty:</b> The website and its content are provided "as is" without any warranties of any kind, either express or implied.<br>
-      <b>Limitation of Damages:</b> In no event shall Cryptocards be liable for any indirect, incidental, special, or consequential damages arising out of or in connection with your use of the website or purchase of codes.<br>
+      <b>Limitation of Damages:</b> In no event shall Crypto Cards be liable for any indirect, incidental, special, or consequential damages arising out of or in connection with your use of the website or purchase of codes.<br>
     </p>
 
     <h3>8. Changes to Terms</h3>
@@ -82,13 +82,13 @@ require_once "./include/header.php";
 
     <h3>9. Governing Law</h3>
 
-    <p>These Terms of Use are governed by and construed in accordance with the laws of the jurisdiction in which Cryptocards operates, without regard to its conflict of law principles.</p>
+    <p>These Terms of Use are governed by and construed in accordance with the laws of the jurisdiction in which Crypto Cards operates, without regard to its conflict of law principles.</p>
 
     <h3>10. Contact Us</h3>
 
-    <p>If you have any questions about these Terms of Use, please contact us at support@cryptocards.com.</p>
+    <p>If you have any questions about these Terms of Use, please contact us at support@Crypto Cards.com.</p>
 
-    <p class="fs-6 lead">By accessing and using the Cryptocards website, you acknowledge that you have read, understood, and agree to be bound by these Terms of Use. Thank you for choosing Cryptocards for your code purchases!</p>
+    <p class="fs-6 lead">By accessing and using the Crypto Cards website, you acknowledge that you have read, understood, and agree to be bound by these Terms of Use. Thank you for choosing Crypto Cards for your code purchases!</p>
   </div>
 </main>
 

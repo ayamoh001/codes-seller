@@ -73,7 +73,7 @@ try {
         "goodsQuantity" => 1,
       ]
     ],
-    "returnUrl" => "$baseURL/payment_processing.php?chargeId=$insertedChargeId",
+    // "returnUrl" => "$baseURL/payment_processing.php?chargeId=$insertedChargeId",
     "cancelUrl" => "$baseURL/faild_payment.php",
   ];
 

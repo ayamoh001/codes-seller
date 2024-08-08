@@ -1,6 +1,7 @@
 <?php
 session_start();
 
+$baseURL = "http://192.168.1.10/crypto-cards"; // for mobile dev
 $baseURL = "http://localhost/crypto-cards"; // for dev
 // $baseURL = "https://cryptogamingcards.com"; // for production
 

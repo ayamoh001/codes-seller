@@ -6,14 +6,17 @@ if ($_SERVER['REQUEST_METHOD'] != 'GET') {
   die("Invalid request method");
 }
 
-$returnPath = "checkout.php";
-
-$user_id = "";
-if (isset($_SESSION["user_id"]) && $_SESSION["user_id"] != "") {
-  $user_id = (int) $_SESSION["user_id"];
-  $user = getUser($user_id, $returnPath);
-  $wallet = getUserWallet($user_id, $returnPath);
+if (!isset($_SESSION["user_id"]) || $_SESSION["user_id"] == "") {
+  showSessionAlert("You are not logged in!", "danger", true, "login.php");
+  exit;
 }
+
+$returnPath = "";
+
+$user_id = (int) $_SESSION["user_id"];
+
+$user = getUser($user_id, $returnPath);
+$wallet = getUserWallet($user_id, $returnPath);
 
 $groupId = (int) $_GET['groupId'];
 $typeId = (int) $_GET['typeId'];
@@ -79,8 +82,38 @@ require_once "./include/header.php";
 
                 <div class="row gap-2 gap-md-0">
                   <div class="col col-12 mb-md-2">
-                    <button type="button" class="btn btn-lg btn-warning w-100" data-bs-toggle="modal" data-bs-target="#manual-payment-request">
-                      Manual Payment Request
+                    <form action="<?php echo $baseURL; ?>/backend/create_payment.php" method="POST" class="m-0">
+                      <!-- <input type="hidden" name="useWallet" value="FALSE"> -->
+                      <input type="hidden" name="groupId" value="<?php echo $groupId; ?>">
+                      <input type="hidden" name="typeId" value="<?php echo $typeId; ?>">
+                      <input type="hidden" name="quantity" value="<?php echo $quantity; ?>">
+                      <button type="submit" class="w-100 btn btn-warning btn-lg">Binance Pay</button>
+                    </form>
+                  </div>
+                  <div class="col col-12 col-md-6">
+                    <?php
+                    if (isset($user) && $user["id"] != "") :
+                    ?>
+                      <form action="<?php echo $baseURL; ?>/backend/create_payment.php" method="POST" class="m-0">
+                        <input type="hidden" name="useWallet" value="TRUE">
+                        <input type="hidden" name="groupId" value="<?php echo $groupId; ?>">
+                        <input type="hidden" name="typeId" value="<?php echo $typeId; ?>">
+                        <input type="hidden" name="quantity" value="<?php echo $quantity; ?>">
+                        <button type="submit" class="w-100 btn btn-primary btn-lg">Wallet Balance</button>
+                      </form>
+                    <?php
+                    else :
+                    ?>
+                      <a href="<?php echo $baseURL; ?>/login.php" class="d-flex h-100 w-100 btn btn-primary btn-sm justify-content-center align-items-center">
+                        Login to pay with wallet balance
+                      </a>
+                    <?php
+                    endif;
+                    ?>
+                  </div>
+                  <div class="col col-12 col-md-6">
+                    <button type="button" class="btn btn-lg btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#manual-payment-request">
+                      Manual Payment
                     </button>
                     <!-- Manual Payment Request Modal -->
                     <div class="modal fade" id="manual-payment-request" tabindex="-1" aria-labelledby="manual-payment-request-label" aria-hidden="true">
@@ -131,36 +164,6 @@ require_once "./include/header.php";
                         </div>
                       </div>
                     </div>
-                  </div>
-                  <div class="col col-12 col-md-6">
-                    <form action="<?php echo $baseURL; ?>/backend/create_payment.php" method="POST" class="m-0">
-                      <!-- <input type="hidden" name="useWallet" value="FALSE"> -->
-                      <input type="hidden" name="groupId" value="<?php echo $groupId; ?>">
-                      <input type="hidden" name="typeId" value="<?php echo $typeId; ?>">
-                      <input type="hidden" name="quantity" value="<?php echo $quantity; ?>">
-                      <button type="submit" class="w-100 btn btn-primary btn-lg">Binance Pay</button>
-                    </form>
-                  </div>
-                  <div class="col col-12 col-md-6">
-                    <?php
-                    if (isset($user) && $user["id"] != "") :
-                    ?>
-                      <form action="<?php echo $baseURL; ?>/backend/create_payment.php" method="POST" class="m-0">
-                        <input type="hidden" name="useWallet" value="TRUE">
-                        <input type="hidden" name="groupId" value="<?php echo $groupId; ?>">
-                        <input type="hidden" name="typeId" value="<?php echo $typeId; ?>">
-                        <input type="hidden" name="quantity" value="<?php echo $quantity; ?>">
-                        <button type="submit" class="w-100 btn btn-outline-primary btn-lg">Wallet Balance</button>
-                      </form>
-                    <?php
-                    else :
-                    ?>
-                      <a href="<?php echo $baseURL; ?>/login.php" class="d-flex h-100 w-100 btn btn-outline-primary btn-sm justify-content-center align-items-center">
-                        Login to pay with wallet balance
-                      </a>
-                    <?php
-                    endif;
-                    ?>
                   </div>
                 </div>
               </div>

@@ -31,7 +31,11 @@ require_once "./include/header.php";
     <section class="hero-section bg-dark text-light mb-5">
       <div class="text-center">
         <h1 class="display-4 fw-bold">INSTANT DELIVERY</h1>
-        <a href="<?php echo $baseURL . ((isset($user_id) && $user_id != "") ? "/profile/" : "/login.php"); ?>" class="btn btn-primary btn-lg px-5 fw-bold my-2"><?php echo $user_id == "" ? "LOGIN NOW" : "Your Account"; ?></a>
+        <?php if (isset($user_id) && $user_id != "") : ?>
+          <a href="<?php echo "$baseURL/profile/wallet.php"; ?>" class="btn btn-primary btn-lg px-5 fw-bold my-2"><?php echo $wallet["balance"]; ?> USD</a>
+        <?php else : ?>
+          <a href="<?php echo "$baseURL/login.php"; ?>" class="btn btn-primary btn-lg px-5 fw-bold my-2">LOGIN NOW</a>
+        <?php endif; ?>
         <p class="lead">And buy your code type</p>
       </div>
     </section>

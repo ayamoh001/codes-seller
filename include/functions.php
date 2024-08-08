@@ -50,12 +50,27 @@ function getGroups(string $returnPath = ""): array
 {
   global $connection;
   try {
-    $getGroupsWithProuductsStmt = $connection->prepare("SELECT gr.*, ty.id AS type_id, ty.name AS type_name, ty.price AS type_price, pd.id AS product_id, ty.sort_index AS type_sort_index
+    $getGroupsWithProuductsStmt = $connection->prepare("SELECT gr.*, 
+                                                            ty.id AS type_id, 
+                                                            ty.name AS type_name, 
+                                                            ty.price AS type_price, 
+                                                            pd.id AS product_id, 
+                                                            ty.sort_index AS type_sort_index
                                                       FROM `groups` gr
                                                       LEFT JOIN `types` ty ON gr.id = ty.group_id
                                                       LEFT JOIN `products` pd ON ty.id = pd.type_id AND pd.payment_id IS NULL
                                                       WHERE gr.visibility = 1
-                                                      ORDER BY gr.sort_index, gr.id, ty.sort_index, ty.id, pd.date");
+                                                        AND (ty.id IS NULL OR EXISTS (
+                                                          SELECT 1
+                                                          FROM `products` p
+                                                          WHERE p.type_id = ty.id
+                                                            AND p.payment_id IS NULL
+                                                        ))
+                                                      ORDER BY gr.sort_index DESC, 
+                                                              gr.id DESC, 
+                                                              IFNULL(ty.sort_index, 999999) DESC, 
+                                                              IFNULL(ty.id, 999999) DESC, 
+                                                              IFNULL(pd.date, '9999-12-31') DESC");
 
     $getGroupsWithProuductsStmt->execute();
     if ($getGroupsWithProuductsStmt->errno) {
@@ -113,12 +128,22 @@ function getGroupsForAdmin(string $returnPath = ""): array
 {
   global $connection;
   try {
-    $getGroupsWithProuductsStmt = $connection->prepare("SELECT gr.*, ty.id AS type_id, ty.name AS type_name, ty.price AS type_price, pd.id AS product_id, ty.sort_index AS type_sort_index, pd.code_value
-                                                      FROM `groups` gr
-                                                      LEFT JOIN `types` ty ON gr.id = ty.group_id
-                                                      LEFT JOIN `products` pd ON ty.id = pd.type_id AND pd.payment_id IS NULL
-                                                      WHERE gr.visibility = 1
-                                                      ORDER BY gr.sort_index, gr.id, ty.sort_index, ty.id, pd.date");
+    $getGroupsWithProuductsStmt = $connection->prepare(" SELECT gr.*, 
+                                                                ty.id AS type_id, 
+                                                                ty.name AS type_name, 
+                                                                ty.price AS type_price, 
+                                                                pd.id AS product_id, 
+                                                                ty.sort_index AS type_sort_index, 
+                                                                pd.code_value
+                                                          FROM `groups` gr
+                                                          LEFT JOIN `types` ty ON gr.id = ty.group_id
+                                                          LEFT JOIN `products` pd ON ty.id = pd.type_id AND pd.payment_id IS NULL
+                                                          WHERE gr.visibility = 1
+                                                          ORDER BY gr.sort_index DESC, 
+                                                                  gr.id DESC, 
+                                                                  IFNULL(ty.sort_index, 999999) DESC, 
+                                                                  IFNULL(ty.id, 999999) DESC, 
+                                                                  IFNULL(pd.date, '9999-12-31') DESC");
 
     $getGroupsWithProuductsStmt->execute();
     if ($getGroupsWithProuductsStmt->errno) {
@@ -450,8 +475,8 @@ function confirmCharge(int $chargeId, int $userId, string $returnPath = ""): arr
     $getChargeStmt->bind_param("ii", $chargeId, $userId);
     $getChargeStmt->execute();
     if ($getChargeStmt->errno) {
-      // showSessionAlert($getChargeStmt->error, "danger");
       logErrors($getChargeStmt->error, "string");
+      // showSessionAlert($getChargeStmt->error, "danger");
       throw new Exception($getChargeStmt->error);
     }
 
@@ -474,7 +499,6 @@ function confirmCharge(int $chargeId, int $userId, string $returnPath = ""): arr
       if ($updateChargeStatusStmt->errno) {
         $connection->rollback();
         logErrors($updateChargeStatusStmt->error, "string");
-        showSessionAlert($updateChargeStatusStmt->error, "danger", true, $returnPath);
         throw new Exception($updateChargeStatusStmt->error);
         // exit;
       }
@@ -490,20 +514,19 @@ function confirmCharge(int $chargeId, int $userId, string $returnPath = ""): arr
       if ($chargeWalletStmt->errno) {
         $connection->rollback();
         logErrors($chargeWalletStmt->error, "string");
-        showSessionAlert($chargeWalletStmt->error, "danger", true, $returnPath);
         throw new Exception($chargeWalletStmt->error);
         // exit;
       }
       $chargeWalletStmt->close();
       if (count($errors)) {
         logErrors($errors, "string");
-        showSessionAlert($errors, "danger", true, $returnPath);
+        return $errors;
         // exit;
       } else {
-        showSessionAlert("Wallet charged successfully!", "success", true, $returnPath);
+        showSessionAlert("Wallet charged successfully!", "success", false, $returnPath);
+        $connection->commit();
+        return [];
       }
-
-      $connection->commit();
     }
 
     return $errors;

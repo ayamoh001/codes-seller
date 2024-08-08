@@ -24,7 +24,7 @@
   <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
 </head>
 
-<body class="inter-without-weight">
+<body class="inter-without-weight bg-dark">
   <header class="d-block bg-dark py-3">
     <div class="container">
       <nav class="navbar navbar-expand-lg navbar-dark">
@@ -39,9 +39,6 @@
             </li>
             <li class="nav-item">
               <a class="nav-link" href="<?php echo $baseURL; ?>/admin/payments.php">payments</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="<?php echo $baseURL; ?>/admin/manual_payments.php">manual payments</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="<?php echo $baseURL; ?>/admin/charges.php">charges</a>
